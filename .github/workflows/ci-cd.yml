@@ -1,0 +1,198 @@
+name: Tradexy CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+      - staging
+      - main
+  pull_request:
+    branches:
+      - dev
+      - staging
+      - main
+
+jobs:
+
+  # ════════════════════════════════════════
+  # JOB 1: LINT & TEST
+  # ════════════════════════════════════════
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: testing_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_pgsql, mbstring, zip, exif, pcntl
+          coverage: none
+
+      - name: 📦 Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: 📦 Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: 📄 Copy environment file
+        run: cp .env.example .env
+
+      - name: 🔑 Generate application key
+        run: php artisan key:generate
+
+      - name: 🗄️ Run migrations
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: testing_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+
+      - name: 🧪 Run tests
+        run: php artisan test
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: testing_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+
+  # ════════════════════════════════════════
+  # JOB 2: DEPLOY TO DEV
+  # Trigger: push to dev branch
+  # ════════════════════════════════════════
+  deploy-dev:
+    name: 🚀 Deploy to Dev
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+
+    steps:
+      - name: 🖥️ Deploy to Dev Server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "========================================="
+            echo "🚀 Deploying to DEV"
+            echo "========================================="
+            cd /var/www/trading-journal-v2
+            git fetch origin
+            git checkout dev
+            git pull origin dev
+            docker-compose -f docker-compose.dev.yml down
+            docker-compose -f docker-compose.dev.yml build --no-cache
+            docker-compose -f docker-compose.dev.yml up -d
+            sleep 15
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan key:generate --force || true
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan storage:link || true
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan config:clear
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan route:clear
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan view:clear
+            docker-compose -f docker-compose.dev.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            echo "✅ Dev deployment complete!"
+
+  # ════════════════════════════════════════
+  # JOB 3: DEPLOY TO STAGING
+  # Trigger: push to staging branch
+  # ════════════════════════════════════════
+  deploy-staging:
+    name: 🟡 Deploy to Staging
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+
+    steps:
+      - name: 🖥️ Deploy to Staging Server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "========================================="
+            echo "🟡 Deploying to STAGING"
+            echo "========================================="
+            cd /var/www/trading-journal-v2
+            git fetch origin
+            git checkout staging
+            git pull origin staging
+            docker-compose -f docker-compose.staging.yml down
+            docker-compose -f docker-compose.staging.yml build --no-cache
+            docker-compose -f docker-compose.staging.yml up -d
+            sleep 15
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan key:generate --force || true
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan storage:link || true
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan config:cache
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan route:cache
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan view:cache
+            docker-compose -f docker-compose.staging.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            echo "✅ Staging deployment complete!"
+
+  # ════════════════════════════════════════
+  # JOB 4: DEPLOY TO PRODUCTION
+  # Trigger: push to main branch
+  # ════════════════════════════════════════
+  deploy-production:
+    name: 🟢 Deploy to Production
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: 🖥️ Deploy to Production Server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "========================================="
+            echo "🟢 Deploying to PRODUCTION"
+            echo "========================================="
+            cd /var/www/trading-journal-v2
+            git fetch origin
+            git checkout main
+            git pull origin main
+            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.prod.yml build --no-cache
+            docker-compose -f docker-compose.prod.yml up -d
+            sleep 15
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan key:generate --force || true
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan storage:link || true
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan route:cache
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+            docker-compose -f docker-compose.prod.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            echo "✅ Production deployment complete!"
