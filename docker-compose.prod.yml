@@ -6,8 +6,6 @@ services:
     container_name: tradexy_app_prod
     restart: unless-stopped
     working_dir: /var/www
-    env_file:
-      - .env
     networks:
       - tradexy_prod
 

@@ -6,8 +6,6 @@ services:
     container_name: tradexy_app_staging
     restart: unless-stopped
     working_dir: /var/www
-    env_file:
-      - .env
     networks:
       - tradexy_staging
 

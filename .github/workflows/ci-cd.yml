@@ -86,7 +86,7 @@ jobs:
   # ════════════════════════════════════════
   # JOB 2: DEPLOY TO DEV
   # ════════════════════════════════════════
-  deploy-dev:
+   deploy-dev:
     name: 🚀 Deploy to Dev
     needs: test
     runs-on: ubuntu-latest
@@ -100,17 +100,21 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            echo "========================================="
-            echo "🚀 Deploying to DEV"
-            echo "========================================="
             cd /var/www/tradexy-dev
             git fetch origin
             git checkout dev
             git pull origin dev
 
-            # Ensure .env exists
             if [ ! -f .env ]; then
-              cp .env.example .env
+              echo "❌ No .env file!"
+              exit 1
+            fi
+
+            # Ensure APP_KEY before build
+            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
+            if [ -z "$APP_KEY" ]; then
+              NEW_KEY="base64:$(openssl rand -base64 32)"
+              sed -i "s|^APP_KEY=.*|APP_KEY=$NEW_KEY|" .env
             fi
 
             docker-compose -f docker-compose.dev.yml down
@@ -118,13 +122,6 @@ jobs:
             docker-compose -f docker-compose.dev.yml up -d
             sleep 15
             docker-compose -f docker-compose.dev.yml exec -T app composer install --no-interaction --prefer-dist
-
-            # Generate app key if missing
-            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
-            if [ -z "$APP_KEY" ]; then
-              docker-compose -f docker-compose.dev.yml exec -T app php artisan key:generate --force
-            fi
-
             docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.dev.yml exec -T app php artisan storage:link || true
             docker-compose -f docker-compose.dev.yml exec -T app php artisan config:clear
@@ -150,17 +147,21 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            echo "========================================="
-            echo "🟡 Deploying to STAGING"
-            echo "========================================="
             cd /var/www/tradexy-staging
             git fetch origin
             git checkout staging
             git pull origin staging
 
             if [ ! -f .env ]; then
-              echo "❌ No .env file! Create one first."
+              echo "❌ No .env file!"
               exit 1
+            fi
+
+            # Ensure APP_KEY before build
+            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
+            if [ -z "$APP_KEY" ]; then
+              NEW_KEY="base64:$(openssl rand -base64 32)"
+              sed -i "s|^APP_KEY=.*|APP_KEY=$NEW_KEY|" .env
             fi
 
             docker-compose -f docker-compose.staging.yml down
@@ -168,12 +169,6 @@ jobs:
             docker-compose -f docker-compose.staging.yml up -d
             sleep 15
             docker-compose -f docker-compose.staging.yml exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-
-            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
-            if [ -z "$APP_KEY" ]; then
-              docker-compose -f docker-compose.staging.yml exec -T app php artisan key:generate --force
-            fi
-
             docker-compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.staging.yml exec -T app php artisan storage:link || true
             docker-compose -f docker-compose.staging.yml exec -T app php artisan config:cache
@@ -185,7 +180,7 @@ jobs:
   # ════════════════════════════════════════
   # JOB 4: DEPLOY TO PRODUCTION
   # ════════════════════════════════════════
-  deploy-production:
+ deploy-production:
     name: 🟢 Deploy to Production
     needs: test
     runs-on: ubuntu-latest
@@ -199,17 +194,21 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            echo "========================================="
-            echo "🟢 Deploying to PRODUCTION"
-            echo "========================================="
             cd /var/www/tradexy-prod
             git fetch origin
             git checkout main
             git pull origin main
 
             if [ ! -f .env ]; then
-              echo "❌ No .env file! Create one first."
+              echo "❌ No .env file!"
               exit 1
+            fi
+
+            # Ensure APP_KEY before build
+            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
+            if [ -z "$APP_KEY" ]; then
+              NEW_KEY="base64:$(openssl rand -base64 32)"
+              sed -i "s|^APP_KEY=.*|APP_KEY=$NEW_KEY|" .env
             fi
 
             docker-compose -f docker-compose.prod.yml down
@@ -217,12 +216,6 @@ jobs:
             docker-compose -f docker-compose.prod.yml up -d
             sleep 15
             docker-compose -f docker-compose.prod.yml exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-
-            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
-            if [ -z "$APP_KEY" ]; then
-              docker-compose -f docker-compose.prod.yml exec -T app php artisan key:generate --force
-            fi
-
             docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.prod.yml exec -T app php artisan storage:link || true
             docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache

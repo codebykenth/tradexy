@@ -50,33 +50,36 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-echo "🛑 Step 3: Stopping old containers..."
+echo "🔑 Step 3: Ensuring APP_KEY exists BEFORE build..."
+APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
+if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ]; then
+    echo "  🔑 No key found, generating one..."
+    # Generate a key manually (base64 random)
+    NEW_KEY="base64:$(openssl rand -base64 32)"
+    # Write it to .env on the HOST
+    sed -i "s|^APP_KEY=.*|APP_KEY=$NEW_KEY|" .env
+    echo "  ✅ App key set: ${NEW_KEY:0:20}..."
+else
+    echo "  ✅ App key already exists: ${APP_KEY:0:20}..."
+fi
+
+echo "🛑 Step 4: Stopping old containers..."
 docker-compose -f $COMPOSE_FILE down
 
-echo "🔨 Step 4: Building new containers..."
+echo "🔨 Step 5: Building new containers..."
 docker-compose -f $COMPOSE_FILE build --no-cache
 
-echo "🚀 Step 5: Starting containers..."
+echo "🚀 Step 6: Starting containers..."
 docker-compose -f $COMPOSE_FILE up -d
 
-echo "⏳ Step 6: Waiting for containers to be ready..."
+echo "⏳ Step 7: Waiting for containers to be ready..."
 sleep 10
 
-echo "📦 Step 7: Installing dependencies..."
+echo "📦 Step 8: Installing dependencies..."
 if [ "$ENV" = "dev" ]; then
     docker-compose -f $COMPOSE_FILE exec -T app composer install --no-interaction --prefer-dist
 else
     docker-compose -f $COMPOSE_FILE exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-fi
-
-echo "🔑 Step 8: Checking app key..."
-APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
-if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ]; then
-    echo "  🔑 No key found, generating..."
-    docker-compose -f $COMPOSE_FILE exec -T app php artisan key:generate --force
-    echo "  ✅ App key generated."
-else
-    echo "  ✅ App key already exists: ${APP_KEY:0:10}..."
 fi
 
 echo "📂 Step 9: Running migrations..."
