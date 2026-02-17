@@ -15,7 +15,7 @@ on:
 jobs:
 
   # ════════════════════════════════════════
-  # JOB 1: LINT & TEST
+  # JOB 1: TEST
   # ════════════════════════════════════════
   test:
     name: 🧪 Run Tests
@@ -85,7 +85,6 @@ jobs:
 
   # ════════════════════════════════════════
   # JOB 2: DEPLOY TO DEV
-  # Trigger: push to dev branch
   # ════════════════════════════════════════
   deploy-dev:
     name: 🚀 Deploy to Dev
@@ -106,13 +105,26 @@ jobs:
             echo "========================================="
             cd /var/www/tradexy-dev
             git fetch origin
+            git checkout dev
             git pull origin dev
+
+            # Ensure .env exists
+            if [ ! -f .env ]; then
+              cp .env.example .env
+            fi
+
             docker-compose -f docker-compose.dev.yml down
             docker-compose -f docker-compose.dev.yml build --no-cache
             docker-compose -f docker-compose.dev.yml up -d
             sleep 15
             docker-compose -f docker-compose.dev.yml exec -T app composer install --no-interaction --prefer-dist
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan key:generate --force || true
+
+            # Generate app key if missing
+            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
+            if [ -z "$APP_KEY" ]; then
+              docker-compose -f docker-compose.dev.yml exec -T app php artisan key:generate --force
+            fi
+
             docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.dev.yml exec -T app php artisan storage:link || true
             docker-compose -f docker-compose.dev.yml exec -T app php artisan config:clear
@@ -123,7 +135,6 @@ jobs:
 
   # ════════════════════════════════════════
   # JOB 3: DEPLOY TO STAGING
-  # Trigger: push to staging branch
   # ════════════════════════════════════════
   deploy-staging:
     name: 🟡 Deploy to Staging
@@ -144,12 +155,30 @@ jobs:
             echo "========================================="
             cd /var/www/tradexy-staging
             git fetch origin
+            git checkout staging
             git pull origin staging
+
+            # Ensure .env exists
+            if [ ! -f .env ]; then
+              if [ -f .env.staging ]; then
+                cp .env.staging .env
+              else
+                cp .env.example .env
+              fi
+            fi
+
             docker-compose -f docker-compose.staging.yml down
             docker-compose -f docker-compose.staging.yml build --no-cache
             docker-compose -f docker-compose.staging.yml up -d
             sleep 15
-            docker-compose -f docker-compose.staging.yml exec -T app php artisan key:generate --force || true
+            docker-compose -f docker-compose.staging.yml exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+            # Generate app key if missing
+            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
+            if [ -z "$APP_KEY" ]; then
+              docker-compose -f docker-compose.staging.yml exec -T app php artisan key:generate --force
+            fi
+
             docker-compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.staging.yml exec -T app php artisan storage:link || true
             docker-compose -f docker-compose.staging.yml exec -T app php artisan config:cache
@@ -160,7 +189,6 @@ jobs:
 
   # ════════════════════════════════════════
   # JOB 4: DEPLOY TO PRODUCTION
-  # Trigger: push to main branch
   # ════════════════════════════════════════
   deploy-production:
     name: 🟢 Deploy to Production
@@ -181,12 +209,30 @@ jobs:
             echo "========================================="
             cd /var/www/tradexy-prod
             git fetch origin
+            git checkout main
             git pull origin main
+
+            # Ensure .env exists
+            if [ ! -f .env ]; then
+              if [ -f .env.production ]; then
+                cp .env.production .env
+              else
+                cp .env.example .env
+              fi
+            fi
+
             docker-compose -f docker-compose.prod.yml down
             docker-compose -f docker-compose.prod.yml build --no-cache
             docker-compose -f docker-compose.prod.yml up -d
             sleep 15
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan key:generate --force || true
+            docker-compose -f docker-compose.prod.yml exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+            # Generate app key if missing
+            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
+            if [ -z "$APP_KEY" ]; then
+              docker-compose -f docker-compose.prod.yml exec -T app php artisan key:generate --force
+            fi
+
             docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.prod.yml exec -T app php artisan storage:link || true
             docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache
