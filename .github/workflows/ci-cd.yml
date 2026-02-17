@@ -175,16 +175,16 @@ jobs:
             echo "${GH_PAT}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
             docker pull ghcr.io/${GH_REPO}:dev
 
-            docker compose -f docker-compose.dev.yml down
-            docker compose -f docker-compose.dev.yml up -d
+            docker-compose -f docker-compose.dev.yml down
+            docker-compose -f docker-compose.dev.yml up -d
             sleep 15
 
-            docker compose -f docker-compose.dev.yml exec -T app php artisan migrate --force
-            docker compose -f docker-compose.dev.yml exec -T app php artisan storage:link || true
-            docker compose -f docker-compose.dev.yml exec -T app php artisan config:clear
-            docker compose -f docker-compose.dev.yml exec -T app php artisan route:clear
-            docker compose -f docker-compose.dev.yml exec -T app php artisan view:clear
-            docker compose -f docker-compose.dev.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan storage:link || true
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan config:clear
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan route:clear
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan view:clear
+            docker-compose -f docker-compose.dev.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
             docker image prune -af
             docker logout ghcr.io
@@ -242,16 +242,16 @@ jobs:
             echo "${GH_PAT}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
             docker pull ghcr.io/${GH_REPO}:staging
 
-            docker compose -f docker-compose.staging.yml down
-            docker compose -f docker-compose.staging.yml up -d
+            docker-compose -f docker-compose.staging.yml down
+            docker-compose -f docker-compose.staging.yml up -d
             sleep 15
 
-            docker compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
-            docker compose -f docker-compose.staging.yml exec -T app php artisan storage:link || true
-            docker compose -f docker-compose.staging.yml exec -T app php artisan config:cache
-            docker compose -f docker-compose.staging.yml exec -T app php artisan route:cache
-            docker compose -f docker-compose.staging.yml exec -T app php artisan view:cache
-            docker compose -f docker-compose.staging.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan storage:link || true
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan config:cache
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan route:cache
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan view:cache
+            docker-compose -f docker-compose.staging.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
             docker image prune -af
             docker logout ghcr.io
@@ -309,16 +309,16 @@ jobs:
             echo "${GH_PAT}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
             docker pull ghcr.io/${GH_REPO}:main
 
-            docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml up -d
+            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.prod.yml up -d
             sleep 15
 
-            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-            docker compose -f docker-compose.prod.yml exec -T app php artisan storage:link || true
-            docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-            docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-            docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
-            docker compose -f docker-compose.prod.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan storage:link || true
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan route:cache
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+            docker-compose -f docker-compose.prod.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
             docker image prune -af
             docker logout ghcr.io
