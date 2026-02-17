@@ -56,34 +56,34 @@ echo "🐳 Step 3: Pulling latest image..."
 docker pull ghcr.io/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME:$IMAGE_TAG
 
 echo "🛑 Step 4: Stopping old containers..."
-docker compose down
+docker-compose down
 
 echo "🚀 Step 5: Starting containers..."
-docker compose up -d
+docker-compose up -d
 
 echo "⏳ Step 6: Waiting for health check..."
 sleep 15
 
 echo "📂 Step 7: Running migrations..."
-docker compose exec -T app php artisan migrate --force
+docker-compose exec -T app php artisan migrate --force
 
 echo "🔗 Step 8: Creating storage link..."
-docker compose exec -T app php artisan storage:link || true
+docker-compose exec -T app php artisan storage:link || true
 
 if [ "$ENV" != "dev" ]; then
     echo "⚡ Step 9: Caching for $ENV..."
-    docker compose exec -T app php artisan config:cache
-    docker compose exec -T app php artisan route:cache
-    docker compose exec -T app php artisan view:cache
+    docker-compose exec -T app php artisan config:cache
+    docker-compose exec -T app php artisan route:cache
+    docker-compose exec -T app php artisan view:cache
 else
     echo "⚡ Step 9: Clearing cache for dev..."
-    docker compose exec -T app php artisan config:clear
-    docker compose exec -T app php artisan route:clear
-    docker compose exec -T app php artisan view:clear
+    docker-compose exec -T app php artisan config:clear
+    docker-compose exec -T app php artisan route:clear
+    docker-compose exec -T app php artisan view:clear
 fi
 
 echo "🔒 Step 10: Setting permissions..."
-docker compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+docker-compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 echo "🧹 Step 11: Cleaning old images..."
 docker image prune -a --force --filter "until=168h"

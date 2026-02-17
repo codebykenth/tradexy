@@ -162,16 +162,16 @@ jobs:
             echo "${GH_PAT}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
             docker pull ghcr.io/${GH_REPO}:dev
 
-            docker compose down
-            docker compose up -d
+            docker-compose down
+            docker-compose up -d
             sleep 15
 
-            docker compose exec -T app php artisan migrate --force
-            docker compose exec -T app php artisan storage:link || true
-            docker compose exec -T app php artisan config:clear
-            docker compose exec -T app php artisan route:clear
-            docker compose exec -T app php artisan view:clear
-            docker compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            docker-compose exec -T app php artisan migrate --force
+            docker-compose exec -T app php artisan storage:link || true
+            docker-compose exec -T app php artisan config:clear
+            docker-compose exec -T app php artisan route:clear
+            docker-compose exec -T app php artisan view:clear
+            docker-compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
             docker image prune -a --force --filter "until=168h"
             docker logout ghcr.io
@@ -216,16 +216,16 @@ jobs:
             echo "${GH_PAT}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
             docker pull ghcr.io/${GH_REPO}:staging
 
-            docker compose down
-            docker compose up -d
+            docker-compose down
+            docker-compose up -d
             sleep 15
 
-            docker compose exec -T app php artisan migrate --force
-            docker compose exec -T app php artisan storage:link || true
-            docker compose exec -T app php artisan config:cache
-            docker compose exec -T app php artisan route:cache
-            docker compose exec -T app php artisan view:cache
-            docker compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            docker-compose exec -T app php artisan migrate --force
+            docker-compose exec -T app php artisan storage:link || true
+            docker-compose exec -T app php artisan config:cache
+            docker-compose exec -T app php artisan route:cache
+            docker-compose exec -T app php artisan view:cache
+            docker-compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
             docker image prune -a --force --filter "until=168h"
             docker logout ghcr.io
@@ -270,16 +270,16 @@ jobs:
             echo "${GH_PAT}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
             docker pull ghcr.io/${GH_REPO}:main
 
-            docker compose down
-            docker compose up -d
+            docker-compose down
+            docker-compose up -d
             sleep 15
 
-            docker compose exec -T app php artisan migrate --force
-            docker compose exec -T app php artisan storage:link || true
-            docker compose exec -T app php artisan config:cache
-            docker compose exec -T app php artisan route:cache
-            docker compose exec -T app php artisan view:cache
-            docker compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            docker-compose exec -T app php artisan migrate --force
+            docker-compose exec -T app php artisan storage:link || true
+            docker-compose exec -T app php artisan config:cache
+            docker-compose exec -T app php artisan route:cache
+            docker-compose exec -T app php artisan view:cache
+            docker-compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
             docker image prune -a --force --filter "until=168h"
             docker logout ghcr.io
