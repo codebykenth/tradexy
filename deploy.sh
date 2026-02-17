@@ -18,19 +18,16 @@ case $ENV in
         COMPOSE_FILE="docker-compose.dev.yml"
         PROJECT_DIR="/var/www/tradexy-dev"
         BRANCH="dev"
-        ENV_FILE=".env"
         ;;
     staging)
         COMPOSE_FILE="docker-compose.staging.yml"
         PROJECT_DIR="/var/www/tradexy-staging"
         BRANCH="staging"
-        ENV_FILE=".env.staging"
         ;;
     production)
         COMPOSE_FILE="docker-compose.prod.yml"
         PROJECT_DIR="/var/www/tradexy-prod"
         BRANCH="main"
-        ENV_FILE=".env.production"
         ;;
     *)
         echo "❌ Invalid environment: $ENV"
@@ -46,18 +43,11 @@ git fetch origin
 git checkout $BRANCH
 git pull origin $BRANCH
 
-echo "📄 Step 2: Ensuring .env file exists..."
+echo "📄 Step 2: Checking .env file..."
 if [ ! -f .env ]; then
-    if [ -f "$ENV_FILE" ] && [ "$ENV_FILE" != ".env" ]; then
-        echo "  📄 Copying $ENV_FILE to .env"
-        cp $ENV_FILE .env
-    elif [ -f .env.example ]; then
-        echo "  📄 Copying .env.example to .env"
-        cp .env.example .env
-    else
-        echo "  ❌ No .env file found! Create one manually."
-        exit 1
-    fi
+    echo "  ❌ No .env file found in $PROJECT_DIR"
+    echo "  Create one with: nano $PROJECT_DIR/.env"
+    exit 1
 fi
 
 echo "🛑 Step 3: Stopping old containers..."
@@ -73,7 +63,11 @@ echo "⏳ Step 6: Waiting for containers to be ready..."
 sleep 10
 
 echo "📦 Step 7: Installing dependencies..."
-docker-compose -f $COMPOSE_FILE exec -T app composer install --no-interaction --prefer-dist
+if [ "$ENV" = "dev" ]; then
+    docker-compose -f $COMPOSE_FILE exec -T app composer install --no-interaction --prefer-dist
+else
+    docker-compose -f $COMPOSE_FILE exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+fi
 
 echo "🔑 Step 8: Checking app key..."
 APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
@@ -82,7 +76,7 @@ if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ]; then
     docker-compose -f $COMPOSE_FILE exec -T app php artisan key:generate --force
     echo "  ✅ App key generated."
 else
-    echo "  ✅ App key already exists, skipping."
+    echo "  ✅ App key already exists: ${APP_KEY:0:10}..."
 fi
 
 echo "📂 Step 9: Running migrations..."

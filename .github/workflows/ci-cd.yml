@@ -158,13 +158,9 @@ jobs:
             git checkout staging
             git pull origin staging
 
-            # Ensure .env exists
             if [ ! -f .env ]; then
-              if [ -f .env.staging ]; then
-                cp .env.staging .env
-              else
-                cp .env.example .env
-              fi
+              echo "❌ No .env file! Create one first."
+              exit 1
             fi
 
             docker-compose -f docker-compose.staging.yml down
@@ -173,7 +169,6 @@ jobs:
             sleep 15
             docker-compose -f docker-compose.staging.yml exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-            # Generate app key if missing
             APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
             if [ -z "$APP_KEY" ]; then
               docker-compose -f docker-compose.staging.yml exec -T app php artisan key:generate --force
@@ -212,13 +207,9 @@ jobs:
             git checkout main
             git pull origin main
 
-            # Ensure .env exists
             if [ ! -f .env ]; then
-              if [ -f .env.production ]; then
-                cp .env.production .env
-              else
-                cp .env.example .env
-              fi
+              echo "❌ No .env file! Create one first."
+              exit 1
             fi
 
             docker-compose -f docker-compose.prod.yml down
@@ -227,7 +218,6 @@ jobs:
             sleep 15
             docker-compose -f docker-compose.prod.yml exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-            # Generate app key if missing
             APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
             if [ -z "$APP_KEY" ]; then
               docker-compose -f docker-compose.prod.yml exec -T app php artisan key:generate --force
