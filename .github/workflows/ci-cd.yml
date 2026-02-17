@@ -112,6 +112,7 @@ jobs:
             docker-compose -f docker-compose.dev.yml build --no-cache
             docker-compose -f docker-compose.dev.yml up -d
             sleep 15
+            docker-compose -f docker-compose.dev.yml exec -T app composer install --no-interaction --prefer-dist
             docker-compose -f docker-compose.dev.yml exec -T app php artisan key:generate --force || true
             docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.dev.yml exec -T app php artisan storage:link || true

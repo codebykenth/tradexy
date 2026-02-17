@@ -43,7 +43,10 @@ echo "🚀 Step 4: Starting containers..."
 docker-compose -f $COMPOSE_FILE up -d
 
 echo "⏳ Step 5: Waiting for containers to be ready..."
-sleep 15
+sleep 10
+
+echo "📦 Step 5.5: Installing dependencies..."
+docker-compose -f $COMPOSE_FILE exec -T app composer install --no-interaction --prefer-dist
 
 echo "🔑 Step 6: Generating app key..."
 docker-compose -f $COMPOSE_FILE exec -T app php artisan key:generate --force || true
