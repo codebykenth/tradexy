@@ -16,12 +16,18 @@ echo "========================================="
 case $ENV in
     dev)
         COMPOSE_FILE="docker-compose.dev.yml"
+        PROJECT_DIR="/var/www/tradexy-dev"
+        BRANCH="dev"
         ;;
     staging)
         COMPOSE_FILE="docker-compose.staging.yml"
+        PROJECT_DIR="/var/www/tradexy-staging"
+        BRANCH="staging"
         ;;
     production)
         COMPOSE_FILE="docker-compose.prod.yml"
+        PROJECT_DIR="/var/www/tradexy-prod"
+        BRANCH="main"
         ;;
     *)
         echo "❌ Invalid environment: $ENV"
@@ -30,8 +36,10 @@ case $ENV in
         ;;
 esac
 
+cd $PROJECT_DIR
+
 echo "📦 Step 1: Pulling latest code..."
-git pull origin $(git branch --show-current)
+git pull origin $BRANCH
 
 echo "🛑 Step 2: Stopping old containers..."
 docker-compose -f $COMPOSE_FILE down

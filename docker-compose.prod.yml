@@ -16,8 +16,7 @@ services:
     container_name: tradexy_nginx_prod
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "8082:80"
     volumes:
       - ./public:/var/www/public:ro
       - ./storage/app/public:/var/www/storage/app/public:ro

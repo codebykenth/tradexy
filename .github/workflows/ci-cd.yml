@@ -104,9 +104,8 @@ jobs:
             echo "========================================="
             echo "🚀 Deploying to DEV"
             echo "========================================="
-            cd /var/www/trading-journal-v2
+            cd /var/www/tradexy-dev
             git fetch origin
-            git checkout dev
             git pull origin dev
             docker-compose -f docker-compose.dev.yml down
             docker-compose -f docker-compose.dev.yml build --no-cache
@@ -143,9 +142,8 @@ jobs:
             echo "========================================="
             echo "🟡 Deploying to STAGING"
             echo "========================================="
-            cd /var/www/trading-journal-v2
+            cd /var/www/tradexy-staging
             git fetch origin
-            git checkout staging
             git pull origin staging
             docker-compose -f docker-compose.staging.yml down
             docker-compose -f docker-compose.staging.yml build --no-cache
@@ -181,9 +179,8 @@ jobs:
             echo "========================================="
             echo "🟢 Deploying to PRODUCTION"
             echo "========================================="
-            cd /var/www/trading-journal-v2
+            cd /var/www/tradexy-prod
             git fetch origin
-            git checkout main
             git pull origin main
             docker-compose -f docker-compose.prod.yml down
             docker-compose -f docker-compose.prod.yml build --no-cache
