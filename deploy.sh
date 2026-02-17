@@ -15,19 +15,16 @@ echo "========================================="
 
 case $ENV in
     dev)
-        COMPOSE_FILE="docker-compose.dev.yml"
         PROJECT_DIR="/var/www/tradexy-dev"
-        BRANCH="dev"
+        IMAGE_TAG="dev"
         ;;
     staging)
-        COMPOSE_FILE="docker-compose.staging.yml"
         PROJECT_DIR="/var/www/tradexy-staging"
-        BRANCH="staging"
+        IMAGE_TAG="staging"
         ;;
     production)
-        COMPOSE_FILE="docker-compose.prod.yml"
         PROJECT_DIR="/var/www/tradexy-prod"
-        BRANCH="main"
+        IMAGE_TAG="main"
         ;;
     *)
         echo "❌ Invalid environment: $ENV"
@@ -38,74 +35,61 @@ esac
 
 cd $PROJECT_DIR
 
-echo "📦 Step 1: Pulling latest code..."
-git fetch origin
-git checkout $BRANCH
-git pull origin $BRANCH
-
-echo "📄 Step 2: Checking .env file..."
+echo "📄 Step 1: Checking .env file..."
 if [ ! -f .env ]; then
     echo "  ❌ No .env file found in $PROJECT_DIR"
-    echo "  Create one with: nano $PROJECT_DIR/.env"
     exit 1
 fi
+echo "  ✅ .env exists"
 
-echo "🔑 Step 3: Ensuring APP_KEY exists BEFORE build..."
+echo "🔑 Step 2: Ensuring APP_KEY..."
 APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
 if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ]; then
-    echo "  🔑 No key found, generating one..."
-    # Generate a key manually (base64 random)
     NEW_KEY="base64:$(openssl rand -base64 32)"
-    # Write it to .env on the HOST
     sed -i "s|^APP_KEY=.*|APP_KEY=$NEW_KEY|" .env
-    echo "  ✅ App key set: ${NEW_KEY:0:20}..."
+    echo "  ✅ App key generated"
 else
-    echo "  ✅ App key already exists: ${APP_KEY:0:20}..."
+    echo "  ✅ App key exists"
 fi
+
+echo "🐳 Step 3: Pulling latest image..."
+docker pull ghcr.io/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME:$IMAGE_TAG
 
 echo "🛑 Step 4: Stopping old containers..."
-docker-compose -f $COMPOSE_FILE down
+docker compose down
 
-echo "🔨 Step 5: Building new containers..."
-docker-compose -f $COMPOSE_FILE build --no-cache
+echo "🚀 Step 5: Starting containers..."
+docker compose up -d
 
-echo "🚀 Step 6: Starting containers..."
-docker-compose -f $COMPOSE_FILE up -d
+echo "⏳ Step 6: Waiting for health check..."
+sleep 15
 
-echo "⏳ Step 7: Waiting for containers to be ready..."
-sleep 10
+echo "📂 Step 7: Running migrations..."
+docker compose exec -T app php artisan migrate --force
 
-echo "📦 Step 8: Installing dependencies..."
-if [ "$ENV" = "dev" ]; then
-    docker-compose -f $COMPOSE_FILE exec -T app composer install --no-interaction --prefer-dist
-else
-    docker-compose -f $COMPOSE_FILE exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-fi
-
-echo "📂 Step 9: Running migrations..."
-docker-compose -f $COMPOSE_FILE exec -T app php artisan migrate --force
-
-echo "🔗 Step 10: Creating storage link..."
-docker-compose -f $COMPOSE_FILE exec -T app php artisan storage:link || true
+echo "🔗 Step 8: Creating storage link..."
+docker compose exec -T app php artisan storage:link || true
 
 if [ "$ENV" != "dev" ]; then
-    echo "⚡ Step 11: Optimizing for $ENV..."
-    docker-compose -f $COMPOSE_FILE exec -T app php artisan config:cache
-    docker-compose -f $COMPOSE_FILE exec -T app php artisan route:cache
-    docker-compose -f $COMPOSE_FILE exec -T app php artisan view:cache
+    echo "⚡ Step 9: Caching for $ENV..."
+    docker compose exec -T app php artisan config:cache
+    docker compose exec -T app php artisan route:cache
+    docker compose exec -T app php artisan view:cache
 else
-    echo "⚡ Step 11: Clearing cache for dev..."
-    docker-compose -f $COMPOSE_FILE exec -T app php artisan config:clear
-    docker-compose -f $COMPOSE_FILE exec -T app php artisan route:clear
-    docker-compose -f $COMPOSE_FILE exec -T app php artisan view:clear
+    echo "⚡ Step 9: Clearing cache for dev..."
+    docker compose exec -T app php artisan config:clear
+    docker compose exec -T app php artisan route:clear
+    docker compose exec -T app php artisan view:clear
 fi
 
-echo "🔒 Step 12: Setting permissions..."
-docker-compose -f $COMPOSE_FILE exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+echo "🔒 Step 10: Setting permissions..."
+docker compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+echo "🧹 Step 11: Cleaning old images..."
+docker image prune -a --force --filter "until=168h"
 
 echo "========================================="
 echo "✅ Deployment to $ENV complete!"
 echo "========================================="
 echo ""
-echo "Running containers:"
 docker ps --filter "name=tradexy" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

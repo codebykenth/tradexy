@@ -12,6 +12,10 @@ on:
       - staging
       - main
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
 
   # ════════════════════════════════════════
@@ -84,13 +88,54 @@ jobs:
           DB_PASSWORD: password
 
   # ════════════════════════════════════════
-  # JOB 2: DEPLOY TO DEV
+  # JOB 2: BUILD & PUSH DOCKER IMAGE
   # ════════════════════════════════════════
-   deploy-dev:
-    name: 🚀 Deploy to Dev
+  build:
+    name: 🐳 Build & Push Image
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+
+      - name: 🔨 Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/php/Dockerfile.prod
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  # ════════════════════════════════════════
+  # JOB 3: DEPLOY TO DEV
+  # ════════════════════════════════════════
+  deploy-dev:
+    name: 🚀 Deploy to Dev
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
 
     steps:
       - name: 🖥️ Deploy to Dev Server
@@ -99,45 +144,51 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          script_stop: true
+          envs: GH_PAT,GH_ACTOR,GH_REPO
           script: |
+            set -e
+            echo "========================================="
+            echo "🚀 Deploying to DEV"
+            echo "========================================="
             cd /var/www/tradexy-dev
-            git fetch origin
-            git checkout dev
-            git pull origin dev
 
             if [ ! -f .env ]; then
-              echo "❌ No .env file!"
+              echo "❌ No .env file found!"
               exit 1
             fi
 
-            # Ensure APP_KEY before build
-            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
-            if [ -z "$APP_KEY" ]; then
-              NEW_KEY="base64:$(openssl rand -base64 32)"
-              sed -i "s|^APP_KEY=.*|APP_KEY=$NEW_KEY|" .env
-            fi
+            echo "${GH_PAT}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
+            docker pull ghcr.io/${GH_REPO}:dev
 
-            docker-compose -f docker-compose.dev.yml down
-            docker-compose -f docker-compose.dev.yml build --no-cache
-            docker-compose -f docker-compose.dev.yml up -d
+            docker compose down
+            docker compose up -d
             sleep 15
-            docker-compose -f docker-compose.dev.yml exec -T app composer install --no-interaction --prefer-dist
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan storage:link || true
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan config:clear
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan route:clear
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan view:clear
-            docker-compose -f docker-compose.dev.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+            docker compose exec -T app php artisan migrate --force
+            docker compose exec -T app php artisan storage:link || true
+            docker compose exec -T app php artisan config:clear
+            docker compose exec -T app php artisan route:clear
+            docker compose exec -T app php artisan view:clear
+            docker compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+            docker image prune -a --force --filter "until=168h"
+            docker logout ghcr.io
+
             echo "✅ Dev deployment complete!"
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_ACTOR: ${{ github.actor }}
+          GH_REPO: ${{ github.repository }}
 
   # ════════════════════════════════════════
-  # JOB 3: DEPLOY TO STAGING
+  # JOB 4: DEPLOY TO STAGING
   # ════════════════════════════════════════
   deploy-staging:
     name: 🟡 Deploy to Staging
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/staging'
 
     steps:
       - name: 🖥️ Deploy to Staging Server
@@ -146,45 +197,51 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          script_stop: true
+          envs: GH_PAT,GH_ACTOR,GH_REPO
           script: |
+            set -e
+            echo "========================================="
+            echo "🟡 Deploying to STAGING"
+            echo "========================================="
             cd /var/www/tradexy-staging
-            git fetch origin
-            git checkout staging
-            git pull origin staging
 
             if [ ! -f .env ]; then
-              echo "❌ No .env file!"
+              echo "❌ No .env file found!"
               exit 1
             fi
 
-            # Ensure APP_KEY before build
-            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
-            if [ -z "$APP_KEY" ]; then
-              NEW_KEY="base64:$(openssl rand -base64 32)"
-              sed -i "s|^APP_KEY=.*|APP_KEY=$NEW_KEY|" .env
-            fi
+            echo "${GH_PAT}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
+            docker pull ghcr.io/${GH_REPO}:staging
 
-            docker-compose -f docker-compose.staging.yml down
-            docker-compose -f docker-compose.staging.yml build --no-cache
-            docker-compose -f docker-compose.staging.yml up -d
+            docker compose down
+            docker compose up -d
             sleep 15
-            docker-compose -f docker-compose.staging.yml exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-            docker-compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
-            docker-compose -f docker-compose.staging.yml exec -T app php artisan storage:link || true
-            docker-compose -f docker-compose.staging.yml exec -T app php artisan config:cache
-            docker-compose -f docker-compose.staging.yml exec -T app php artisan route:cache
-            docker-compose -f docker-compose.staging.yml exec -T app php artisan view:cache
-            docker-compose -f docker-compose.staging.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+            docker compose exec -T app php artisan migrate --force
+            docker compose exec -T app php artisan storage:link || true
+            docker compose exec -T app php artisan config:cache
+            docker compose exec -T app php artisan route:cache
+            docker compose exec -T app php artisan view:cache
+            docker compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+            docker image prune -a --force --filter "until=168h"
+            docker logout ghcr.io
+
             echo "✅ Staging deployment complete!"
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_ACTOR: ${{ github.actor }}
+          GH_REPO: ${{ github.repository }}
 
   # ════════════════════════════════════════
-  # JOB 4: DEPLOY TO PRODUCTION
+  # JOB 5: DEPLOY TO PRODUCTION
   # ════════════════════════════════════════
- deploy-production:
+  deploy-production:
     name: 🟢 Deploy to Production
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: 🖥️ Deploy to Production Server
@@ -193,33 +250,39 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          script_stop: true
+          envs: GH_PAT,GH_ACTOR,GH_REPO
           script: |
+            set -e
+            echo "========================================="
+            echo "🟢 Deploying to PRODUCTION"
+            echo "========================================="
             cd /var/www/tradexy-prod
-            git fetch origin
-            git checkout main
-            git pull origin main
 
             if [ ! -f .env ]; then
-              echo "❌ No .env file!"
+              echo "❌ No .env file found!"
               exit 1
             fi
 
-            # Ensure APP_KEY before build
-            APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
-            if [ -z "$APP_KEY" ]; then
-              NEW_KEY="base64:$(openssl rand -base64 32)"
-              sed -i "s|^APP_KEY=.*|APP_KEY=$NEW_KEY|" .env
-            fi
+            echo "${GH_PAT}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
+            docker pull ghcr.io/${GH_REPO}:main
 
-            docker-compose -f docker-compose.prod.yml down
-            docker-compose -f docker-compose.prod.yml build --no-cache
-            docker-compose -f docker-compose.prod.yml up -d
+            docker compose down
+            docker compose up -d
             sleep 15
-            docker-compose -f docker-compose.prod.yml exec -T app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan storage:link || true
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan view:cache
-            docker-compose -f docker-compose.prod.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+            docker compose exec -T app php artisan migrate --force
+            docker compose exec -T app php artisan storage:link || true
+            docker compose exec -T app php artisan config:cache
+            docker compose exec -T app php artisan route:cache
+            docker compose exec -T app php artisan view:cache
+            docker compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+            docker image prune -a --force --filter "until=168h"
+            docker logout ghcr.io
+
             echo "✅ Production deployment complete!"
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_ACTOR: ${{ github.actor }}
+          GH_REPO: ${{ github.repository }}
