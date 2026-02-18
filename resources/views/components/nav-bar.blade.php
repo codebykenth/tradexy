@@ -24,7 +24,7 @@
             @auth
             <form action="/logout" method="post">
                 @csrf
-                <button type="submit" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Logout</button>
+                <button type="submit" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer">Logout</button>
             </form>
             @else
                 <div class="flex items-center gap-4">

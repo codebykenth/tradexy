@@ -31,7 +31,7 @@
                     <!-- Social Login -->
                     <div class="grid grid-cols-2 gap-4">
                         <a href="#"
-                            class="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1a1a19] transition-all bg-white dark:bg-[#161615] text-sm font-medium dark:text-gray-200">
+                            class="flex items-center justify-center gap-2 px-4 p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1a1a19] transition-all bg-white dark:bg-[#161615] text-sm font-medium dark:text-gray-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                                 <path
                                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
@@ -49,7 +49,7 @@
                             Google
                         </a>
                         <a href="#"
-                            class="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1a1a19] transition-all bg-white dark:bg-[#161615] text-sm font-medium dark:text-gray-200">
+                            class="flex items-center justify-center gap-2 px-4 p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1a1a19] transition-all bg-white dark:bg-[#161615] text-sm font-medium dark:text-gray-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="#1877F2">
                                 <path
@@ -104,7 +104,7 @@
                             <div class="mt-2">
                                 <input id="email" name="email" type="email" autocomplete="email" required
                                     value="{{ old('email') }}"
-                                    class="block w-full rounded-md border-0 py-2.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-900 dark:focus:ring-white sm:text-sm sm:leading-6 dark:bg-[#161615] @error('email') ring-red-500 @enderror">
+                                    class="block w-full rounded-md border-0 p-2.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-900 dark:focus:ring-white sm:text-sm sm:leading-6 dark:bg-[#161615] @error('email') ring-red-500 @enderror">
                             </div>
                             @error('email')
                                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
@@ -124,7 +124,7 @@
                             <div class="mt-2">
                                 <input id="password" name="password" type="password" autocomplete="current-password"
                                     required
-                                    class="block w-full rounded-md border-0 py-2.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-900 dark:focus:ring-white sm:text-sm sm:leading-6 dark:bg-[#161615] @error('password') ring-red-500 @enderror">
+                                    class="block w-full rounded-md border-0 p-2.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-900 dark:focus:ring-white sm:text-sm sm:leading-6 dark:bg-[#161615] @error('password') ring-red-500 @enderror">
                             </div>
                             @error('password')
                                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
@@ -142,7 +142,7 @@
 
                         <div>
                             <button type="submit"
-                                class="flex w-full justify-center rounded-md bg-gray-900 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 transition-colors">
+                                class="flex w-full justify-center rounded-md bg-gray-900 px-3 p-2.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 transition-colors">
                                 Sign in
                             </button>
                         </div>
