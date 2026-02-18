@@ -77,6 +77,12 @@ jobs:
           DB_USERNAME: postgres
           DB_PASSWORD: password
 
+      - name: 📦 Install NPM dependencies
+        run: npm ci
+
+      - name: 🔨 Build Vite assets
+        run: npm run build
+
       - name: 🧪 Run tests
         run: php artisan test
         env:
