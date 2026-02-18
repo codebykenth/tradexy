@@ -199,39 +199,73 @@ CMD ["php-fpm"]
 ### `docker/php/Dockerfile.prod` (Production — used by CI/CD)
 **Purpose:** Builds the optimized PHP container image that gets pushed to GHCR. This is the image used on the server for ALL environments (dev/staging/prod).
 
+**It uses a Multi-Stage Build:**
+1.  **Stage 1 (Frontend):** Uses `node:20-alpine` to install npm dependencies and run `npm run build` to compile assets (CSS/JS).
+2.  **Stage 2 (Backend):** Uses `php:8.4-fpm` to setup the PHP environment.
+3.  **Merge:** Copies the compiled `public/build` directory from Stage 1 into the final PHP image.
+
 ```dockerfile
+# ==============================================================================
+# Stage 1: Build Frontend Assets
+# ==============================================================================
+FROM node:20-alpine AS frontend
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# ==============================================================================
+# Stage 2: Build PHP Application
+# ==============================================================================
 FROM php:8.4-fpm
 
-# Install system dependencies + PHP extensions
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpng-dev libonig-dev \
-    libxml2-dev libzip-dev libpq-dev libfcgi-bin \
+    git \
+    curl \
+    zip \
+    unzip \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    libpq-dev \
+    libfcgi-bin \
     && docker-php-ext-install \
-        pdo pdo_pgsql mbstring zip exif pcntl \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*    # Clean up to reduce size
+        pdo \
+        pdo_pgsql \
+        mbstring \
+        zip \
+        exif \
+        pcntl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Health check script (for monitoring)
+# Health check script
 RUN curl -o /usr/local/bin/php-fpm-healthcheck \
     https://raw.githubusercontent.com/renatomefi/php-fpm-healthcheck/master/php-fpm-healthcheck \
     && chmod +x /usr/local/bin/php-fpm-healthcheck
+
+# Enable PHP-FPM status page for health checks
 RUN echo "pm.status_path = /status" >> /usr/local/etc/php-fpm.d/zz-docker.conf
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Layer caching: copy composer files first, install deps, then copy code
-# This means deps are only re-installed if composer.json/lock changes
+# Copy composer files first (layer caching)
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
-# Copy application code (filtered by .dockerignore)
+# Copy application code from context
 COPY . .
 
-# Rebuild autoloader with full code
+# Copy compiled frontend assets from Stage 1
+COPY --from=frontend /app/public/build public/build
+
+# Post-install
 RUN composer dump-autoload --optimize
 
-# Set permissions
+# Permissions
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 storage bootstrap/cache
 
@@ -407,7 +441,7 @@ volumes:
 
 | Job | What it does |
 |-----|-------------|
-| **1. Test** | Installs PHP 8.4, runs `composer install`, creates test DB, runs `php artisan test` |
+| **1. Test** | Installs PHP 8.4, installs Node.js packages (`npm ci`), builds assets (`npm run build`), runs `composer install`, creates test DB, runs `php artisan test` |
 | **2. Build & Push** | Builds Docker image using `Dockerfile.prod`, pushes to `ghcr.io/codebykenth/trading-journal-v2:<branch>` |
 | **3. Deploy Dev** | SCPs compose+nginx to server, pulls image, restarts containers, runs migrations, clears cache |
 | **4. Deploy Staging** | Same but caches config/routes/views (optimized for performance) |
@@ -796,6 +830,20 @@ git push origin main
 
 ### Monitor
 Go to GitHub repo → **Actions** tab → watch the pipeline.
+
+### 12. Troubleshooting <a id="troubleshooting"></a>
+### "Vite manifest not found"
+**Error:** `Vite manifest not found at: /var/www/public/build/manifest.json`
+
+**Cause:** The frontend assets (CSS/JS) were not built during the Docker image creation. Laravel needs this file to know which assets to load.
+
+**Solution:**
+Ensure you are using the updated `Dockerfile.prod` with the **multi-stage build** (Node.js + PHP).
+1. Check `docker/php/Dockerfile.prod` and ensure it has the `FROM node:20-alpine AS frontend` stage.
+2. Ensure the line `COPY --from=frontend /app/public/build public/build` exists in the PHP stage.
+3. Trigger a rebuild by pushing to your branch.
+
+---
 
 ### Access in browser
 

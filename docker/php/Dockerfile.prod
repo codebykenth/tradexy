@@ -1,3 +1,16 @@
+# ==============================================================================
+# Stage 1: Build Frontend Assets
+# ==============================================================================
+FROM node:20-alpine AS frontend
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# ==============================================================================
+# Stage 2: Build PHP Application
+# ==============================================================================
 FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y \
@@ -36,8 +49,11 @@ WORKDIR /var/www
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
-# Copy application code
+# Copy application code from context
 COPY . .
+
+# Copy compiled frontend assets from Stage 1
+COPY --from=frontend /app/public/build public/build
 
 # Post-install
 RUN composer dump-autoload --optimize
