@@ -11,15 +11,16 @@
 
 1. [Security Best Practices](#security)
 2. [How It Works](#how-it-works)
-3. [File Reference — What Each File Does](#file-reference)
-4. [GitHub Setup (One-Time)](#github-setup)
-5. [Server Setup (One-Time)](#server-setup)
-6. [Domain & SSL Setup (One-Time)](#domain-setup)
-7. [Deploying](#deploying)
-8. [Verifying a Deployment](#verifying)
-9. [Manual Deploy (deploy.sh)](#manual-deploy)
-10. [Disk Cleanup](#disk-cleanup)
-11. [Troubleshooting](#troubleshooting)
+3. [Running Locally](#running-locally)
+4. [File Reference — What Each File Does](#file-reference)
+5. [GitHub Setup (One-Time)](#github-setup)
+6. [Server Setup (One-Time)](#server-setup)
+7. [Domain & SSL Setup (One-Time)](#domain-setup)
+8. [Deploying](#deploying)
+9. [Verifying a Deployment](#verifying)
+10. [Manual Deploy (deploy.sh)](#manual-deploy)
+11. [Disk Cleanup](#disk-cleanup)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -77,7 +78,65 @@ Internet → tradexy.site → Host Nginx (port 443, SSL) → 127.0.0.1:8082 → 
 
 ---
 
-## 3. File Reference — What Each File Does <a id="file-reference"></a>
+## 3. Running Locally <a id="running-locally"></a>
+
+This project includes a Docker environment for local development.
+
+### Prerequisites
+- Docker & Docker Compose
+- Git
+
+### Quick Start
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repo-url>
+   cd trading-journal-v2
+   ```
+
+2. **Setup Environment Variables:**
+   ```bash
+   cp .env.example .env
+   ```
+   Open `.env` and set the following variables to match the Docker configuration:
+   ```env
+   DB_CONNECTION=pgsql
+   DB_HOST=postgres
+   DB_PORT=5432
+   DB_DATABASE=tradexy
+   DB_USERNAME=tradexy
+   DB_PASSWORD=secret
+   ```
+
+3. **Start Docker:**
+   ```bash
+   docker-compose up -d --build
+   ```
+   This will start:
+   - **Nginx & PHP:** Application server (http://localhost:8000)
+   - **Postgres:** Database
+   - **Vite:** Asset server (http://localhost:5173). Runs `npm run dev` automatically.
+
+4. **Initialize Database:**
+   ```bash
+   docker-compose exec app php artisan migrate --seed
+   ```
+
+5. **Access the App:**
+   - App: http://localhost:8000
+   - Vite: http://localhost:5173
+
+### Managing Frontend (Vite)
+- **Logs:** `docker logs -f laravel_vite`
+- **Install Packages:**
+  ```bash
+  docker-compose exec vite npm install <package-name>
+  docker-compose restart vite
+  ```
+
+---
+
+## 4. File Reference — What Each File Does <a id="file-reference"></a>
 
 ### `.dockerignore`
 **Purpose:** Tells Docker what to EXCLUDE when building the image. Without this, `COPY . .` in the Dockerfile would copy `.git` (several GB), `node_modules`, `vendor`, etc., making the image huge.
@@ -377,7 +436,7 @@ Usage (on the server):
 
 ---
 
-## 4. GitHub Setup (One-Time) <a id="github-setup"></a>
+## 5. GitHub Setup (One-Time) <a id="github-setup"></a>
 
 ### Step 1: Set workflow permissions
 1. Go to your repo → **Settings** → **Actions** → **General**
@@ -407,7 +466,7 @@ Usage (on the server):
 
 ---
 
-## 5. Server Setup (One-Time) <a id="server-setup"></a>
+## 6. Server Setup (One-Time) <a id="server-setup"></a>
 
 SSH into your server:
 ```bash
@@ -527,7 +586,7 @@ After the first CI/CD deploy, each directory should look like:
 
 ---
 
-## 6. Domain & SSL Setup (One-Time) <a id="domain-setup"></a>
+## 7. Domain & SSL Setup (One-Time) <a id="domain-setup"></a>
 
 ### Step 1: Configure DNS at your domain registrar
 
@@ -709,7 +768,7 @@ All should show a 🔒 lock icon (SSL active).
 
 ---
 
-## 7. Deploying <a id="deploying"></a>
+## 8. Deploying <a id="deploying"></a>
 
 Once the server setup above is done, deployments are **fully automatic**:
 
@@ -748,7 +807,7 @@ Go to GitHub repo → **Actions** tab → watch the pipeline.
 
 ---
 
-## 8. Verifying a Deployment <a id="verifying"></a>
+## 9. Verifying a Deployment <a id="verifying"></a>
 
 SSH into the server and run:
 
@@ -771,7 +830,7 @@ docker-compose -f docker-compose.prod.yml ps
 
 ---
 
-## 9. Manual Deploy (deploy.sh) <a id="manual-deploy"></a>
+## 10. Manual Deploy (deploy.sh) <a id="manual-deploy"></a>
 
 If CI/CD fails or you need to deploy manually from the server:
 
@@ -794,7 +853,7 @@ cd /var/www
 
 ---
 
-## 10. Disk Cleanup <a id="disk-cleanup"></a>
+## 11. Disk Cleanup <a id="disk-cleanup"></a>
 
 ### Remove old git clone data (one-time)
 
@@ -820,7 +879,7 @@ docker system prune -af       # Remove everything unused
 
 ---
 
-## 11. Troubleshooting <a id="troubleshooting"></a>
+## 12. Troubleshooting <a id="troubleshooting"></a>
 
 | Problem | Solution |
 |---------|----------|

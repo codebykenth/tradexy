@@ -1,59 +1,180 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tradexy — Trading Journal
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A professional trading journal application built with Laravel, Tailwind CSS, and PostgreSQL. Log trades, backtest strategies, and leverage AI-powered insights to become a consistent, profitable trader.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Backend:** PHP 8.4, Laravel 12
+- **Frontend:** Blade, Tailwind CSS v4, Vite
+- **Database:** PostgreSQL 16
+- **AI:** Google Gemini API
+- **Containerization:** Docker & Docker Compose
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Prerequisites
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
+- [Node.js](https://nodejs.org/) (v20+ recommended) — for running Vite on the host
+- [Git](https://git-scm.com/)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Local Development Setup
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1. Clone the Repository
 
-### Premium Partners
+```bash
+git clone https://github.com/codebykenth/trading-journal-v2.git
+cd trading-journal-v2
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 2. Install Node Dependencies
 
-## Contributing
+```bash
+npm install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Setup Environment Variables
 
-## Code of Conduct
+```bash
+cp .env.example .env
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Open `.env` and configure the database to use the Docker PostgreSQL container:
 
-## Security Vulnerabilities
+```env
+DB_CONNECTION=pgsql
+DB_HOST=postgres
+DB_PORT=5432
+DB_DATABASE=tradexy
+DB_USERNAME=tradexy
+DB_PASSWORD=secret
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+> **Note:** `DB_HOST=postgres` refers to the Docker service name, not `localhost`. The PHP app container connects to the Postgres container over the Docker network.
+
+### 4. Start Docker Containers
+
+```bash
+docker-compose up -d --build
+```
+
+This starts:
+| Service | Container | Access |
+|---------|-----------|--------|
+| **PHP-FPM** | `laravel_app` | — |
+| **Nginx** | `laravel_nginx` | http://localhost:8000 |
+| **PostgreSQL** | `laravel_postgres` | localhost:5432 |
+
+### 5. Generate App Key
+
+```bash
+docker-compose exec app php artisan key:generate
+```
+
+### 6. Run Migrations & Seeders
+
+```bash
+docker-compose exec app php artisan migrate --seed
+```
+
+### 7. Start Vite (Frontend Assets)
+
+In a **separate terminal**, run Vite on the host for instant hot reload:
+
+```bash
+npm run dev
+```
+
+> **Why on the host?** Running Vite inside Docker on Windows causes ~10 second delays due to volume sync. Running natively gives instant file detection and hot reload.
+
+### 8. Open the App
+
+Visit **http://localhost:8000** in your browser.
+
+---
+
+## Daily Workflow
+
+Once the initial setup is done, your daily workflow is:
+
+```bash
+# Terminal 1 — Start Docker (PHP, Nginx, Postgres)
+docker-compose up -d
+
+# Terminal 2 — Start Vite (hot reload)
+npm run dev
+```
+
+Then open http://localhost:8000 and start developing!
+
+---
+
+## Useful Commands
+
+| Command | Description |
+|---------|-------------|
+| `docker-compose up -d` | Start all containers in background |
+| `docker-compose down` | Stop all containers |
+| `docker-compose exec app php artisan migrate` | Run migrations |
+| `docker-compose exec app php artisan migrate:fresh --seed` | Reset DB & re-seed |
+| `docker-compose exec app php artisan tinker` | Open Laravel REPL |
+| `docker-compose exec app php artisan test` | Run tests |
+| `docker-compose exec app php artisan cache:clear` | Clear application cache |
+| `docker-compose logs -f app` | View PHP container logs |
+| `npm run dev` | Start Vite dev server (hot reload) |
+| `npm run build` | Build production assets |
+
+---
+
+## Project Structure
+
+```
+trading-journal-v2/
+├── app/                    # Laravel application code
+│   ├── Http/Controllers/   # Route controllers
+│   ├── Models/             # Eloquent models
+│   └── Services/           # Business logic
+├── config/                 # Configuration files
+├── database/
+│   ├── migrations/         # Database migrations
+│   └── seeders/            # Database seeders
+├── docker/
+│   ├── nginx/              # Nginx configuration
+│   └── php/                # PHP Dockerfile
+├── public/                 # Public assets
+│   └── images/             # Static images
+├── resources/
+│   ├── css/                # Stylesheets (Tailwind)
+│   ├── js/                 # JavaScript
+│   └── views/              # Blade templates
+├── routes/                 # Route definitions
+├── storage/                # Logs, cache, uploads
+├── docker-compose.yml      # Local dev Docker config
+├── vite.config.js          # Vite configuration
+└── .env.example            # Environment template
+```
+
+---
+
+## Environment Files
+
+| File | Purpose |
+|------|---------|
+| `.env.example` | Template — committed to git |
+| `.env` | Your local config — **never committed** |
+
+---
+
+## Deployment
+
+For full deployment instructions (server setup, CI/CD, SSL, domains), see **[deployment-guide.md](deployment-guide.md)**.
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is proprietary software. All rights reserved.
