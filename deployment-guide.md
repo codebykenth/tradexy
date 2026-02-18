@@ -269,16 +269,52 @@ RUN composer dump-autoload --optimize
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 storage bootstrap/cache
 
+# Create shared public directory and add entrypoint script
+RUN mkdir -p /var/www/public-shared
+COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 9000
-CMD ["php-fpm"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 ```
 
 **Key differences from dev Dockerfile:**
+- **Multi-stage build** — Stage 1 builds frontend assets with Node.js, Stage 2 builds the PHP app
+- **Entrypoint script** — copies public files to a shared volume on startup so Nginx can serve them
 - `--no-dev` — excludes dev dependencies
 - `--optimize-autoloader` — faster class loading
 - Layer caching — composer install runs before code copy
 - Health check — for container monitoring
 - `apt-get clean` — smaller image
+
+---
+
+### `docker/php/docker-entrypoint.sh` (Entrypoint script)
+**Purpose:** Runs every time the `app` container starts. Copies all public files (CSS, JS, images) from inside the container to a shared Docker volume so the `nginx` container can serve them. Without this, Nginx has no access to static files.
+
+```bash
+#!/bin/sh
+set -e
+
+# Sync public files to the shared volume so Nginx can serve them.
+# This runs on every container start to ensure assets stay up-to-date
+# after each deployment.
+echo "Syncing public files to shared volume..."
+cp -r /var/www/public/. /var/www/public-shared/
+
+echo "Starting PHP-FPM..."
+exec php-fpm
+```
+
+**How the shared volume works:**
+```
+App Container                    Shared Volume              Nginx Container
+/var/www/public/  ──(copy)──►  app_public_*  ──(mount)──►  /var/www/public/
+  ├── build/manifest.json                                    ├── build/manifest.json
+  ├── build/assets/app.css                                   ├── build/assets/app.css
+  ├── images/logo.png                                        ├── images/logo.png
+  └── index.php                                              └── index.php
+```
 
 ---
 
@@ -401,7 +437,8 @@ services:
     working_dir: /var/www
     env_file: .env                                       # ← Loads .env into the container
     volumes:
-      - app_storage_dev:/var/www/storage
+      - app_storage_dev:/var/www/storage                  # ← Persistent storage (logs, uploads)
+      - app_public_dev:/var/www/public-shared             # ← Entrypoint copies public files here
     networks:
       - tradexy_dev
 
@@ -412,7 +449,7 @@ services:
     ports:
       - "127.0.0.1:8080:80"                             # ← Localhost only! Not exposed to internet
     volumes:
-      - app_storage_dev:/var/www/storage:ro
+      - app_public_dev:/var/www/public:ro                 # ← Nginx reads public files from shared volume
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - app
@@ -424,15 +461,16 @@ networks:
 
 volumes:
   app_storage_dev:
+  app_public_dev:                                        # ← Shared volume for CSS/JS/images
 ```
 
 ---
 
 ### `docker-compose.staging.yml` (Staging server)
-**Purpose:** Same as dev but for **staging**. Port `127.0.0.1:8081`. Uses Supabase DB. Tag `:staging`.
+**Purpose:** Same as dev but for **staging**. Port `127.0.0.1:8081`. Uses Supabase DB. Tag `:staging`. Uses `app_public_staging` volume.
 
 ### `docker-compose.prod.yml` (Production server)
-**Purpose:** Same but for **production**. Port `127.0.0.1:8082`. Uses Supabase DB. Tag `:main`.
+**Purpose:** Same but for **production**. Port `127.0.0.1:8082`. Uses Supabase DB. Tag `:main`. Uses `app_public_prod` volume.
 
 ---
 
@@ -831,17 +869,7 @@ git push origin main
 ### Monitor
 Go to GitHub repo → **Actions** tab → watch the pipeline.
 
-### 12. Troubleshooting <a id="troubleshooting"></a>
-### "Vite manifest not found"
-**Error:** `Vite manifest not found at: /var/www/public/build/manifest.json`
 
-**Cause:** The frontend assets (CSS/JS) were not built during the Docker image creation. Laravel needs this file to know which assets to load.
-
-**Solution:**
-Ensure you are using the updated `Dockerfile.prod` with the **multi-stage build** (Node.js + PHP).
-1. Check `docker/php/Dockerfile.prod` and ensure it has the `FROM node:20-alpine AS frontend` stage.
-2. Ensure the line `COPY --from=frontend /app/public/build public/build` exists in the PHP stage.
-3. Trigger a rebuild by pushing to your branch.
 
 ---
 
@@ -944,3 +972,29 @@ docker system prune -af       # Remove everything unused
 | `apt update` fails (MySQL GPG) | Run `rm -f /etc/apt/sources.list.d/mysql*.list` then retry |
 | DNS not resolving | Wait 5-30 min for propagation, verify with `ping tradexy.site` |
 | Host Nginx config error | Run `nginx -t` to test config, `systemctl reload nginx` to apply |
+
+### "Vite manifest not found"
+**Error:** `Vite manifest not found at: /var/www/public/build/manifest.json`
+
+**Cause:** Frontend assets (CSS/JS) were not built during the Docker image creation. Laravel needs this file to know which compiled assets to load.
+
+**Solution:**
+1. Check `docker/php/Dockerfile.prod` has the `FROM node:20-alpine AS frontend` stage that runs `npm ci` and `npm run build`.
+2. Ensure the line `COPY --from=frontend /app/public/build public/build` exists in the PHP stage.
+3. Trigger a rebuild by pushing to your branch.
+
+### No CSS, JS, or Images loading (unstyled page)
+**Symptom:** The page loads but has no styling, no JavaScript, and broken images.
+
+**Cause:** The `nginx` container doesn't have access to the `public/` directory. Static files (CSS, JS, images) only exist inside the `app` container. Nginx needs a shared volume to serve them.
+
+**Solution:**
+1. Check `docker/php/Dockerfile.prod` has the entrypoint script that copies public files to a shared volume.
+2. Check `docker/php/docker-entrypoint.sh` exists and copies `/var/www/public/` to `/var/www/public-shared/`.
+3. Check docker-compose files have the `app_public_*` shared volume between `app` and `nginx`.
+4. If assets are stale after a deploy, SSH in and restart the containers to trigger the entrypoint copy:
+   ```bash
+   cd /var/www/tradexy-<env>
+   docker-compose -f docker-compose.<env>.yml down
+   docker-compose -f docker-compose.<env>.yml up -d
+   ```

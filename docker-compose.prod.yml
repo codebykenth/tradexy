@@ -7,6 +7,7 @@ services:
     env_file: .env
     volumes:
       - app_storage_prod:/var/www/storage
+      - app_public_prod:/var/www/public-shared
     networks:
       - tradexy_prod
 
@@ -17,7 +18,7 @@ services:
     ports:
       - "127.0.0.1:8082:80"
     volumes:
-      - app_storage_prod:/var/www/storage:ro
+      - app_public_prod:/var/www/public:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - app
@@ -29,3 +30,4 @@ networks:
 
 volumes:
   app_storage_prod:
+  app_public_prod:
