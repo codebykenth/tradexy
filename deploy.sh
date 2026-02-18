@@ -53,7 +53,7 @@ else
 fi
 
 echo "🐳 Step 3: Pulling latest image..."
-docker pull ghcr.io/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME:$IMAGE_TAG
+docker pull ghcr.io/codebykenth/trading-journal-v2:$IMAGE_TAG
 
 echo "🛑 Step 4: Stopping old containers..."
 docker-compose down
