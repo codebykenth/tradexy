@@ -38,6 +38,10 @@ class MigrateTradesController extends Controller
         if (empty($oldTrades)) {
             return response()->json(['message' => 'No trades found in old journal.']);
         }
+        
+        usort($oldTrades, function ($a, $b) {
+            return strtotime($a['open_datetime']) - strtotime($b['open_datetime']);
+        });
 
         $created = 0;
         $skipped = 0;
