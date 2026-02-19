@@ -1,6 +1,6 @@
 # Tradexy — Complete Deployment Guide
 
-> **Last updated:** February 18, 2026
+> **Last updated:** February 19, 2026
 > **Server:** xCloud Managed VPS (single server, 3 environments)
 > **Domain:** `tradexy.site` with SSL via Let's Encrypt
 > **Database:** Aiven PostgreSQL (dev), Supabase PostgreSQL (staging/prod)
@@ -75,6 +75,19 @@ Internet → tradexy.site → Host Nginx (port 443, SSL) → 127.0.0.1:8082 → 
          → dev.tradexy.site → Host Nginx (port 443, SSL) → 127.0.0.1:8080 → Docker Nginx → PHP-FPM App
          → staging.tradexy.site → Host Nginx (port 443, SSL) → 127.0.0.1:8081 → Docker Nginx → PHP-FPM App
 ```
+
+**Background Workers (per environment):**
+```
+Scheduler container  → runs `php artisan schedule:run` every 60 seconds (timed tasks)
+Queue worker container → runs `php artisan queue:work` continuously (event-driven jobs)
+```
+
+| Container | Purpose | Example |
+|-----------|---------|--------|
+| `app` | Handles HTTP requests via PHP-FPM | User visits a page |
+| `nginx` | Routes HTTP traffic, serves static files | CSS/JS/images |
+| `scheduler` | Runs timed/cron tasks |
+| `queue` | Processes queued jobs instantly |
 
 ---
 
@@ -456,6 +469,35 @@ services:
     networks:
       - tradexy_dev
 
+  scheduler:
+    image: ghcr.io/codebykenth/trading-journal-v2:dev
+    container_name: tradexy_scheduler_dev
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file: .env
+    volumes:
+      - app_storage_dev:/var/www/storage
+    depends_on:
+      - app
+    networks:
+      - tradexy_dev
+    command: >                                            # ← Overrides default CMD (php-fpm)
+      sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+
+  queue:
+    image: ghcr.io/codebykenth/trading-journal-v2:dev
+    container_name: tradexy_queue_dev
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file: .env
+    volumes:
+      - app_storage_dev:/var/www/storage
+    depends_on:
+      - app
+    networks:
+      - tradexy_dev
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+
 networks:
   tradexy_dev:
 
@@ -464,13 +506,23 @@ volumes:
   app_public_dev:                                        # ← Shared volume for CSS/JS/images
 ```
 
+**Scheduler & Queue containers explained:**
+- They use the **same image** as `app` — they need PHP and your Laravel code
+- They don't need `nginx` or the `app_public_*` volume — they don't serve web pages
+- The `command:` overrides the default `php-fpm` startup:
+  - **Scheduler:** Loops forever, running `schedule:run` every 60 seconds to check for timed tasks
+  - **Queue:** Runs `queue:work` which listens for dispatched jobs and processes them immediately
+- `--sleep=3` — queue checks for new jobs every 3 seconds when idle
+- `--tries=3` — retry failed jobs up to 3 times
+- `--max-time=3600` — restart the worker every hour (prevents memory leaks)
+
 ---
 
 ### `docker-compose.staging.yml` (Staging server)
-**Purpose:** Same as dev but for **staging**. Port `127.0.0.1:8081`. Uses Supabase DB. Tag `:staging`. Uses `app_public_staging` volume.
+**Purpose:** Same as dev but for **staging**. Port `127.0.0.1:8081`. Uses Supabase DB. Tag `:staging`. Uses `app_public_staging` volume. Includes `scheduler` and `queue` containers.
 
 ### `docker-compose.prod.yml` (Production server)
-**Purpose:** Same but for **production**. Port `127.0.0.1:8082`. Uses Supabase DB. Tag `:main`. Uses `app_public_prod` volume.
+**Purpose:** Same but for **production**. Port `127.0.0.1:8082`. Uses Supabase DB. Tag `:main`. Uses `app_public_prod` volume. Includes `scheduler` and `queue` containers.
 
 ---
 
@@ -904,6 +956,29 @@ cd /var/www/tradexy-prod
 docker-compose -f docker-compose.prod.yml ps
 ```
 
+### Verifying Scheduler & Queue Workers
+
+```bash
+# Check all containers are running (should see app, nginx, scheduler, queue)
+docker ps | grep tradexy
+
+# Check scheduler logs (should show "No scheduled commands are ready to run." every minute)
+cd /var/www/tradexy-dev
+docker-compose -f docker-compose.dev.yml logs scheduler
+
+# Check queue worker logs
+docker-compose -f docker-compose.dev.yml logs queue
+
+# Same for staging/prod:
+cd /var/www/tradexy-staging
+docker-compose -f docker-compose.staging.yml logs scheduler
+docker-compose -f docker-compose.staging.yml logs queue
+
+cd /var/www/tradexy-prod
+docker-compose -f docker-compose.prod.yml logs scheduler
+docker-compose -f docker-compose.prod.yml logs queue
+```
+
 ---
 
 ## 10. Manual Deploy (deploy.sh) <a id="manual-deploy"></a>
@@ -972,6 +1047,9 @@ docker system prune -af       # Remove everything unused
 | `apt update` fails (MySQL GPG) | Run `rm -f /etc/apt/sources.list.d/mysql*.list` then retry |
 | DNS not resolving | Wait 5-30 min for propagation, verify with `ping tradexy.site` |
 | Host Nginx config error | Run `nginx -t` to test config, `systemctl reload nginx` to apply |
+| Scheduler not running | Check logs: `docker-compose -f docker-compose.<env>.yml logs scheduler`. If not found, ensure `scheduler` service is defined in the compose file and redeploy. |
+| Queue worker not processing jobs | Check logs: `docker-compose -f docker-compose.<env>.yml logs queue`. Ensure `QUEUE_CONNECTION` is set to `database` (or `redis`) in `.env`, not `sync`. |
+| Scheduler/queue container keeps restarting | Check for PHP errors: `docker-compose -f docker-compose.<env>.yml logs --tail=50 scheduler`. Common cause: missing database connection or uncaught exception. |
 
 ### "Vite manifest not found"
 **Error:** `Vite manifest not found at: /var/www/public/build/manifest.json`
