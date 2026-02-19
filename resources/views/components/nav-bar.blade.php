@@ -1,13 +1,13 @@
-<header class="w-full text-sm not-has-[nav]:hidden border-b border-transparent dark:border-transparent py-4">
+<header class="w-full text-sm not-has-[nav]:hidden border-b border-transparent dark:border-transparent py-4 relative">
     <div class="max-w-7xl mx-auto px-6">
-        <nav class="flex items-center justify-between gap-4 w-full">
+        <nav class=" flex items-center justify-between gap-4 w-full">
             <div class="flex items-center gap-6">
                 <a href="{{ url('/') }}" class="font-bold text-lg flex items-center gap-2">
                     {{-- <x-application-logo class="w-8 h-8 fill-current text-black dark:text-white" /> --}}
                     <img src="{{ asset('images/logo.png') }}" alt="Trading Journal Logo" class="h-8">
                     {{ config('app.name', 'Laravel') }}
                 </a>
-                
+
                 <div class="hidden md:flex items-center gap-6 text-gray-600 dark:text-gray-400">
                     @auth
                         <a href="" class="hover:text-gray-900 dark:hover:text-white transition-colors">Dashboard</a>
@@ -22,10 +22,135 @@
             </div>
 
             @auth
-            <form action="/logout" method="post">
-                @csrf
-                <button type="submit" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer">Logout</button>
-            </form>
+                <!-- Desktop Avatar -->
+                <div class="relative w-10 h-10 rounded-full bg-blue-500 text-white md:flex justify-center items-center hidden cursor-pointer"
+                    id="avatar-btn">
+                    @if ($profilePicture)
+                        <img src="" alt="">
+                    @else
+                        @if ($initials)
+                            <span>{{ $initials  }}</span>
+                        @endif
+
+                    @endif
+                    <!-- Desktop Dropdown -->
+                    <div id="avatar-menu"
+                        class="hidden absolute top-12 right-0 bg-gray-600 text-white py-2 px-6 rounded-md w-50">
+                        <ul class="space-y-4">
+                            <li><a href="/">Profile</a></li>
+                            <li><a href="/">Settings</a></li>
+                            <li>
+                                <form action="/logout" method="post" class="hidden md:block">
+                                    @csrf
+                                    <button type="submit"
+                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-white transition-colors cursor-pointer">Logout</button>
+                                </form>
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+                <!-- Hamburger Mobile -->
+                <div id="menu-btn" class="md:hidden cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 640 640"
+                        fill="currentColor"><!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.-->
+                        <path
+                            d="M96 160C96 142.3 110.3 128 128 128L512 128C529.7 128 544 142.3 544 160C544 177.7 529.7 192 512 192L128 192C110.3 192 96 177.7 96 160zM96 320C96 302.3 110.3 288 128 288L512 288C529.7 288 544 302.3 544 320C544 337.7 529.7 352 512 352L128 352C110.3 352 96 337.7 96 320zM544 480C544 497.7 529.7 512 512 512L128 512C110.3 512 96 497.7 96 480C96 462.3 110.3 448 128 448L512 448C529.7 448 544 462.3 544 480z" />
+                    </svg>
+                </div>
+                <!-- Mobile Dropdown -->
+                <div id="dropdown-menu" class="hidden md:hidden fixed top-16 left-0 right-0 bottom-0 bg-gray-200 px-4">
+                    @auth
+                        <ul class="">
+                            <li class="py-4">
+                                <a href=""
+                                    class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    {{-- Dashboard Icon (Heroicons: squares-2x2) --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                                    </svg>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="py-4">
+                                <a href=""
+                                    class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    {{-- Trade Logs Icon (Heroicons: chart-bar) --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                                    </svg>
+                                    Trade Logs
+                                </a>
+                            </li>
+                            <li class="py-4">
+                                <a href=""
+                                    class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    {{-- Balance Icon (Heroicons: wallet) --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3" />
+                                    </svg>
+                                    Balance
+                                </a>
+                            </li>
+                            <li class="py-4">
+                                <form action="/logout" method="post">
+                                    @csrf
+                                    <button type="submit"
+                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-white transition-colors cursor-pointer">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    @else
+                        <ul class="">
+                            <li class="py-4">
+                                <a href=""
+                                    class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    {{-- Features Icon (Heroicons: star) --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                                    </svg>
+                                    Features
+                                </a>
+                            </li>
+                            <li class="py-4">
+                                <a href=""
+                                    class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    {{-- How it Works Icon (Heroicons: light-bulb) --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                    </svg>
+                                    How it Works
+                                </a>
+                            </li>
+                            <li class="py-4">
+                                <a href=""
+                                    class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    {{-- Why Tradexy Icon (Heroicons: heart) --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                    </svg>
+                                    Why Tradexy
+                                </a>
+                            </li>
+                        </ul>
+                    @endauth
+                </div>
+
             @else
                 <div class="flex items-center gap-4">
                     @if (Route::has('login'))
@@ -46,3 +171,26 @@
         </nav>
     </div>
 </header>
+<script>
+    let menuBtn = document.getElementById('menu-btn')
+    let avatarBtn = document.getElementById('avatar-btn')
+    dropdownMenu = document.getElementById('dropdown-menu')
+    avatarMenu = document.getElementById('avatar-menu')
+    let desktopMenuIsOpen;
+
+    menuBtn.addEventListener('click', function () {
+        dropdownMenu.classList.toggle('hidden')
+    })
+    avatarBtn.addEventListener('click', function (event) {
+        event.stopPropagation()
+
+        avatarMenu.classList.toggle('hidden')
+    })
+
+    document.addEventListener('click', function (event) {
+        if (!avatarMenu.contains(event.target)) {
+            avatarMenu.classList.add('hidden')
+        }
+
+    })
+</script>
