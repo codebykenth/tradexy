@@ -32,7 +32,7 @@
 
                     <!-- Social Login -->
                     <div class="grid grid-cols-2 gap-4">
-                        <a href="#"
+                        <a href="/auth/google"
                             class="flex items-center justify-center gap-2 px-4 p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1a1a19] transition-all bg-white dark:bg-[#161615] text-sm font-medium dark:text-gray-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                                 <path
@@ -50,7 +50,7 @@
                             </svg>
                             Google
                         </a>
-                        <a href="#"
+                        <a href="/auth/facebook"
                             class="flex items-center justify-center gap-2 px-4 p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1a1a19] transition-all bg-white dark:bg-[#161615] text-sm font-medium dark:text-gray-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="#1877F2">
