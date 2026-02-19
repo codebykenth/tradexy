@@ -36,24 +36,24 @@ return [
     ],
 
     'gemini' => [
-        'key'=> env('GEMINI_API_KEY'),
+        'key' => env('GEMINI_API_KEY'),
     ],
 
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
-        'client_secret'=> env('FACEBOOK_CLIENT_SECRET'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
         'redirect' => env('FACEBOOK_REDIRECT'),
     ],
 
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
-        'client_secret'=> env('GOOGLE_CLIENT_SECRET'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT'),
     ],
 
     // For fetching trade data
     'trade_journal' => [
-        'url'=> env('TRADE_JOURNAL_API_BASE_URL'),
+        'url' => env('TRADE_JOURNAL_API_BASE_URL'),
     ],
 
     // For authentication in request
@@ -64,5 +64,16 @@ return [
     // For file hosting
     'freeimg' => [
         'key' => env('FREEIMAGE_API_KEY'),
-    ]
+    ],
+
+    'bybit' => [
+        'key' => env('BYBIT_API_KEY'),
+        'secret' => env('BYBIT_API_SECRET'),
+        'user_email' => env('BYBIT_USER_EMAIL'),
+    ],
+
+    'old_journal' => [
+        'url' => env('OLD_JOURNAL_API_URL'),
+        'token' => env('OLD_JOURNAL_API_TOKEN'),
+    ],
 ];

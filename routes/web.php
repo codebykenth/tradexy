@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MigrateTradesController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -26,6 +27,9 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('logout', [LoginController::class, 'logout']);
     Route::get('dashboard', [DashboardController::class, 'index']);
+
+    // Temporary: Migrate trades from old journal (remove after migration)
+    Route::get('migrate-trades', [MigrateTradesController::class, 'migrate']);
 });
 
 Route::get('/auth/{provider}', [LoginController::class, 'redirectToProvider']);
