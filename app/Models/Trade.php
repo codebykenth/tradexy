@@ -35,13 +35,33 @@ class Trade extends Model
         'total_pnl',
         'open_datetime',
         'close_datetime',
+        'ai_analysis'
     ];
 
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function strategy(): HasMany {
+    public function strategy(): HasMany
+    {
         return $this->hasMany(Strategy::class);
+    }
+
+    public function getDirectChartUrlAttribute()
+    {
+        $url = $this->chart_picture;
+
+        if ($url && str_contains($url, 'drive.google.com')) {
+            // Extract ID
+            if (preg_match('/file\/d\/([a-zA-Z0-9_-]+)/', $url, $matches)) {
+                $fileId = $matches[1];
+
+                // Bypasses the 403 Forbidden error
+                return "https://lh3.googleusercontent.com/d/{$fileId}";
+            }
+        }
+
+        return $url;
     }
 }

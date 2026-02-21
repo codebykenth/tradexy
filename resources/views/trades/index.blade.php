@@ -1,14 +1,47 @@
 <x-layouts.app>
     <div class="w-full">
         <div class="max-w-7xl mx-auto px-6 space-y-4">
-            <button>Add Trade</button>
+            <div class="relative h-12 mb-4">
+                <button class="btn btn-primary absolute left-0 top-0 h-full">Add Trade</button>
 
+                <div
+                    class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-gray-100 p-2 rounded-lg border border-gray-300">
+                    <span class="text-sm font-semibold text-gray-600 px-2">Bulk Actions:</span>
+                    <select class="select select-sm border-gray-300">
+                        <option disabled selected>Assign timeframe</option>
+                        <option>1m</option>
+                        <option>5m</option>
+                        <option>15m</option>
+                        <option>30m</option>
+                        <option>1hr</option>
+                        <option>4hr</option>
+                        <option>1d</option>
+                    </select>
+                    <select class="select select-sm border-gray-300">
+                        <option disabled selected>Assign strategy</option>
+                        <option>Breakout</option>
+                        <option>Breakdown</option>
+                        <option>Range</option>
+                    </select>
+
+                    <button class="btn btn-sm btn-primary" id="apply-bulk">Apply</button>
+                    <div class="w-px h-6 bg-gray-300 mx-1"></div>
+                    <!-- Delete Button -->
+                    <button class="btn btn-sm btn-square btn-error btn-outline" aria-label="Delete Selected">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
             <div class="border border-gray-300 rounded-lg overflow-x-auto">
-                <table class="w-full ">
-                    <tr class="border-b border-gray-300 bg-gray-100 h-8">
+                <table class="w-full">
+                    <tr class="border-b border-gray-300 bg-gray-100 h-10 [&>th:first-child]:pl-4 [&>th:last-child]:pr-4">
                         <th>
                             <label>
-                                <input type="checkbox" className="checkbox" />
+                                <input type="checkbox" class="all-trade-checkbox size-4" />
                             </label>
                         </th>
                         <th>Date</th>
@@ -20,10 +53,10 @@
                         <th>AI</th>
                     </tr>
                     @foreach ($ownedTrades as $ownedTrade)
-                        <tr class="border-b border-gray-300 odd:bg-gray-100 even:bg-white text-center h-8">
+                        <tr class="border-b border-gray-300 odd:bg-gray-100 even:bg-white text-center h-12 [&>th:first-child]:pl-4 [&>td:last-child]:pr-4">
                             <th>
                                 <label>
-                                    <input type="checkbox" className="checkbox" />
+                                    <input type="checkbox" class="trade-checkbox size-4" value="{{ $ownedTrade->id }}" />
                                 </label>
                             </th>
                             <td>
@@ -39,51 +72,154 @@
                                 {{ $ownedTrade->quantity }}
                             </td>
                             <td>
-                                {{ $ownedTrade->total_pnl }}
+                                <span @class([
+                                    'font-bold',
+                                    'text-green-400' => $ownedTrade->total_pnl > 0,
+                                    'text-red-400' => $ownedTrade->total_pnl < 0
+                                ])>{{ $ownedTrade->total_pnl }}</span>
                             </td>
                             <td>
-                                <button class="btn btn-ghost btn-sm"
-                                    onclick="modal_chart_{{ $ownedTrade->id }}.showModal()">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-                                    </svg>
-                                </button>
-                                <dialog id="modal_chart_{{ $ownedTrade->id }}" class="modal">
-                                    <div class="modal-box">
-                                        <h3 class="text-lg font-bold">Hello!</h3>
-                                        <p class="py-4">Press ESC key or click outside to close</p>
-                                    </div>
-                                    <form method="dialog" class="modal-backdrop">
-                                        <button>close</button>
-                                    </form>
-                                </dialog>
+                                @if($ownedTrade->chart_picture)
+                                    <button class="btn btn-ghost btn-sm"
+                                        onclick="modal_chart_{{ $ownedTrade->id }}.showModal()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                                        </svg>
+                                    </button>
+                                    <dialog id="modal_chart_{{ $ownedTrade->id }}" class="modal">
+                                        <div class="modal-box w-11/12 max-w-5xl">
+                                            <h3 class="text-lg font-bold">Chart</h3>
+                                            <img src="{{ $ownedTrade->direct_chart_url ?? "" }}" alt="">
+                                        </div>
+                                        <form method="dialog" class="modal-backdrop">
+                                            <button>close</button>
+                                        </form>
+                                    </dialog>
+                                @endif
                             </td>
                             <td class="">
-                                <button class="btn btn-ghost btn-sm" onclick="modal_ai_{{ $ownedTrade->id }}.showModal()">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-5 text-indigo-500">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                                    </svg>
-                                </button>
-                                <dialog id="modal_ai_{{ $ownedTrade->id }}" class="modal">
-                                    <div class="modal-box">
-                                        <h3 class="text-lg font-bold">Hello!</h3>
-                                        <p class="py-4">Press ESC key or click outside to close</p>
-                                    </div>
-                                    <form method="dialog" class="modal-backdrop">
-                                        <button>close</button>
-                                    </form>
-                                </dialog>
+                                @if($ownedTrade->ai_analysis)
+                                    <button class="btn btn-ghost btn-sm" onclick="modal_ai_{{ $ownedTrade->id }}.showModal()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-5 text-indigo-500">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                                        </svg>
+                                    </button>
+                                    <dialog id="modal_ai_{{ $ownedTrade->id }}" class="modal">
+                                        <div class="modal-box w-11/12 max-w-4xl">
+                                            <h3 class="text-2xl font-bold mb-6 text-indigo-700">Trade Analysis</h3>
+
+                                            <!-- AI Content Container with dynamic styling for markdown elements -->
+                                            <div
+                                                class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_h3]:flex [&_h3]:items-center [&_h3]:gap-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900 max-h-[65vh] overflow-y-auto pr-4 scrollbar-thin">
+
+                                                {!! \Illuminate\Support\Str::markdown($ownedTrade->ai_analysis) !!}
+
+                                            </div>
+
+                                            <div class="modal-action">
+                                                <form method="dialog">
+                                                    <button class="btn">Close</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <form method="dialog" class="modal-backdrop">
+                                            <button>close</button>
+                                        </form>
+                                    </dialog>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
                 </table>
             </div>
+
             {{ $ownedTrades->links() }}
         </div>
+
     </div>
 
 </x-layouts.app>
+
+<script>
+    let bulkBtn = document.getElementById('apply-bulk')
+    let allTradesBtn = document.querySelector('.all-trade-checkbox')
+    let singleTradeCheckbox = document.querySelectorAll('.trade-checkbox')
+    let bulkContainer = document.querySelector('.bulk-action-container')
+
+    // Select a checkbox then show apply button dynamically (toggle)
+    for (let i = 0; i < singleTradeCheckbox.length; i++) {
+        singleTradeCheckbox[i].addEventListener('click', function () {
+
+            let checkedCount = document.querySelectorAll('.trade-checkbox:checked').length
+            console.log(checkedCount)
+
+            if (checkedCount == 0) {
+                bulkContainer.classList.add('hidden')
+                allTradesBtn.checked = false
+            } else if (checkedCount == 10) {
+                allTradesBtn.checked = true
+            } else {
+                bulkContainer.classList.remove('hidden')
+                allTradesBtn.checked = false
+            }
+        })
+    }
+
+    function applyBulk() {
+        let checkedTrades = document.querySelectorAll('.trade-checkbox:checked')
+        let trades = []
+
+        for (let i = 0; i < checkedTrades.length; i++) {
+            trades.push(checkedTrades[i].value)
+        }
+
+        console.log(trades)
+        /* 
+        fetch('/trades-bulk-action', {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                // Wrap the array in an object to send it
+                trades: trades
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Success:", data);
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
+        */
+    }
+
+    function selectAllTrades() {
+        let isChecked = allTradesBtn.checked
+        let allTradesCheckbox = document.querySelectorAll('.trade-checkbox')
+
+
+        for (let i = 0; i < allTradesCheckbox.length; i++) {
+            allTradesCheckbox[i].checked = isChecked
+        }
+
+        let checkedCount = document.querySelectorAll('.trade-checkbox:checked').length
+
+        if (checkedCount == 0) {
+            bulkContainer.classList.add('hidden')
+
+        } else {
+            bulkContainer.classList.remove('hidden')
+
+        }
+    }
+
+    bulkBtn.addEventListener('click', applyBulk)
+    allTradesBtn.addEventListener('click', selectAllTrades)
+</script>
