@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Trade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Carbon\Carbon;
 
 class TradeController extends Controller
 {
@@ -14,8 +14,11 @@ class TradeController extends Controller
      */
     public function index()
     {
-        $ownedTrades = Trade::where('user_id', '=', Auth::id())->get();
-        return Trade::all();
+        $ownedTrades = Trade::where('user_id', '=', Auth::id())->latest('close_datetime')->paginate(10);
+
+        return view('trades.index', [
+            "ownedTrades" => $ownedTrades
+        ]);
     }
 
     /**

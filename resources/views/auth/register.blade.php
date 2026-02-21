@@ -1,5 +1,4 @@
 <x-layouts.app>
-    <x-nav-bar />
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex flex-col lg:flex-row w-full">
             <!-- Hero Section (Left) -->

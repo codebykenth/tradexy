@@ -1,5 +1,4 @@
 <x-layouts.app>
-    <x-nav-bar />
 
     <main class="w-full">
         <!-- Hero -->
