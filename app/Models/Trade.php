@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -43,9 +44,19 @@ class Trade extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function strategy(): HasMany
+    public function strategy(): BelongsTo
     {
-        return $this->hasMany(Strategy::class);
+        return $this->belongsTo(Strategy::class);
+    }
+
+    public function lessons(): HasMany
+    {
+        return $this->hasMany(Lesson::class);
+    }
+
+    public function reasons(): HasMany
+    {
+        return $this->hasMany(Reason::class);
     }
 
     public function getDirectChartUrlAttribute()
@@ -63,5 +74,60 @@ class Trade extends Model
         }
 
         return $url;
+    }
+
+    public function getSessionAttribute()
+    {
+        if (!$this->open_datetime)
+            return 'N/A';
+
+        // Convert to UTC to standardize the trading session hours
+        $hour = \Carbon\Carbon::parse($this->open_datetime)->timezone('UTC')->hour;
+
+        if ($hour >= 13 && $hour < 17) {
+            return 'Overlap (London & NY)';
+        } elseif ($hour >= 13 && $hour < 22) {
+            return 'New York';
+        } elseif ($hour >= 8 && $hour < 13) {
+            return 'London';
+        } elseif ($hour >= 0 && $hour < 8) {
+            return 'Asian';
+        }
+
+        return 'Asian / Sydney';
+    }
+
+    public function getDurationAttribute()
+    {
+        if (!$this->open_datetime || !$this->close_datetime) {
+            return 'N/A';
+        }
+
+        $open = Carbon::parse($this->open_datetime);
+        $close = Carbon::parse($this->close_datetime);
+
+        // Return the human-readable difference without the "ago" / "after" suffix
+        return $open->diffForHumans($close, true);
+    }
+
+    public function getRiskRewardAttribute()
+    {
+        if (!$this->avg_entry_price || !$this->stop_loss_price || !$this->take_profit_price) {
+            return 'N/A';
+        }
+
+        $entry = (float) $this->avg_entry_price;
+        $sl = (float) $this->stop_loss_price;
+        $tp = (float) $this->take_profit_price;
+
+        $risk = abs($entry - $sl);
+        $reward = abs($tp - $entry);
+
+        if ($risk == 0) {
+            return 'N/A';
+        }
+
+        $rr = $reward / $risk;
+        return '1:' . number_format($rr, 2);
     }
 }

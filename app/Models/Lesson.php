@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Lesson extends Model
 {
@@ -12,4 +13,9 @@ class Lesson extends Model
         'category', // 'strategy', 'execution', 'risk_management', 'psychology', etc.
         'is_positive'
     ];
+
+    public function trade(): BelongsTo
+    {
+        return $this->belongsTo(Trade::class);
+    }
 }

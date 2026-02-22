@@ -38,7 +38,7 @@ class MigrateTradesController extends Controller
         if (empty($oldTrades)) {
             return response()->json(['message' => 'No trades found in old journal.']);
         }
-        
+
         usort($oldTrades, function ($a, $b) {
             return strtotime($a['open_datetime']) - strtotime($b['open_datetime']);
         });
@@ -81,6 +81,56 @@ class MigrateTradesController extends Controller
             );
 
             $result->wasRecentlyCreated ? $created++ : $skipped++;
+
+            if ($result->wasRecentlyCreated) {
+                // Migrate Entry Reasons
+                if (!empty($old['entry_reason'])) {
+                    $entryReasons = is_array($old['entry_reason']) ? $old['entry_reason'] : json_decode($old['entry_reason'], true);
+                    if (is_array($entryReasons)) {
+                        foreach ($entryReasons as $reason) {
+                            if (empty($reason))
+                                continue;
+                            \App\Models\Reason::create([
+                                'trade_id' => $result->id,
+                                'type' => 'entry',
+                                'reason' => $reason
+                            ]);
+                        }
+                    }
+                }
+
+                // Migrate Exit Reasons
+                if (!empty($old['exit_reason'])) {
+                    $exitReasons = is_array($old['exit_reason']) ? $old['exit_reason'] : json_decode($old['exit_reason'], true);
+                    if (is_array($exitReasons)) {
+                        foreach ($exitReasons as $reason) {
+                            if (empty($reason))
+                                continue;
+                            \App\Models\Reason::create([
+                                'trade_id' => $result->id,
+                                'type' => 'exit',
+                                'reason' => $reason
+                            ]);
+                        }
+                    }
+                }
+
+                // Migrate Lessons
+                if (!empty($old['lessons_learned'])) {
+                    $lessons = is_array($old['lessons_learned']) ? $old['lessons_learned'] : json_decode($old['lessons_learned'], true);
+                    if (is_array($lessons)) {
+                        foreach ($lessons as $lesson) {
+                            if (empty($lesson))
+                                continue;
+                            \App\Models\Lesson::create([
+                                'trade_id' => $result->id,
+                                'lesson' => $lesson,
+                                'category' => 'migration' // Defaulting to migration category since old API doesn't specify
+                            ]);
+                        }
+                    }
+                }
+            }
         }
 
         return response()->json([
