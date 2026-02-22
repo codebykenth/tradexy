@@ -219,17 +219,28 @@ CMD ["php-fpm"]
 
 ```dockerfile
 # ==============================================================================
-# Stage 1: Build Frontend Assets
+# Stage 1: Build Composer Dependencies for Frontend Scanning
+# ==============================================================================
+FROM composer:latest AS vendor
+WORKDIR /app
+COPY composer.json composer.lock ./
+# Ignore platform reqs because we just need the raw vendor files (like Laravel source) for Tailwind to scan
+RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts
+
+# ==============================================================================
+# Stage 2: Build Frontend Assets
 # ==============================================================================
 FROM node:20-alpine AS frontend
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+# Copy vendor from Stage 1 so Tailwind can find Laravel's built-in blade views
+COPY --from=vendor /app/vendor/ ./vendor/
 RUN npm run build
 
 # ==============================================================================
-# Stage 2: Build PHP Application
+# Stage 3: Build PHP Application
 # ==============================================================================
 FROM php:8.4-fpm
 
@@ -292,7 +303,7 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 ```
 
 **Key differences from dev Dockerfile:**
-- **Multi-stage build** — Stage 1 builds frontend assets with Node.js, Stage 2 builds the PHP app
+- **3-Stage Build** — Stage 1 pulls `vendor/` so Tailwind can scan Laravel code, Stage 2 builds frontend assets with Node.js, Stage 3 builds the final PHP app
 - **Entrypoint script** — copies public files to a shared volume on startup so Nginx can serve them
 - `--no-dev` — excludes dev dependencies
 - `--optimize-autoloader` — faster class loading
