@@ -77,7 +77,7 @@
         </section>
 
         <!-- Features -->
-        <section class="py-24 bg-gray-50 dark:bg-[#0F0F0E] border-y border-gray-200 dark:border-[#1F1F1E]">
+        <section id="features" class="py-24 bg-gray-50 dark:bg-[#0F0F0E] border-y border-gray-200 dark:border-[#1F1F1E]">
             <div class="max-w-7xl mx-auto px-6">
                 <div class="max-w-3xl mx-auto text-center space-y-4 mb-20">
                     <div class="text-blue-600 dark:text-blue-400 font-semibold tracking-wide uppercase text-sm">Powerful
@@ -217,7 +217,7 @@
         </section>
 
         <!-- How it Works (Loop) -->
-        <section class="py-24 max-w-7xl mx-auto px-6">
+        <section id="how-it-works" class="py-24 max-w-7xl mx-auto px-6">
             <div class="text-center max-w-2xl mx-auto mb-20 space-y-4">
                 <p class="text-sm font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">Workflow</p>
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">The Loop of
@@ -265,7 +265,7 @@
         </section>
 
         <!-- Why Tradexy -->
-        <section class="py-24 bg-gray-50 dark:bg-[#0F0F0E] border-y border-gray-200 dark:border-[#1F1F1E]">
+        <section id="why-tradexy" class="py-24 bg-gray-50 dark:bg-[#0F0F0E] border-y border-gray-200 dark:border-[#1F1F1E]">
             <div class="max-w-7xl mx-auto px-6">
                 <div class="text-center space-y-4 mb-16">
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Why Traders Trust

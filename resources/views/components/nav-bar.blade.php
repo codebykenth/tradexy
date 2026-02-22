@@ -10,13 +10,13 @@
 
                 <div class="hidden md:flex items-center gap-6 text-gray-600 dark:text-gray-400">
                     @auth
-                        <a href="" class="hover:text-gray-900 dark:hover:text-white transition-colors">Dashboard</a>
-                        <a href="" class="hover:text-gray-900 dark:hover:text-white transition-colors">Trade Logs</a>
-                        <a href="" class="hover:text-gray-900 dark:hover:text-white transition-colors">Balance</a>
+                        <a href="/dashboard" class="hover:text-gray-900 dark:hover:text-white transition-colors">Dashboard</a>
+                        <a href="/trades" class="hover:text-gray-900 dark:hover:text-white transition-colors">Trades</a>
+                        <a href="/balance" class="hover:text-gray-900 dark:hover:text-white transition-colors">Balance</a>
                     @else
-                        <a href="" class="hover:text-gray-900 dark:hover:text-white transition-colors">Features</a>
-                        <a href="" class="hover:text-gray-900 dark:hover:text-white transition-colors">How it Works</a>
-                        <a href="" class="hover:text-gray-900 dark:hover:text-white transition-colors">Why Tradexy</a>
+                        <a href="#features" class="hover:text-gray-900 dark:hover:text-white transition-colors">Features</a>
+                        <a href="#how-it-works" class="hover:text-gray-900 dark:hover:text-white transition-colors">How it Works</a>
+                        <a href="#why-tradexy" class="hover:text-gray-900 dark:hover:text-white transition-colors">Why Tradexy</a>
                     @endauth
                 </div>
             </div>
@@ -37,8 +37,8 @@
                     <div id="avatar-menu"
                         class="hidden absolute top-12 right-0 bg-gray-600 text-white py-2 px-6 rounded-md w-50">
                         <ul class="space-y-4">
-                            <li><a href="/">Profile</a></li>
-                            <li><a href="/">Settings</a></li>
+                            <li><a href="/profile">Profile</a></li>
+                            <li><a href="/settings">Settings</a></li>
                             <li>
                                 <form action="/logout" method="post" class="hidden md:block">
                                     @csrf
@@ -66,7 +66,7 @@
                     @auth
                         <ul class="">
                             <li class="py-4">
-                                <a href=""
+                                <a href="/dashboard"
                                     class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     {{-- Dashboard Icon (Heroicons: squares-2x2) --}}
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -78,19 +78,19 @@
                                 </a>
                             </li>
                             <li class="py-4">
-                                <a href=""
+                                <a href="/trades"
                                     class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
-                                    {{-- Trade Logs Icon (Heroicons: chart-bar) --}}
+                                    {{-- Trades Icon (Heroicons: chart-bar) --}}
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
                                         stroke="currentColor" stroke-width="1.5">
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
                                     </svg>
-                                    Trade Logs
+                                    Trades
                                 </a>
                             </li>
                             <li class="py-4">
-                                <a href=""
+                                <a href="/balance"
                                     class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     {{-- Balance Icon (Heroicons: wallet) --}}
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -112,7 +112,7 @@
                     @else
                         <ul class="">
                             <li class="py-4">
-                                <a href=""
+                                <a href="#features"
                                     class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     {{-- Features Icon (Heroicons: star) --}}
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -124,7 +124,7 @@
                                 </a>
                             </li>
                             <li class="py-4">
-                                <a href=""
+                                <a href="#how-it-works"
                                     class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     {{-- How it Works Icon (Heroicons: light-bulb) --}}
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -136,7 +136,7 @@
                                 </a>
                             </li>
                             <li class="py-4">
-                                <a href=""
+                                <a href="#why-tradexy"
                                     class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     {{-- Why Tradexy Icon (Heroicons: heart) --}}
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"

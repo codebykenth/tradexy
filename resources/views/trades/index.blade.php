@@ -2,7 +2,7 @@
     <div class="w-full">
         <div class="max-w-7xl mx-auto px-6 space-y-4">
             <div class="relative h-12 mb-4">
-                <button class="btn btn-primary absolute left-0 top-0 h-full">Add Trade</button>
+                <a href="{{ route('trades.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">Add Trade</a>
 
                 <div
                     class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-gray-100 p-2 rounded-lg border border-gray-300">
@@ -38,7 +38,8 @@
             </div>
             <div class="border border-gray-300 rounded-lg overflow-x-auto">
                 <table class="w-full">
-                    <tr class="border-b border-gray-300 bg-gray-100 h-10 [&>th:first-child]:pl-4 [&>th:last-child]:pr-4">
+                    <tr
+                        class="border-b border-gray-300 bg-gray-100 h-10 [&>th:first-child]:pl-4 [&>th:last-child]:pr-4">
                         <th>
                             <label>
                                 <input type="checkbox" class="all-trade-checkbox size-4" />
@@ -53,7 +54,8 @@
                         <th>AI</th>
                     </tr>
                     @foreach ($ownedTrades as $ownedTrade)
-                        <tr class="border-b border-gray-300 odd:bg-gray-100 even:bg-white text-center h-12 [&>th:first-child]:pl-4 [&>td:last-child]:pr-4">
+                        <tr
+                            class="border-b border-gray-300 odd:bg-gray-100 even:bg-white text-center h-12 [&>th:first-child]:pl-4 [&>td:last-child]:pr-4">
                             <th>
                                 <label>
                                     <input type="checkbox" class="trade-checkbox size-4" value="{{ $ownedTrade->id }}" />

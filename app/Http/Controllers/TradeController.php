@@ -20,4 +20,34 @@ class TradeController extends Controller
             "ownedTrades" => $ownedTrades
         ]);
     }
+
+    public function create()
+    {
+        return view('trades.create');
+    }
+
+    public function show()
+    {
+        return view('trades.show');
+    }
+
+    public function edit()
+    {
+        return view('trades.edit');
+    }
+
+    public function store(Request $request)
+    {
+
+    }
+
+    public function update(Request $request, $id)
+    {
+
+    }
+
+    public function destroy($id)
+    {
+
+    }
 }
