@@ -8,9 +8,6 @@ use App\Http\Controllers\MigrateTradesController;
 use App\Http\Controllers\TradeController;
 use Illuminate\Support\Facades\Route;
 
-
-
-
 // For unauthenticated users
 Route::middleware('guest')->group(function () {
     Route::get('/', function () {
@@ -30,9 +27,12 @@ Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index']);
     Route::resource('trades', TradeController::class);
 
-    // Temporary: Migrate trades from old journal (remove after migration)
     Route::get('migrate-trades', [MigrateTradesController::class, 'migrate']);
 });
 
 Route::get('/auth/{provider}', [LoginController::class, 'redirectToProvider']);
 Route::get('/auth/{provider}/callback', [LoginController::class, 'handleProviderCallback']);
+
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
+});

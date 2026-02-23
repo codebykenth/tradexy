@@ -32,9 +32,10 @@ class TradeController extends Controller
         return view('trades.show', ["trade" => $trade]);
     }
 
-    public function edit()
+    public function edit($id)
     {
-        return view('trades.edit');
+        $trade = Trade::where('user_id', Auth::id())->with(['strategy', 'lessons', 'reasons'])->findOrFail($id);
+        return view('trades.edit', ['trade' => $trade]);
     }
 
     public function store(Request $request)
