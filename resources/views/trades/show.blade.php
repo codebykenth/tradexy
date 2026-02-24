@@ -117,7 +117,7 @@
                     </div>
                     <div>
                         <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Quantity</p>
-                        <p>{{ $trade->quantity ?? 'N/A' }}</p>
+                        <p>{{ $trade->quantity !== null ? (strpos((string) $trade->quantity, '.') !== false ? rtrim(rtrim((string) $trade->quantity, '0'), '.') : $trade->quantity) : 'N/A' }}</p>
                     </div>
 
                     <div>
@@ -265,13 +265,27 @@
                                     class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_h3]:flex [&_h3]:items-center [&_h3]:gap-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900 max-h-[65vh] overflow-y-auto pr-4 scrollbar-thin">
 
                                     {!! \Illuminate\Support\Str::markdown($trade->ai_analysis, [
-                                        'html_input' => 'strip',
-                                        'allow_unsafe_links' => false
-                                    ]) !!}
+                        'html_input' => 'strip',
+                        'allow_unsafe_links' => false
+                    ]) !!}
 
                                 </div>
                 @else
                     <p class="italic text-gray-500">No AI analysis yet.</p>
+                    @if($trade->chart_picture)
+                        <form action="/analyze/{{ $trade->id }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <button type="submit" class="btn btn-primary btn-sm flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                                </svg>
+                                Generate AI Analysis
+                            </button>
+                        </form>
+                    @endif
                 @endif
             </div>
             <div class="bg-gray-100 rounded-lg p-8 my-8 w-1/3">

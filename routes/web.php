@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiAnalysisController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -26,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [LoginController::class, 'logout']);
     Route::get('dashboard', [DashboardController::class, 'index']);
     Route::resource('trades', TradeController::class);
+    Route::put('analyze/{id}', [AiAnalysisController::class, 'analyze']);
 
     Route::get('migrate-trades', [MigrateTradesController::class, 'migrate']);
 });

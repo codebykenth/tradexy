@@ -73,7 +73,7 @@
 
                                 </td>
                                 <td>
-                                    {{ $ownedTrade->quantity }}
+                                    {{ strpos((string) $ownedTrade->quantity, '.') !== false ? rtrim(rtrim((string) $ownedTrade->quantity, '0'), '.') : $ownedTrade->quantity }}
                                 </td>
                                 <td>
                                     <span @class([
