@@ -9,32 +9,46 @@ use App\Http\Controllers\MigrateTradesController;
 use App\Http\Controllers\TradeController;
 use Illuminate\Support\Facades\Route;
 
-// For unauthenticated users
-Route::middleware('guest')->group(function () {
-    Route::get('/', function () {
-        return view('index');
-    });
-
-    Route::get('login', [LoginController::class, 'index'])->name('login');
-    Route::get('register', [RegisterController::class, 'index'])->name('register');
-    Route::post('register', [RegisterController::class, 'store']);
-    Route::post('login', [LoginController::class, 'authenticate']);
-
-    Route::get('forgot-password', [ForgotPasswordController::class, 'index'])->name('forgot-password');
-});
-// For authenticated users
 Route::middleware('auth')->group(function () {
-    Route::post('logout', [LoginController::class, 'logout']);
-    Route::get('dashboard', [DashboardController::class, 'index']);
-    Route::resource('trades', TradeController::class);
-    Route::put('analyze/{id}', [AiAnalysisController::class, 'analyze']);
+    Route::put('analyze/{id}', [AiAnalysisController::class, 'analyze'])->middleware('throttle:ai-analysis');
 
     Route::get('migrate-trades', [MigrateTradesController::class, 'migrate']);
 });
 
-Route::get('/auth/{provider}', [LoginController::class, 'redirectToProvider']);
-Route::get('/auth/{provider}/callback', [LoginController::class, 'handleProviderCallback']);
+// Authentication Routes
+Route::middleware(['throttle:auth'])->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::post('register', [RegisterController::class, 'store']);
+        Route::post('login', [LoginController::class, 'authenticate']);
+        Route::get('/auth/{provider}', [LoginController::class, 'redirectToProvider']);
+        Route::get('/auth/{provider}/callback', [LoginController::class, 'handleProviderCallback']);
+    });
 
-Route::fallback(function () {
-    return response()->view('errors.404', [], 404);
+    Route::post('logout', [LoginController::class, 'logout'])->middleware('auth');
+});
+
+// Read Routes
+Route::middleware(['throttle:read'])->group(function () {
+    Route::fallback(function () {
+        return response()->view('errors.404', [], 404);
+    });
+
+    Route::middleware('guest')->group(function () {
+        Route::get('/', function () {
+            return view('index');
+        });
+        Route::get('login', [LoginController::class, 'index'])->name('login');
+        Route::get('register', [RegisterController::class, 'index'])->name('register');
+        Route::get('forgot-password', [ForgotPasswordController::class, 'index'])->name('forgot-password');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::get('dashboard', [DashboardController::class, 'index']);
+        Route::resource('trades', TradeController::class)->only(['index', 'show', 'create', 'edit']);
+    });
+});
+
+// Write Routes (Create, Update Delete)
+Route::middleware(['throttle:write', 'auth'])->group(function () {
+    Route::resource('trades', TradeController::class)->only(['store', 'update', 'destroy']);
 });
