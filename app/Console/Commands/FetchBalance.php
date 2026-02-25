@@ -41,7 +41,7 @@ class FetchBalance extends Command
             'date' => now()->toDateString(),
             'total_equity' => $usdtData['totalEquity'],
             'wallet_balance' => $usdtData['totalWalletBalance'],
-            'cum_realised_pnl' => $usdtData['cum_realised_pnl'],
+            'cum_realised_pnl' => $usdtData['cumRealisedPnl'],
         ]);
     }
 }

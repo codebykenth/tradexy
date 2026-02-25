@@ -17,9 +17,9 @@ class BalanceController extends Controller
      */
     public function index()
     {
-        $balances = Balance::where('user_id', Auth::id())->get();
-        return response()->json([
-            'data' => $balances
+        $balances = Balance::where('user_id', Auth::id())->latest('date')->paginate(10);
+        return view('balances.index', [
+            'balances' => $balances
         ]);
     }
 
@@ -28,7 +28,7 @@ class BalanceController extends Controller
      */
     public function create()
     {
-        //
+        return view('balances.create');
     }
 
     /**
@@ -44,7 +44,8 @@ class BalanceController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $balance = Balance::findOrFail($id);
+        return view('balances.show', ['balance' => $balance]);
     }
 
     /**
@@ -52,7 +53,7 @@ class BalanceController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return view('balances.edit');
     }
 
     /**

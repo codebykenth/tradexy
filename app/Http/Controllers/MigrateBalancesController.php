@@ -22,14 +22,14 @@ class MigrateBalancesController extends Controller
         foreach ($oldBalances as $balance) {
             Balance::updateOrCreate([
                 'user_id' => $user->id,
-                'date' => $balance['date']
+                'date' => $balance['date'],
             ], [
                 'total_equity' => $balance['total_equity'],
                 'wallet_balance' => $balance['wallet_balance'],
                 'cum_realised_pnl' => $balance['cum_realised_pnl'],
             ]);
         }
-        
+
         return response()->json([
             'message' => 'Migration complete!',
             'total_from_api' => count($oldBalances)

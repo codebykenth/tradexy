@@ -59,5 +59,4 @@ Route::middleware(['throttle:read'])->group(function () {
 Route::middleware(['throttle:write', 'auth'])->group(function () {
     Route::resource('trades', TradeController::class)->only(['store', 'update', 'destroy']);
 });
-
-Route::get('balances', [BalanceController::class, 'index']);
+Route::resource('balances', BalanceController::class);
