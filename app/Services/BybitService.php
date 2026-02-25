@@ -187,14 +187,15 @@ class BybitService
         ];
     }
 
-    public function getAccountBalance() {
+    public function getAccountBalance()
+    {
         try {
             $response = $this->get('/v5/account/wallet-balance', [
                 'coin' => 'USDT',
                 'accountType' => 'UNIFIED',
 
             ]);
-            dd($response);
+            return $response;
         } catch (Exception $e) {
             return [
                 'error' => $e

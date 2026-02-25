@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Auth;
 
 class BalanceController extends Controller
 {
-    public function __construct(private BybitService $bybitService) {}
+    public function __construct(private BybitService $bybitService)
+    {
+    }
     /**
      * Display a listing of the resource.
      */
@@ -69,7 +71,11 @@ class BalanceController extends Controller
         //
     }
 
-    public function testBalance() {
-        return $this->bybitService->getAccountBalance();
+    public function testBalance()
+    {
+        $balance = $this->bybitService->getAccountBalance()['result']['list'][0];
+        $usdtData = $balance['coin'][0];
+
+        return $usdtData;
     }
 }
