@@ -2,14 +2,18 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\Errors\FetchClosedPnlMail;
 use App\Models\Trade;
 use App\Models\User;
 use App\Services\BybitService;
 use Carbon\Carbon;
+use DB;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class FetchClosedPnl extends Command
 {
+    private $user;
     /**
      * The name and signature of the console command.
      *
@@ -29,12 +33,13 @@ class FetchClosedPnl extends Command
      */
     public function handle()
     {
+        $this->user = User::where('email', config('services.bybit.user_email'))->first();
         $this->info('Fetching closed PnL from Bybit...');
 
         try {
             $bybit = new BybitService();
 
-            $user = User::where('email', config('services.bybit.user_email'))->first();
+            $user = $this->user;
 
             if (!$user) {
                 $this->error('Bybit user not found. Set BYBIT_USER_EMAIL in .env');
@@ -78,6 +83,7 @@ class FetchClosedPnl extends Command
                 $closeDatetime = Carbon::createFromTimestampMs((int) $trade['updatedTime']);
 
                 // Use firstOrCreate to prevent duplicate trades
+                DB::beginTransaction();
                 $result = Trade::firstOrCreate(
                     [
                         'user_id' => $user->id,
@@ -103,10 +109,9 @@ class FetchClosedPnl extends Command
                         'close_datetime' => $closeDatetime,
                     ]
                 );
-
                 $result->wasRecentlyCreated ? $created++ : $skipped++;
             }
-
+            DB::commit();
             if (count($errors) > 0) {
                 foreach ($errors as $error) {
                     $this->error("Error: {$error['error']}");
@@ -119,6 +124,8 @@ class FetchClosedPnl extends Command
 
         } catch (\Exception $e) {
             $this->error("Failed: {$e->getMessage()}");
+            Mail::to($this->user->email)->send(new FetchClosedPnlMail($e->getMessage()));
+            DB::rollBack();
             return 1;
         }
 
