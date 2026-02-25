@@ -40,7 +40,7 @@ class FetchBalance extends Command
             'user_id' => $user->id,
             'date' => now()->toDateString(),
             'total_equity' => $usdtData['equity'],
-            'wallet_balance' => $usdtData['totalWalletBalance'],
+            'wallet_balance' => $usdtData['walletBalance'],
             'cum_realised_pnl' => $usdtData['cumRealisedPnl'],
         ]);
     }
