@@ -28,8 +28,9 @@ class FetchBalanceMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $environment = ucfirst(config('app.env'));
         return new Envelope(
-            subject: 'Failed Job: Syncing Account Balance | Tradexy',
+            subject: "Failed Job: Syncing Account Balance | Tradexy - $environment",
         );
     }
 

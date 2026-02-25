@@ -28,8 +28,9 @@ class FetchClosedPnlMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $environment = ucfirst(config('app.env'));
         return new Envelope(
-            subject: 'Failed Job: Syncing Trade Logs | Tradexy',
+            subject: "Failed Job: Syncing Trade Logs | Tradexy - $environment",
         );
     }
 
