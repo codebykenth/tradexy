@@ -39,7 +39,7 @@ class FetchBalance extends Command
         Balance::create([
             'user_id' => $user->id,
             'date' => now()->toDateString(),
-            'total_equity' => $usdtData['totalEquity'],
+            'total_equity' => $usdtData['equity'],
             'wallet_balance' => $usdtData['totalWalletBalance'],
             'cum_realised_pnl' => $usdtData['cumRealisedPnl'],
         ]);
