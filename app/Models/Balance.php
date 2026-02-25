@@ -13,4 +13,8 @@ class Balance extends Model
         'wallet_balance',
         'cum_realised_pnl',
     ];
+
+    protected $casts = [
+        'date' => 'datetime'
+    ];
 }

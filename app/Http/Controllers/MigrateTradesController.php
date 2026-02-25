@@ -23,7 +23,7 @@ class MigrateTradesController extends Controller
             return response()->json(['error' => 'User not found. Set BYBIT_USER_EMAIL in .env'], 404);
         }
 
-        $response = Http::withToken($apiToken)->get($apiUrl);
+        $response = Http::withToken($apiToken)->get("$apiUrl/trade-logs");
 
         if (!$response->successful()) {
             return response()->json([

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Balance;
 use App\Services\BybitService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BalanceController extends Controller
 {
@@ -13,7 +15,10 @@ class BalanceController extends Controller
      */
     public function index()
     {
-        //
+        $balances = Balance::where('user_id', Auth::id())->get();
+        return response()->json([
+            'data' => $balances
+        ]);
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MigrateBalancesController;
 use App\Http\Controllers\MigrateTradesController;
 use App\Http\Controllers\TradeController;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,8 @@ Route::middleware('auth')->group(function () {
     Route::put('analyze/{id}', [AiAnalysisController::class, 'analyze'])->middleware('throttle:ai-analysis');
 
     Route::get('migrate-trades', [MigrateTradesController::class, 'migrate']);
+    Route::get('migrate-balances', [MigrateBalancesController::class, 'migrate']);
+
 });
 
 // Authentication Routes
@@ -56,3 +59,5 @@ Route::middleware(['throttle:read'])->group(function () {
 Route::middleware(['throttle:write', 'auth'])->group(function () {
     Route::resource('trades', TradeController::class)->only(['store', 'update', 'destroy']);
 });
+
+Route::get('balances', [BalanceController::class, 'index']);
