@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Trade;
+use App\Services\BybitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class TradeController extends Controller
 {
+    public function __construct(private BybitService $bybitService)
+    {
+    }
     /**
      * Display a listing of the resource.
      */
@@ -51,5 +55,11 @@ class TradeController extends Controller
     public function destroy($id)
     {
 
+    }
+
+    public function testTrades()
+    {
+        $userId = Auth::id();
+        return $this->bybitService->getClosedPnl($userId);
     }
 }

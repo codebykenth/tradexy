@@ -109,6 +109,7 @@ class BybitService
         ];
 
         $response = $this->get('/v5/position/closed-pnl', $params);
+        dd($response);
 
         $trades = [];
         $errors = [];
@@ -184,5 +185,20 @@ class BybitService
                 'endDate' => $endDate->toISOString(),
             ],
         ];
+    }
+
+    public function getAccountBalance() {
+        try {
+            $response = $this->get('/v5/account/wallet-balance', [
+                'coin' => 'USDT',
+                'accountType' => 'UNIFIED',
+
+            ]);
+            dd($response);
+        } catch (Exception $e) {
+            return [
+                'error' => $e
+            ];
+        }
     }
 }

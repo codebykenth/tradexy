@@ -4,6 +4,7 @@ use App\Http\Controllers\AiAnalysisController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MigrateTradesController;
 use App\Http\Controllers\TradeController;
@@ -46,6 +47,9 @@ Route::middleware(['throttle:read'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::resource('trades', TradeController::class)->only(['index', 'show', 'create', 'edit']);
     });
+
+    Route::get('/test-account-balance', [BalanceController::class, 'testBalance']);
+    Route::get('/test-trades', [TradeController::class, 'testTrades']);
 });
 
 // Write Routes (Create, Update Delete)
