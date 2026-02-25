@@ -60,6 +60,7 @@ class TradeController extends Controller
     public function testTrades()
     {
         $userId = Auth::id();
-        return $this->bybitService->getClosedPnl($userId);
+        $trades = $this->bybitService->getClosedPnl($userId)['result']['list'][0];
+        return $trades;
     }
 }

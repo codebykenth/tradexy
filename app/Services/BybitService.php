@@ -97,7 +97,7 @@ class BybitService
      * @param int $days - Number of days to look back (default: 2)
      * @return array - ['trades' => [...], 'errors' => [...], 'summary' => [...]]
      */
-    public function getClosedPnl(int $userId, int $days = 2): array
+    public function getClosedPnl(int $days = 2): array
     {
         $endDate = now();
         $startDate = now()->subDays($days);
@@ -109,82 +109,8 @@ class BybitService
         ];
 
         $response = $this->get('/v5/position/closed-pnl', $params);
-        dd($response);
 
-        $trades = [];
-        $errors = [];
-
-        if (($response['retCode'] ?? -1) === 0 && isset($response['result']['list'])) {
-            $trades = $response['result']['list'];
-        } else {
-            $errors[] = [
-                'period' => "{$startDate->toISOString()} to {$endDate->toISOString()}",
-                'error' => $response['retMsg'] ?? 'Unknown error',
-            ];
-        }
-
-        // Sort by updatedTime ascending (oldest first)
-        usort($trades, function ($a, $b) {
-            $timeA = (int) ($a['updatedTime'] ?? $a['createdTime'] ?? 0);
-            $timeB = (int) ($b['updatedTime'] ?? $b['createdTime'] ?? 0);
-            return $timeA - $timeB;
-        });
-
-        // Save trades to database
-        $created = 0;
-        $skipped = 0;
-
-        foreach ($trades as $trade) {
-            // Bybit's "side" is the CLOSING side, so entry is the opposite
-            $closeSide = strtolower($trade['side']) === 'buy' ? 'long' : 'short';
-            $entrySide = $closeSide === 'long' ? 'short' : 'long';
-
-            // Convert millisecond timestamps to datetime
-            $openDatetime = \Carbon\Carbon::createFromTimestampMs((int) $trade['createdTime']);
-            $closeDatetime = \Carbon\Carbon::createFromTimestampMs((int) $trade['updatedTime']);
-
-            // Use firstOrCreate to prevent duplicate trades
-            $result = Trade::firstOrCreate(
-                [
-                    'user_id' => $userId,
-                    'order_id' => $trade['orderId'],
-                ],
-                [
-                    'symbol' => $trade['symbol'],
-                    'entry_side' => $entrySide,
-                    'exit_side' => $closeSide,
-                    'entry_price' => $trade['avgEntryPrice'],
-                    'exit_price' => $trade['avgExitPrice'],
-                    'quantity' => $trade['closedSize'],
-                    'cum_entry_value' => $trade['cumEntryValue'],
-                    'cum_exit_value' => $trade['cumExitValue'],
-                    'avg_entry_price' => $trade['avgEntryPrice'],
-                    'avg_exit_price' => $trade['avgExitPrice'],
-                    'leverage' => $trade['leverage'],
-                    'open_fees' => $trade['openFee'] ?? 0,
-                    'close_fees' => $trade['closeFee'] ?? 0,
-                    'closed_pnl' => $trade['closedPnl'],
-                    'total_pnl' => $trade['closedPnl'],
-                    'open_datetime' => $openDatetime,
-                    'close_datetime' => $closeDatetime,
-                ]
-            );
-
-            $result->wasRecentlyCreated ? $created++ : $skipped++;
-        }
-
-        return [
-            'created' => $created,
-            'skipped' => $skipped,
-            'errors' => $errors,
-            'summary' => [
-                'totalFromApi' => count($trades),
-                'created' => $created,
-                'skipped' => $skipped,
-                'startDate' => $startDate->toISOString(),
-                'endDate' => $endDate->toISOString(),
-            ],
-        ];
+        return $response;
     }
 
     public function getAccountBalance()

@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\BybitService;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class FetchClosedPnl extends Command
@@ -41,16 +43,78 @@ class FetchClosedPnl extends Command
 
             $this->info("Fetching for: {$user->name}");
 
-            $result = $bybit->getClosedPnl(userId: $user->id, days: 2);
+            $response = $bybit->getClosedPnl(days: 2);
 
-            if (count($result['errors']) > 0) {
-                foreach ($result['errors'] as $error) {
+            $trades = [];
+            $errors = [];
+
+            if (($response['retCode'] ?? -1) === 0 && isset($response['result']['list'])) {
+                $trades = $response['result']['list'];
+                dump($trades);
+            } else {
+                $errors[] = [
+                    'error' => $response['retMsg'] ?? 'Unknown error',
+                ];
+            }
+
+            // Sort by updatedTime ascending (oldest first)
+            usort($trades, function ($a, $b) {
+                $timeA = (int) ($a['updatedTime'] ?? $a['createdTime'] ?? 0);
+                $timeB = (int) ($b['updatedTime'] ?? $b['createdTime'] ?? 0);
+                return $timeA - $timeB;
+            });
+
+            // Save trades to database
+            $created = 0;
+            $skipped = 0;
+
+            foreach ($trades as $trade) {
+                // Bybit's "side" is the CLOSING side, so entry is the opposite
+                $closeSide = strtolower($trade['side']) === 'buy' ? 'long' : 'short';
+                $entrySide = $closeSide === 'long' ? 'short' : 'long';
+
+                // Convert millisecond timestamps to datetime
+                $openDatetime = Carbon::createFromTimestampMs((int) $trade['createdTime']);
+                $closeDatetime = Carbon::createFromTimestampMs((int) $trade['updatedTime']);
+
+                // Use firstOrCreate to prevent duplicate trades
+                $result = Trade::firstOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'order_id' => $trade['orderId'],
+                    ],
+                    [
+                        'symbol' => $trade['symbol'],
+                        'entry_side' => $entrySide,
+                        'exit_side' => $closeSide,
+                        'entry_price' => $trade['avgEntryPrice'],
+                        'exit_price' => $trade['avgExitPrice'],
+                        'quantity' => $trade['closedSize'],
+                        'cum_entry_value' => $trade['cumEntryValue'],
+                        'cum_exit_value' => $trade['cumExitValue'],
+                        'avg_entry_price' => $trade['avgEntryPrice'],
+                        'avg_exit_price' => $trade['avgExitPrice'],
+                        'leverage' => $trade['leverage'],
+                        'open_fees' => $trade['openFee'] ?? 0,
+                        'close_fees' => $trade['closeFee'] ?? 0,
+                        'closed_pnl' => $trade['closedPnl'],
+                        'total_pnl' => $trade['closedPnl'],
+                        'open_datetime' => $openDatetime,
+                        'close_datetime' => $closeDatetime,
+                    ]
+                );
+
+                $result->wasRecentlyCreated ? $created++ : $skipped++;
+            }
+
+            if (count($errors) > 0) {
+                foreach ($errors as $error) {
                     $this->error("Error: {$error['error']}");
                 }
             }
 
-            $this->info("API returned: {$result['summary']['totalFromApi']} trades");
-            $this->info("Created: {$result['created']} | Skipped (duplicates): {$result['skipped']}");
+            $this->info("API returned: " . count($trades) . " trades");
+            $this->info("Created: {$created} | Skipped (duplicates): {$skipped}");
             $this->info('Done!');
 
         } catch (\Exception $e) {

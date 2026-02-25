@@ -28,13 +28,17 @@ class FetchBalance extends Command
      */
     public function handle()
     {
-        //
+        $this->info('Fetching account balance from Bybit...');
+
         $bybitService = new BybitService();
         $user = User::where('email', config('services.bybit.user_email'))->first();
+
+        $this->info("Fetching for: {$user->name}");
 
         $balance = $bybitService->getAccountBalance()['result']['list'][0];
 
         $usdtData = $balance['coin'][0];
+        dump($usdtData);
 
         Balance::create([
             'user_id' => $user->id,
@@ -43,5 +47,7 @@ class FetchBalance extends Command
             'wallet_balance' => $usdtData['walletBalance'],
             'cum_realised_pnl' => $usdtData['cumRealisedPnl'],
         ]);
+
+        $this->info('Done!');
     }
 }
