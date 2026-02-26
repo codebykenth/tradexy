@@ -7,5 +7,12 @@ set -e
 echo "Syncing public files to shared volume..."
 cp -r /var/www/public/. /var/www/public-shared/
 
+# If a custom command was passed (e.g. scheduler, queue worker),
+# execute it instead of the default PHP-FPM process.
+if [ $# -gt 0 ]; then
+    echo "Running custom command: $@"
+    exec "$@"
+fi
+
 echo "Starting PHP-FPM..."
 exec php-fpm
