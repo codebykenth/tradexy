@@ -90,7 +90,7 @@ class DailyNewsService
                         'pubDate' => (string) $item->get_date('c'), // ISO 8601 format
                     ];
                 }
-                $item->__destruct(); 
+                $item->__destruct();
             }
 
             $feed->__destruct();
@@ -119,8 +119,29 @@ class DailyNewsService
         $goldPrice = $this->getGoldPrice();
         $btcPrice = $this->getBtcPrice();
 
+        $aiPrompts = $this->generateAiPrompts($goldArticles, (string) $goldPrice, $cryptoArticles, (string) $btcPrice);
+
+        $aiAnalysis = [];
+        foreach ($aiPrompts as $prompt) {
+            $systemMsg = '';
+            $userMsg = '';
+            foreach ($prompt['messages'] as $msg) {
+                if ($msg['role'] === 'system') {
+                    $systemMsg = $msg['content'];
+                } elseif ($msg['role'] === 'user') {
+                    $userMsg = $msg['content'];
+                }
+            }
+            if ($systemMsg && $userMsg) {
+                $rawAnalysis = $this->analyze($systemMsg, $userMsg);
+                $aiAnalysis[$prompt['asset']] = $this->normalizeAiOutput($rawAnalysis);
+            }
+        }
+
         return [
             'dateRange' => "{$twoDaysAgo->format('Y-m-d')} - {$now->format('Y-m-d')}",
+            'aiPrompts' => $aiPrompts,
+            'aiAnalysis' => $aiAnalysis,
             'gold' => [
                 'count' => count($goldArticles),
                 'currentPrice' => $goldPrice,
@@ -131,6 +152,82 @@ class DailyNewsService
                 'currentPrice' => $btcPrice,
                 'articles' => $cryptoArticles
             ]
+        ];
+    }
+
+    private function analyze(string $systemPrompt, string $userPrompt)
+    {
+        $output = Http::withHeaders([
+            "x-goog-api-key" => config('services.gemini.key'),
+            "Content-Type" => "application/json"
+        ])->post(
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent',
+                [
+                    "system_instruction" => [
+                        "parts" => [
+                            [
+                                "text" => $systemPrompt
+                            ]
+                        ]
+                    ],
+                    "contents" => [
+                        [
+                            "parts" => [
+                                [
+                                    "text" => $userPrompt
+                                ]
+                            ]
+                        ]
+                    ],
+                    "generationConfig" => [
+                        "temperature" => 1.0,
+                        "topP" => 0.8,
+                        "topK" => 10,
+                        "thinkingConfig" => [
+                            "thinkingLevel" => "medium"
+                        ]
+                    ]
+                ]
+            );
+        $responseData = $output->json();
+        return $responseData['candidates'][0]['content']['parts'][0]['text'] ?? 'No analysis generated.';
+    }
+
+    private function normalizeAiOutput($rawOutput): array
+    {
+        $raw = is_string($rawOutput)
+            ? json_decode(trim(str_replace(['```json', '```'], '', $rawOutput)), true)
+            : $rawOutput;
+
+        $raw = is_array($raw) ? $raw : [];
+
+        $rawScore = $raw['summary']['confidence_score'] ?? null;
+        $confidence = null;
+
+        if (is_numeric($rawScore)) {
+            $score = (float) $rawScore;
+            // Handle 0.0-1.0 scale
+            if ($score <= 1 && $score > 0) {
+                $score *= 10;
+            }
+            // Handle 0-100 scale
+            elseif ($score > 10) {
+                $score /= 10;
+            }
+
+            $score = intval(round($score));
+            $score = min(10, max(0, $score)); // clamp between 0 and 10
+
+            $confidence = "{$score}/10";
+        }
+
+        return [
+            'asset' => $raw['asset'] ?? null,
+            'bias' => $raw['summary']['bias'] ?? null,
+            'confidence' => $confidence,
+            'key_driver' => $raw['key_driver']['theme'] ?? null,
+            'source' => $raw['top_news_source']['source_name'] ?? null,
+            'data' => $raw
         ];
     }
 
@@ -263,5 +360,137 @@ class DailyNewsService
             return false;
         }
         return preg_match('/^https?:\/\/.+/i', $url) === 1;
+    }
+
+    private const SYSTEM_MESSAGES = [
+        'gold' => "You are a high-conviction gold macro analyst.\nFocus only on price-relevant macro & institutional signals.\nWeigh credibility heavily. Analysis only (DYOR).\nRespond exclusively in valid JSON.",
+        'crypto' => "You are a high-conviction Bitcoin macro analyst.\nFocus only on price-relevant macro & institutional signals.\nIgnore hype and opinion pieces.\nWeigh credibility heavily. Analysis only (DYOR).\nRespond exclusively in valid JSON."
+    ];
+
+    private function formatArticlesForPrompt(array $articles): string
+    {
+        $formatted = [];
+        foreach ($articles as $index => $article) {
+            $link = $article['link'] ?? $article['url'] ?? 'N/A';
+            $content = $article['content'] ?? $article['contentSnippet'] ?? '';
+            $num = $index + 1;
+            $formatted[] = "ARTICLE {$num}\nLink: {$link}\nContent:\n{$content}\n";
+        }
+        return implode("\n---\n\n", $formatted);
+    }
+
+    private function buildUserPrompt(string $asset, array $articles, string $price): string
+    {
+        $schema = $asset === 'gold' ? '{
+        "asset": "gold",
+        "timestamp_utc": "",
+        "summary": {
+            "bias": "Bullish | Bearish",
+            "confidence_score": 0,
+            "price_direction_24h": "Up | Down",
+            "price_direction_7d": "Up | Down"
+        },
+        "key_driver": {
+            "theme": "",
+            "explanation": ""
+        },
+        "market_context": {
+            "usd_dynamics": "",
+            "real_yields": "",
+            "risk_sentiment": ""
+        },
+        "top_news_source": {
+            "source_name": "",
+            "headline": "",
+            "url": ""
+        },
+        "risk_factors": []
+        }' : '{
+        "asset": "crypto",
+        "timestamp_utc": "",
+        "summary": {
+            "bias": "Bullish | Bearish",
+            "confidence_score": 0,
+            "trend_direction": "UP | DOWN"
+        },
+        "key_driver": {
+            "theme": "",
+            "explanation": ""
+        },
+        "market_context": {
+            "liquidity": "",
+            "risk_regime": "",
+            "institutional_flows": ""
+        },
+        "top_news_source": {
+            "source_name": "",
+            "headline": "",
+            "url": ""
+        },
+        "risk_factors": []
+        }';
+
+        $ticker = $asset === 'gold' ? 'XAU/USD' : 'BTC/USD';
+        $priceString = empty($price) ? 'Unknown' : $price;
+        $articlesString = $this->formatArticlesForPrompt($articles);
+
+        return <<<PROMPT
+        📰 NEWS INPUT:
+        {$articlesString}
+
+        💰 Current {$ticker} Price:
+        {$priceString}
+
+        =========================
+        STRICT OUTPUT RULES
+        =========================
+        • Return VALID JSON ONLY
+        • Use EXACT schema below
+        • DO NOT add/remove/rename fields
+        • confidence_score MUST be an integer from 0 to 10
+        • price_direction_24h MUST be exactly "Up" or "Down" only (no "Neutral" or "Up/Neutral")
+        • trend_direction MUST be exactly "UP" or "DOWN" only (no "NEUTRAL")
+        • DO NOT use markdown or code blocks
+        • Never omit fields
+        • If uncertain, use null or "Unknown"
+
+        =========================
+        JSON SCHEMA
+        =========================
+        {$schema}
+        PROMPT;
+    }
+
+    private function generateAiPrompts(array $goldArticles, string $goldPrice, array $cryptoArticles, string $btcPrice): array
+    {
+        $outputs = [];
+
+        if (count($goldArticles) > 0) {
+            $outputs[] = [
+                'asset' => 'gold',
+                'messages' => [
+                    ['role' => 'system', 'content' => self::SYSTEM_MESSAGES['gold']],
+                    [
+                        'role' => 'user',
+                        'content' => $this->buildUserPrompt('gold', $goldArticles, $goldPrice)
+                    ]
+                ]
+            ];
+        }
+
+        if (count($cryptoArticles) > 0) {
+            $outputs[] = [
+                'asset' => 'crypto',
+                'messages' => [
+                    ['role' => 'system', 'content' => self::SYSTEM_MESSAGES['crypto']],
+                    [
+                        'role' => 'user',
+                        'content' => $this->buildUserPrompt('crypto', $cryptoArticles, $btcPrice)
+                    ]
+                ]
+            ];
+        }
+
+        return $outputs;
     }
 }

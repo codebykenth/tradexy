@@ -13,12 +13,14 @@ class DailyNewsMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $aiAnalysis;
+
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($aiAnalysis)
     {
-        //
+        $this->aiAnalysis = $aiAnalysis;
     }
 
     /**
@@ -27,7 +29,7 @@ class DailyNewsMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Daily News Mail | Tradexy',
+            subject: 'Daily Macro Market Brief — Gold & Bitcoin | Tradexy',
         );
     }
 
