@@ -36,7 +36,18 @@ class BalanceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate(
+            [
+                'date' => 'date|required',
+                'wallet_balance' => 'numeric|required',
+                'total_equity' => 'numeric|required',
+                'cum_realised_pnl' => 'numeric|required'
+            ]
+        );
+
+        Balance::create($validated);
+
+        return redirect()->route('balances.index');
     }
 
     /**
@@ -61,7 +72,19 @@ class BalanceController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate(
+            [
+                'date' => 'date',
+                'wallet_balance' => 'numeric',
+                'total_equity' => 'numeric',
+                'cum_realised_pnl' => 'numeric'
+            ]
+        );
+
+        $balance = Balance::findOrFail($id);
+        $balance->update($validated);
+
+        return redirect()->route('balances.index');
     }
 
     /**
@@ -69,7 +92,10 @@ class BalanceController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $balance = Balance::findOrFail($id);
+        $balance->delete();
+
+        return redirect()->route('balances.index');
     }
 
     public function testBalance()

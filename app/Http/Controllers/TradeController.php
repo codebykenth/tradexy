@@ -59,8 +59,14 @@ class TradeController extends Controller
 
     public function testTrades()
     {
-        $userId = Auth::id();
-        $trades = $this->bybitService->getClosedPnl($userId)['result']['list'][0];
-        return $trades;
+        $userId = Auth::id(); 
+        $response = $this->bybitService->getClosedPnl($userId);
+
+        // Check if the list exists and has items
+        if (!empty($response['result']['list'])) {
+            $trade = $response['result']['list'][0];
+            return $trade;
+        }
+        return response()->json(['message' => 'No closed pnl found for this period.']);
     }
 }
