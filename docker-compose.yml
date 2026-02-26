@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     container_name: laravel_app
+    environment:
+      - TZ=Asia/Manila
     volumes:
       - .:/var/www
     networks:
