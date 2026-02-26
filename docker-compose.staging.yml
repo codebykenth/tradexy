@@ -25,21 +25,6 @@ services:
     networks:
       - tradexy_staging
 
-  scheduler:
-    image: ghcr.io/codebykenth/trading-journal-v2:staging
-    container_name: tradexy_scheduler_staging
-    restart: unless-stopped
-    working_dir: /var/www
-    env_file: .env
-    volumes:
-      - app_storage_staging:/var/www/storage
-    depends_on:
-      - app
-    networks:
-      - tradexy_staging
-    command: >
-      sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
-
   queue:
     image: ghcr.io/codebykenth/trading-journal-v2:staging
     container_name: tradexy_queue_staging
