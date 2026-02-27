@@ -67,36 +67,57 @@ class DailyNewsService
 
         // Fetch feeds sequentially to prevent hitting PHP's memory limit
         foreach ($rssSources as $source) {
-            $feed = new SimplePie();
-            $feed->enable_cache(false);
-            $feed->set_feed_url($source);
-
-            $feed->set_useragent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-
-            $feed->init();
-            $feed->handle_content_type();
-
-            if ($feed->error()) {
-                throw new Exception("Error fetching feed {$source}: " . $feed->error());
-            }
-
+            $maxRetries = 3;
             $feedArticles = [];
-            foreach ($feed->get_items() as $item) {
-                if ($item->get_date() && $item->get_permalink()) {
-                    $feedArticles[] = [
-                        'title' => (string) $item->get_title(),
-                        'contentSnippet' => strip_tags((string) $item->get_description()),
-                        'link' => (string) $item->get_permalink(),
-                        'pubDate' => (string) $item->get_date('c'), // ISO 8601 format
-                    ];
+
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                try {
+                    $feed = new SimplePie();
+                    $feed->enable_cache(false);
+                    $feed->set_feed_url($source);
+                    $feed->set_timeout(30);
+
+                    $feed->set_useragent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+
+                    $feed->init();
+                    $feed->handle_content_type();
+
+                    if ($feed->error()) {
+                        throw new Exception($feed->error());
+                    }
+
+                    foreach ($feed->get_items() as $item) {
+                        if ($item->get_date() && $item->get_permalink()) {
+                            $feedArticles[] = [
+                                'title' => (string) $item->get_title(),
+                                'contentSnippet' => strip_tags((string) $item->get_description()),
+                                'link' => (string) $item->get_permalink(),
+                                'pubDate' => (string) $item->get_date('c'),
+                            ];
+                        }
+                        $item->__destruct();
+                    }
+
+                    $feed->__destruct();
+                    unset($feed);
+                    break; // Success — exit retry loop
+
+                } catch (Exception $e) {
+                    if (isset($feed)) {
+                        $feed->__destruct();
+                        unset($feed);
+                    }
+
+                    if ($attempt < $maxRetries) {
+                        logger()->warning("Feed {$source} failed (attempt {$attempt}/{$maxRetries}): {$e->getMessage()}. Retrying...");
+                        sleep($attempt * 5); // 5s, 10s, 15s backoff
+                    } else {
+                        logger()->error("Feed {$source} failed after {$maxRetries} attempts: {$e->getMessage()}. Skipping.");
+                    }
                 }
-                $item->__destruct();
             }
 
-            $feed->__destruct();
-            unset($feed);
-
-            // Filter immediately to avoid building a massive array of all articles
+            // Filter immediately to avoid building a massive array
             $goldArticles = array_merge(
                 $goldArticles,
                 $this->filterHighImpactNews($feedArticles, self::GOLD_KEYWORDS, 'title', $twoDaysAgo, $now)
@@ -107,7 +128,6 @@ class DailyNewsService
             );
 
             unset($feedArticles);
-
             gc_collect_cycles();
 
             sleep(1);
@@ -359,7 +379,21 @@ class DailyNewsService
         if (empty($url) || !is_string($url)) {
             return false;
         }
-        return preg_match('/^https?:\/\/.+/i', $url) === 1;
+
+        // Must start with http:// or https://
+        if (preg_match('/^https?:\/\/.+/i', $url) !== 1) {
+            return false;
+        }
+
+        // Reject URLs with broken template variables (e.g., /undefined/undefined/ from ChainGPT)
+        $brokenPatterns = ['/undefined/', '/null/', '/[object'];
+        foreach ($brokenPatterns as $pattern) {
+            if (str_contains($url, $pattern)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private const SYSTEM_MESSAGES = [
