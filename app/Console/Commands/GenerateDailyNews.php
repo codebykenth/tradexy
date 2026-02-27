@@ -28,19 +28,33 @@ class GenerateDailyNews extends Command
      */
     public function handle()
     {
-        $dailyNewsService = new DailyNewsService();
-        $news = $dailyNewsService->generate();
-        $this->info("Daily news generated successfully.");
-        $this->info("Date Range: " . $news['dateRange']);
-        $this->info("Gold Articles: {$news['gold']['count']}");
-        $this->info("Crypto Articles: {$news['crypto']['count']}");
+        try {
+            $dailyNewsService = new DailyNewsService();
+            $news = $dailyNewsService->generate();
+            $this->info("Daily news generated successfully.");
+            $this->info("Date Range: " . $news['dateRange']);
+            $this->info("Gold Articles: {$news['gold']['count']}");
+            $this->info("Crypto Articles: {$news['crypto']['count']}");
 
-        $email = config('services.bybit.user_email');
-        if ($email) {
-            Mail::to($email)->send(new DailyNewsMail($news['aiAnalysis']));
-            $this->info("Daily news mail sent to {$email}.");
-        } else {
-            $this->warn("No Bybit user email configured. Could not send the mail.");
+            $email = config('services.bybit.user_email');
+            if ($email) {
+                Mail::to($email)->send(new DailyNewsMail($news['aiAnalysis']));
+                $this->info("Daily news mail sent to {$email}.");
+            } else {
+                $this->warn("No Bybit user email configured. Could not send the mail.");
+            }
+        } catch (\Exception $e) {
+            $this->error("Daily news generation failed: {$e->getMessage()}");
+
+            $email = config('services.bybit.user_email');
+            if ($email) {
+                Mail::raw("Daily news generation failed:\n\n{$e->getMessage()}\n\nTrace:\n{$e->getTraceAsString()}", function ($message) use ($email) {
+                    $message->to($email)
+                        ->subject('⚠️ Daily News Generation Failed — Tradexy');
+                });
+            }
+
+            return 1;
         }
     }
 }

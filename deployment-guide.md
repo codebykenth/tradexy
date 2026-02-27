@@ -1,6 +1,6 @@
 # Tradexy — Complete Deployment Guide
 
-> **Last updated:** February 19, 2026
+> **Last updated:** February 27, 2026
 > **Server:** xCloud Managed VPS (single server, 3 environments)
 > **Domain:** `tradexy.site` with SSL via Let's Encrypt
 > **Database:** Aiven PostgreSQL (dev), Supabase PostgreSQL (staging/prod)
@@ -313,8 +313,14 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 
 ---
 
-### `docker/php/docker-entrypoint.sh` (Entrypoint script)
-**Purpose:** Runs every time the `app` container starts. Copies all public files (CSS, JS, images) from inside the container to a shared Docker volume so the `nginx` container can serve them. Without this, Nginx has no access to static files.
+### `docker/php/docker-entrypoint.sh` (Entrypoint wrapper script)
+**Purpose:** Runs every time ANY container starts (app, scheduler, queue). Uses the **entrypoint wrapper pattern** to:
+1. Run shared initialization (syncing public files)
+2. Check if a custom `command` was passed from docker-compose
+3. If yes → run that command (scheduler loop, queue worker, etc.)
+4. If no → default to PHP-FPM (for the `app` container)
+
+> ⚠️ **Critical:** Without the `if [ $# -gt 0 ]` check, the `command:` override in docker-compose is silently ignored. The scheduler and queue containers would just run PHP-FPM instead of their intended processes.
 
 ```bash
 #!/bin/sh
@@ -326,9 +332,29 @@ set -e
 echo "Syncing public files to shared volume..."
 cp -r /var/www/public/. /var/www/public-shared/
 
+# If a custom command was passed (e.g. scheduler, queue worker),
+# execute it instead of the default PHP-FPM process.
+if [ $# -gt 0 ]; then
+    echo "Running custom command: $@"
+    exec "$@"
+fi
+
 echo "Starting PHP-FPM..."
 exec php-fpm
 ```
+
+**How Docker combines `ENTRYPOINT` + `command`:**
+
+| Dockerfile | docker-compose | What actually runs |
+|---|---|---|
+| `ENTRYPOINT ["entrypoint.sh"]` | *(no command)* | `entrypoint.sh` → runs PHP-FPM (default) |
+| `ENTRYPOINT ["entrypoint.sh"]` | `command: php artisan queue:work` | `entrypoint.sh php artisan queue:work` → runs queue worker |
+| `ENTRYPOINT ["entrypoint.sh"]` | `command: sh -c "while true; ..."` | `entrypoint.sh sh -c "while true; ..."` → runs scheduler loop |
+
+**Key shell concepts:**
+- `$#` = number of arguments passed to the script
+- `$@` = all arguments as separate strings
+- `exec` = **replaces** the current shell with the new process (required for Docker signal handling)
 
 **How the shared volume works:**
 ```
@@ -407,6 +433,8 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile    # Builds from source locally
     container_name: laravel_app
+    environment:
+      - TZ=Asia/Manila                     # ← Container timezone (matches config/app.php)
     volumes:
       - .:/var/www                         # Live code mount for hot reload
     networks:
@@ -460,6 +488,8 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     env_file: .env                                       # ← Loads .env into the container
+    environment:
+      - TZ=Asia/Manila                                   # ← Container timezone
     volumes:
       - app_storage_dev:/var/www/storage                  # ← Persistent storage (logs, uploads)
       - app_public_dev:/var/www/public-shared             # ← Entrypoint copies public files here
@@ -486,6 +516,8 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     env_file: .env
+    environment:
+      - TZ=Asia/Manila
     volumes:
       - app_storage_dev:/var/www/storage
     depends_on:
@@ -501,6 +533,8 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     env_file: .env
+    environment:
+      - TZ=Asia/Manila
     volumes:
       - app_storage_dev:/var/www/storage
     depends_on:
@@ -526,14 +560,17 @@ volumes:
 - `--sleep=3` — queue checks for new jobs every 3 seconds when idle
 - `--tries=3` — retry failed jobs up to 3 times
 - `--max-time=3600` — restart the worker every hour (prevents memory leaks)
+- `TZ=Asia/Manila` — forces the container's system clock to Philippine time, ensuring schedules like `dailyAt('08:00')` fire at 8 AM PHT regardless of the host OS timezone
+
+> ⚠️ **Important:** The `command:` in docker-compose only works because `docker-entrypoint.sh` checks for arguments (`if [ $# -gt 0 ]`) and runs them via `exec "$@"`. Without this check, the entrypoint ignores the command and always starts PHP-FPM. See the [entrypoint script section](#docker-entrypoint) for details.
 
 ---
 
 ### `docker-compose.staging.yml` (Staging server)
-**Purpose:** Same as dev but for **staging**. Port `127.0.0.1:8081`. Uses Supabase DB. Tag `:staging`. Uses `app_public_staging` volume. Includes `scheduler` and `queue` containers.
+**Purpose:** Same as dev but for **staging**. Port `127.0.0.1:8081`. Uses Supabase DB. Tag `:staging`. Uses `app_public_staging` volume. Includes `scheduler` and `queue` containers. All services have `TZ=Asia/Manila`.
 
 ### `docker-compose.prod.yml` (Production server)
-**Purpose:** Same but for **production**. Port `127.0.0.1:8082`. Uses Supabase DB. Tag `:main`. Uses `app_public_prod` volume. Includes `scheduler` and `queue` containers.
+**Purpose:** Same but for **production**. Port `127.0.0.1:8082`. Uses Supabase DB. Tag `:main`. Uses `app_public_prod` volume. Includes `scheduler` and `queue` containers. All services have `TZ=Asia/Manila`.
 
 ---
 
@@ -1061,6 +1098,8 @@ docker system prune -af       # Remove everything unused
 | Scheduler not running | Check logs: `docker-compose -f docker-compose.<env>.yml logs scheduler`. If not found, ensure `scheduler` service is defined in the compose file and redeploy. |
 | Queue worker not processing jobs | Check logs: `docker-compose -f docker-compose.<env>.yml logs queue`. Ensure `QUEUE_CONNECTION` is set to `database` (or `redis`) in `.env`, not `sync`. |
 | Scheduler/queue container keeps restarting | Check for PHP errors: `docker-compose -f docker-compose.<env>.yml logs --tail=50 scheduler`. Common cause: missing database connection or uncaught exception. |
+| Scheduler/queue shows "Starting PHP-FPM" instead of running commands | The `docker-entrypoint.sh` is missing the argument check. It must have `if [ $# -gt 0 ]; then exec "$@"; fi` before `exec php-fpm`, otherwise Docker's `command:` override from docker-compose is silently ignored. See the [entrypoint script section](#docker-entrypoint). Rebuild the image and redeploy after fixing. |
+| Schedule runs at wrong time (timezone mismatch) | Docker containers default to UTC. Add `environment: [TZ=Asia/Manila]` to all services in docker-compose, AND add `->timezone('Asia/Manila')` to scheduled commands in `routes/console.php`. Verify with `docker exec <container> date`. |
 
 ### "Vite manifest not found"
 **Error:** `Vite manifest not found at: /var/www/public/build/manifest.json`
