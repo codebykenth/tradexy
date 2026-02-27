@@ -180,7 +180,7 @@ class DailyNewsService
         $output = Http::withHeaders([
             "x-goog-api-key" => config('services.gemini.key'),
             "Content-Type" => "application/json"
-        ])->post(
+        ])->timeout(300)->retry(3, 10000)->post(
                 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent',
                 [
                     "system_instruction" => [
