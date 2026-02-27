@@ -14,7 +14,9 @@
                     </svg>
                     <p>Edit Log</p>
                 </a>
-                <button class="btn btn-error">
+
+                <button type="button" class="btn btn-error"
+                    onclick="event.stopPropagation(); document.getElementById('delete_confirmation_modal_{{ $trade->id }}').showModal()">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="size-5">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -24,6 +26,27 @@
                 </button>
             </div>
         </div>
+        <!-- Delete Confirmation Modal -->
+        <dialog id="delete_confirmation_modal_{{ $trade->id }}" class="modal">
+            <div class="modal-box">
+                <h3 class="text-lg font-bold">Confirm Deletion</h3>
+                <p class="py-4">Are you sure you want to delete this trade entry? This action cannot be undone.</p>
+                <div class="modal-action">
+                    <!-- method="dialog" closes the modal without a page refresh -->
+                    <form method="dialog">
+                        <button class="btn">Cancel</button>
+                    </form>
+                    <form action="{{ route('trades.destroy', $trade->id) }}" method="post">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-error" type="submit">Delete</button>
+                    </form>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
         <div class="flex gap-4">
             <!-- Left -->
             <div class="bg-gray-100 rounded-lg p-8 mt-8 w-2/3 space-y-4">
@@ -117,7 +140,8 @@
                     </div>
                     <div>
                         <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Quantity</p>
-                        <p>{{ $trade->quantity !== null ? (strpos((string) $trade->quantity, '.') !== false ? rtrim(rtrim((string) $trade->quantity, '0'), '.') : $trade->quantity) : 'N/A' }}</p>
+                        <p>{{ $trade->quantity !== null ? (strpos((string) $trade->quantity, '.') !== false ? rtrim(rtrim((string) $trade->quantity, '0'), '.') : $trade->quantity) : 'N/A' }}
+                        </p>
                     </div>
 
                     <div>

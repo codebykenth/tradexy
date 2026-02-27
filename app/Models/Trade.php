@@ -16,8 +16,6 @@ class Trade extends Model
         'symbol',
         'entry_side',
         'exit_side',
-        'entry_price',
-        'exit_price',
         'quantity',
         'cum_entry_value',
         'cum_exit_value',

@@ -36,16 +36,17 @@ class BalanceController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate(
-            [
-                'date' => 'date|required',
-                'wallet_balance' => 'numeric|required',
-                'total_equity' => 'numeric|required',
-                'cum_realised_pnl' => 'numeric|required'
-            ]
-        );
+        $validated = $request->validate([
+            'date' => ['required', 'date', 'before_or_equal:tomorrow'],
+            'wallet_balance' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
+            'total_equity' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
+            'cum_realised_pnl' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
+        ]);
 
-        Balance::create($validated);
+        Balance::create([
+            'user_id' => Auth::id(),
+            ...$validated
+        ]);
 
         return redirect()->route('balances.index');
     }
@@ -55,7 +56,7 @@ class BalanceController extends Controller
      */
     public function show(string $id)
     {
-        $balance = Balance::findOrFail($id);
+        $balance = Balance::where('user_id', Auth::id())->findOrFail($id);
         return view('balances.show', ['balance' => $balance]);
     }
 
@@ -72,16 +73,14 @@ class BalanceController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $validated = $request->validate(
-            [
-                'date' => 'date',
-                'wallet_balance' => 'numeric',
-                'total_equity' => 'numeric',
-                'cum_realised_pnl' => 'numeric'
-            ]
-        );
+        $validated = $request->validate([
+            'date' => ['required', 'date', 'before_or_equal:tomorrow'],
+            'wallet_balance' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
+            'total_equity' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
+            'cum_realised_pnl' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
+        ]);
 
-        $balance = Balance::findOrFail($id);
+        $balance = Balance::where('user_id', Auth::id())->findOrFail($id);
         $balance->update($validated);
 
         return redirect()->route('balances.index');
@@ -92,7 +91,7 @@ class BalanceController extends Controller
      */
     public function destroy(string $id)
     {
-        $balance = Balance::findOrFail($id);
+        $balance = Balance::where('user_id', Auth::id())->findOrFail($id);
         $balance->delete();
 
         return redirect()->route('balances.index');

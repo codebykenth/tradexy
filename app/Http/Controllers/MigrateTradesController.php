@@ -56,8 +56,6 @@ class MigrateTradesController extends Controller
                     'symbol' => $old['symbol'],
                     'entry_side' => strtolower($old['entry_side']),
                     'exit_side' => strtolower($old['exit_side']),
-                    'entry_price' => $old['avg_entry_price'],
-                    'exit_price' => $old['avg_exit_price'],
                     'quantity' => $old['qty'] ?? $old['closed_size'],
                     'cum_entry_value' => $old['cum_entry_value'],
                     'cum_exit_value' => $old['cum_exit_value'],

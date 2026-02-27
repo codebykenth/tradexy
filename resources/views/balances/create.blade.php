@@ -10,7 +10,7 @@
                 <a href="{{ route('balances.index') }}"><- Back to balances</a>
             </div>
         </div>
-        <form action="{{ route('balances.store') }}" method="post" class="bg-gray-100 rounded-lg p-8 my-8">
+        <form action="{{ route('balances.store') }}" method="post" class="bg-gray-100 rounded-lg p-8 my-8" id="form">
             @csrf
             <div class="">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -72,3 +72,5 @@
         </form>
     </div>
 </x-layouts.app>
+
+@include('components.form-dirty-state-check')

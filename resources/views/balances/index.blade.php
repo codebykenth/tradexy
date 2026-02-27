@@ -73,12 +73,19 @@
             <!-- Delete Confirmation Modal -->
             <dialog id="delete_confirmation_modal_{{ $balance->id }}" class="modal">
                 <div class="modal-box">
-                    <h2>Are you sure you want to delete this balance entry?</h2>
-                    <form action="{{ route('balances.destroy', $balance->id) }}" method="post" class="flex flex-end">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-error" type="submit">Delete</button>
-                    </form>
+                    <h3 class="text-lg font-bold">Confirm Deletion</h3>
+                    <p class="py-4">Are you sure you want to delete this balance entry? This action cannot be undone.</p>
+                    <div class="modal-action">
+                        <!-- method="dialog" closes the modal without a page refresh -->
+                        <form method="dialog">
+                            <button class="btn">Cancel</button>
+                        </form>
+                        <form action="{{ route('balances.destroy', $balance->id) }}" method="post">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-error" type="submit">Delete</button>
+                        </form>
+                    </div>
                 </div>
                 <form method="dialog" class="modal-backdrop">
                     <button>close</button>
@@ -100,6 +107,8 @@
                         </p>
                     </div>
                 </div>
+                <form method="dialog" class="modal-backdrop">
+                    <button>close</button>
                 </form>
             </dialog>
 
@@ -107,7 +116,7 @@
             <dialog id="edit_modal_{{ $balance->id }}" class="modal text-left">
                 <div class="modal-box w-11/12 max-w-4xl">
                     <h3 class="text-lg font-bold">Edit Balance Entry</h3>
-                    <form action="{{ route('balances.update', $balance->id) }}" method="post" class="mt-4">
+                    <form action="{{ route('balances.update', $balance->id) }}" method="post" class="mt-4" id="form">
                         @csrf
                         @method('PUT')
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -164,3 +173,5 @@
         @endforeach
     </div>
 </x-layouts.app>
+
+@include('components.form-dirty-state-check')

@@ -22,5 +22,5 @@
 </div>
 
 <input type="hidden" name="remove_chart_picture" id="remove-chart-input" value="0">
-<input type="file" id="chart_screenshot" name="chart_screenshot"
+<input type="file" id="chart_screenshot" name="chart_picture"
     class="file-input file-input-primary w-full max-w-xs block mt-2" accept="image/*" />

@@ -8,7 +8,7 @@
                 <div
                     class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-gray-100 p-2 rounded-lg border border-gray-300">
                     <span class="text-sm font-semibold text-gray-600 px-2">Bulk Actions:</span>
-                    <select class="select select-sm border-gray-300">
+                    <select class="select select-sm border-gray-300" name="timeframe">
                         <option disabled selected>Assign timeframe</option>
                         <option>1m</option>
                         <option>5m</option>
@@ -18,7 +18,7 @@
                         <option>4hr</option>
                         <option>1d</option>
                     </select>
-                    <select class="select select-sm border-gray-300">
+                    <select class="select select-sm border-gray-300" name="strategy_id">
                         <option disabled selected>Assign strategy</option>
                         <option>Breakout</option>
                         <option>Breakdown</option>
