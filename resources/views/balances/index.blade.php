@@ -119,6 +119,7 @@
                     <form action="{{ route('balances.update', $balance->id) }}" method="post" class="mt-4" id="form">
                         @csrf
                         @method('PUT')
+                        <x-errors />
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <fieldset class="fieldset w-full">

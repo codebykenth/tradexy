@@ -19,10 +19,9 @@ class Balance extends Model
         'date' => 'datetime'
     ];
 
-    public function getLocalDateAttribute()
+    public function getLocalDateAttribute(): string
     {
-        return Carbon::createFromFormat('Y-m-d H:i:s', $this->attributes['date'], 'UTC')
-            ->timezone(config('app.timezone'))
-            ->format('M d, Y');
+        // $this->date is already a Carbon instance in app timezone (via $casts)
+        return $this->date->format('M d, Y');
     }
 }

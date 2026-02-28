@@ -14,16 +14,7 @@
             @csrf
             @method('PUT')
 
-            @if ($errors->any())
-                <div class="alert alert-error mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            <x-errors />
 
             <!-- General Information -->
             <div class="mb-10">
@@ -38,8 +29,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Symbol</legend>
-                            <input type="text" class="input w-full @error('symbol') input-error @enderror" placeholder="BTCUSDT" name="symbol"
-                                value="{{ old('symbol', $trade->symbol ?? '') }}" />
+                            <input type="text" class="input w-full @error('symbol') input-error @enderror"
+                                placeholder="BTCUSDT" name="symbol" value="{{ old('symbol', $trade->symbol ?? '') }}" />
                             @error('symbol') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
@@ -48,9 +39,11 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Open Trade Date Time</legend>
-                            <input type="datetime-local" class="input w-full @error('open_datetime') input-error @enderror" name="open_datetime"
+                            <input type="datetime-local"
+                                class="input w-full @error('open_datetime') input-error @enderror" name="open_datetime"
                                 value="{{ old('open_datetime', $trade->open_datetime ?? '') }}" />
-                            @error('open_datetime') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('open_datetime') <span class="text-error mt-1 text-sm">{{ $message }}</span>
+                            @enderror
                         </fieldset>
                     </div>
                     <div>
@@ -58,9 +51,12 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Close Trade Date Time</legend>
-                            <input type="datetime-local" class="input w-full @error('close_datetime') input-error @enderror" name="close_datetime"
+                            <input type="datetime-local"
+                                class="input w-full @error('close_datetime') input-error @enderror"
+                                name="close_datetime"
                                 value="{{ old('close_datetime', $trade->close_datetime ?? '') }}" />
-                            @error('close_datetime') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('close_datetime') <span class="text-error mt-1 text-sm">{{ $message }}</span>
+                            @enderror
                         </fieldset>
                     </div>
                     <div>
@@ -114,7 +110,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Entry Side</legend>
-                            <select class="select w-full @error('entry_side') input-error @enderror" name="entry_side" id="entry-side">
+                            <select class="select w-full @error('entry_side') input-error @enderror" name="entry_side"
+                                id="entry-side">
                                 <option disabled selected value="{{ old('entry_side', $trade->entry_side ?? null) }}">
                                     {{ $trade->entry_side ? ucfirst($trade->entry_side) : 'Select entry side' }}
                                 </option>
@@ -129,7 +126,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Leverage (X)</legend>
-                            <input type="number" placeholder="" class="input w-full @error('leverage') input-error @enderror" name="leverage"
+                            <input type="number" placeholder=""
+                                class="input w-full @error('leverage') input-error @enderror" name="leverage"
                                 value="{{ old('leverage', $trade->leverage ?? null) }}" />
                             @error('leverage') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>
@@ -139,10 +137,13 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Avg Entry Price</legend>
-                            <input type="number" placeholder="" class="input w-full @error('avg_entry_price') input-error @enderror" name="avg_entry_price"
+                            <input type="number" placeholder=""
+                                class="input w-full @error('avg_entry_price') input-error @enderror"
+                                name="avg_entry_price"
                                 value="{{ old('avg_entry_price', $trade->avg_entry_price ?? null) }}"
                                 id="avg-entry-price" />
-                            @error('avg_entry_price') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('avg_entry_price') <span class="text-error mt-1 text-sm">{{ $message }}</span>
+                            @enderror
                         </fieldset>
                     </div>
                     <div>
@@ -150,7 +151,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Quantity</legend>
-                            <input type="number" placeholder="" class="input quantity w-full @error('quantity') input-error @enderror" name="quantity"
+                            <input type="number" placeholder=""
+                                class="input quantity w-full @error('quantity') input-error @enderror" name="quantity"
                                 value="{{ old('quantity', $trade->quantity ?? null) }}" />
                             @error('quantity') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>
@@ -169,9 +171,12 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Stoploss</legend>
-                            <input type="number" placeholder="" class="input w-full @error('stop_loss_price') input-error @enderror" name="stop_loss_price"
+                            <input type="number" placeholder=""
+                                class="input w-full @error('stop_loss_price') input-error @enderror"
+                                name="stop_loss_price"
                                 value="{{ old('stop_loss_price', $trade->stop_loss_price ?? null) }}" />
-                            @error('stop_loss_price') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('stop_loss_price') <span class="text-error mt-1 text-sm">{{ $message }}</span>
+                            @enderror
                         </fieldset>
                     </div>
                     <div>
@@ -179,9 +184,12 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Take Profit</legend>
-                            <input type="number" placeholder="" class="input w-full @error('take_profit_price') input-error @enderror" name="take_profit_price"
+                            <input type="number" placeholder=""
+                                class="input w-full @error('take_profit_price') input-error @enderror"
+                                name="take_profit_price"
                                 value="{{ old('take_profit_price', $trade->take_profit_price ?? null) }}" />
-                            @error('take_profit_price') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('take_profit_price') <span class="text-error mt-1 text-sm">{{ $message }}</span>
+                            @enderror
                         </fieldset>
                     </div>
                     <div>
@@ -189,7 +197,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Emotion (Entry)</legend>
-                            <input type="text" placeholder="e.g. FOMO, Confident" class="input w-full @error('entry_emotion') input-error @enderror" name="entry_emotion"
+                            <input type="text" placeholder="e.g. FOMO, Confident"
+                                class="input w-full @error('entry_emotion') input-error @enderror" name="entry_emotion"
                                 list="entry-emotions"
                                 value="{{ old('entry_emotion', $trade->entry_emotion ?? null) }}" />
 
@@ -203,7 +212,8 @@
                                 <option value="Bored">
                                 <option value="Revenge"></option>
                             </datalist>
-                            @error('entry_emotion') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('entry_emotion') <span class="text-error mt-1 text-sm">{{ $message }}</span>
+                            @enderror
                         </fieldset>
                     </div>
 
@@ -217,7 +227,9 @@
 
                         @forelse ($entryReasons as $reason)
                             <div class="flex items-center gap-2 w-full reason-container">
-                                <input type="text" placeholder="Add reason" class="input flex-grow @error('entry_reason.' . $loop->index) input-error @enderror" name="entry_reason[]"
+                                <input type="text" placeholder="Add reason"
+                                    class="input flex-grow @error('entry_reason.' . $loop->index) input-error @enderror"
+                                    name="entry_reason[]"
                                     value="{{ old('entry_reason.' . $loop->index, $reason->reason) }}" />
                                 <button type="button" class="btn btn-square btn-error btn-outline delete-btn"
                                     aria-label="Delete Reason">
@@ -228,12 +240,14 @@
                                     </svg>
                                 </button>
                             </div>
-                            @error('entry_reason.' . $loop->index) <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('entry_reason.' . $loop->index) <span
+                            class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         @empty
                             {{-- Fallback: always show at least one empty input --}}
                             <div class="flex items-center gap-2 w-full reason-container">
-                                <input type="text" placeholder="Add reason" class="input flex-grow @error('entry_reason.0') input-error @enderror" name="entry_reason[]"
-                                    value="{{ old('entry_reason.0') }}" />
+                                <input type="text" placeholder="Add reason"
+                                    class="input flex-grow @error('entry_reason.0') input-error @enderror"
+                                    name="entry_reason[]" value="{{ old('entry_reason.0') }}" />
                                 <button type="button" class="btn btn-square btn-error btn-outline delete-btn"
                                     aria-label="Delete Reason">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -265,7 +279,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Exit Side</legend>
-                            <select class="select w-full @error('exit_side') input-error @enderror" name="exit_side" id="exit-side">
+                            <select class="select w-full @error('exit_side') input-error @enderror" name="exit_side"
+                                id="exit-side">
                                 <option disabled selected value="{{ old('exit_side', $trade->exit_side ?? null) }}">
                                     {{ ucfirst($trade->exit_side) }}
                                 </option>
@@ -280,10 +295,13 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Avg Exit Price</legend>
-                            <input type="number" placeholder="" class="input w-full @error('avg_exit_price') input-error @enderror" name="avg_exit_price"
+                            <input type="number" placeholder=""
+                                class="input w-full @error('avg_exit_price') input-error @enderror"
+                                name="avg_exit_price"
                                 value="{{ old('avg_exit_price', $trade->avg_exit_price ?? null) }}"
                                 id="avg-exit-price" />
-                            @error('avg_exit_price') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('avg_exit_price') <span class="text-error mt-1 text-sm">{{ $message }}</span>
+                            @enderror
                         </fieldset>
                     </div>
                     <div>
@@ -291,8 +309,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Closed Size</legend>
-                            <input type="number" placeholder="" class="input w-full" disabled value="{{ $trade->quantity }}"
-                                id="closed-size" />
+                            <input type="number" placeholder="" class="input w-full" disabled
+                                value="{{ $trade->quantity }}" id="closed-size" />
                         </fieldset>
                     </div>
                     <div>
@@ -309,7 +327,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Emotion (Exit)</legend>
-                            <input type="text" placeholder="e.g. FOMO, Confident" class="input w-full @error('exit_emotion') input-error @enderror" name="exit_emotion"
+                            <input type="text" placeholder="e.g. FOMO, Confident"
+                                class="input w-full @error('exit_emotion') input-error @enderror" name="exit_emotion"
                                 list="exit-emotions" value="{{ old('exit_emotion', $trade->exit_emotion ?? null) }}" />
 
                             <datalist id="exit-emotions">
@@ -336,7 +355,9 @@
 
                         @forelse ($exitReasons as $reason)
                             <div class="flex items-center gap-2 w-full reason-container">
-                                <input type="text" placeholder="Add reason" class="input flex-grow @error('exit_reason.' . $loop->index) input-error @enderror" name="exit_reason[]"
+                                <input type="text" placeholder="Add reason"
+                                    class="input flex-grow @error('exit_reason.' . $loop->index) input-error @enderror"
+                                    name="exit_reason[]"
                                     value="{{ old('exit_reason.' . $loop->index, $reason->reason) }}" />
                                 <button type="button" class="btn btn-square btn-error btn-outline delete-btn"
                                     aria-label="Delete Reason">
@@ -347,12 +368,14 @@
                                     </svg>
                                 </button>
                             </div>
-                            @error('exit_reason.' . $loop->index) <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('exit_reason.' . $loop->index) <span
+                            class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         @empty
                             {{-- Fallback: always show at least one empty input --}}
                             <div class="flex items-center gap-2 w-full reason-container">
-                                <input type="text" placeholder="Add reason" class="input flex-grow @error('exit_reason.0') input-error @enderror" name="exit_reason[]"
-                                    value="{{ old('exit_reason.0') }}" />
+                                <input type="text" placeholder="Add reason"
+                                    class="input flex-grow @error('exit_reason.0') input-error @enderror"
+                                    name="exit_reason[]" value="{{ old('exit_reason.0') }}" />
                                 <button type="button" class="btn btn-square btn-error btn-outline delete-btn"
                                     aria-label="Delete Reason">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -384,7 +407,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Open Fee</legend>
-                            <input type="number" placeholder="" class="input w-full @error('open_fees') input-error @enderror" name="open_fees"
+                            <input type="number" placeholder=""
+                                class="input w-full @error('open_fees') input-error @enderror" name="open_fees"
                                 value="{{ old('open_fees', $trade->open_fees ?? null) }}" id="open-fees" />
                             @error('open_fees') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>
@@ -394,7 +418,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Close Fee</legend>
-                            <input type="number" placeholder="" class="input w-full @error('close_fees') input-error @enderror" name="close_fees"
+                            <input type="number" placeholder=""
+                                class="input w-full @error('close_fees') input-error @enderror" name="close_fees"
                                 value="{{ old('close_fees', $trade->close_fees ?? null) }}" id="close-fees" />
                             @error('close_fees') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>
@@ -433,7 +458,8 @@
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Chart Screenshot</legend>
                             @include('trades.partials.chart-upload')
-                            @error('chart_picture') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                            @error('chart_picture') <span class="text-error mt-1 text-sm">{{ $message }}</span>
+                            @enderror
                         </fieldset>
                     </div>
                     <div class="w-full">
@@ -445,7 +471,8 @@
 
                             @forelse ($existingLessons as $lesson)
                                 <div class="flex items-center gap-2 w-full reason-container">
-                                    <input type="text" placeholder="What did you learn?" class="input flex-grow @error('lesson.' . $loop->index) input-error @enderror"
+                                    <input type="text" placeholder="What did you learn?"
+                                        class="input flex-grow @error('lesson.' . $loop->index) input-error @enderror"
                                         name="lesson[]" value="{{ old('lesson.' . $loop->index, $lesson->lesson) }}" />
                                     <button type="button" class="btn btn-square btn-error btn-outline delete-btn"
                                         aria-label="Delete Reason">
@@ -456,12 +483,14 @@
                                         </svg>
                                     </button>
                                 </div>
-                                @error('lesson.' . $loop->index) <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                                @error('lesson.' . $loop->index) <span class="text-error mt-1 text-sm">{{ $message }}</span>
+                                @enderror
                             @empty
                                 {{-- Fallback: always show at least one empty input --}}
                                 <div class="flex items-center gap-2 w-full reason-container">
-                                    <input type="text" placeholder="What did you learn?" class="input flex-grow @error('lesson.0') input-error @enderror"
-                                        name="lesson[]" value="{{ old('lesson.0') }}" />
+                                    <input type="text" placeholder="What did you learn?"
+                                        class="input flex-grow @error('lesson.0') input-error @enderror" name="lesson[]"
+                                        value="{{ old('lesson.0') }}" />
                                     <button type="button" class="btn btn-square btn-error btn-outline delete-btn"
                                         aria-label="Delete Reason">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

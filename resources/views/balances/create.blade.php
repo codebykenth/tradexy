@@ -12,6 +12,7 @@
         </div>
         <form action="{{ route('balances.store') }}" method="post" class="bg-gray-100 rounded-lg p-8 my-8" id="form">
             @csrf
+            <x-errors />
             <div class="">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
@@ -20,7 +21,7 @@
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Date & Time
                             </legend>
-                            <input type="datetime-local" class="input w-full" name="date"/>
+                            <input type="datetime-local" class="input w-full" name="date" />
                             <!-- Put Error Here -->
                         </fieldset>
                     </div>
@@ -29,7 +30,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Wallet Balance</legend>
-                            <input type="number" step="any" class="input w-full" placeholder="" name="wallet_balance"/>
+                            <input type="number" step="any" class="input w-full" placeholder="" name="wallet_balance" />
                             <!-- Put Error Here -->
                         </fieldset>
                     </div>
@@ -38,7 +39,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Unrealized PnL (Optional)</legend>
-                            <input type="number" step="any" class="input w-full" placeholder=""/>
+                            <input type="number" step="any" class="input w-full" placeholder="" />
                             <!-- Put Error Here -->
                         </fieldset>
                     </div>
@@ -47,7 +48,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Total Equity</legend>
-                            <input type="number" step="any" class="input w-full" placeholder="" name="total_equity"/>
+                            <input type="number" step="any" class="input w-full" placeholder="" name="total_equity" />
                             <!-- Put Error Here -->
                         </fieldset>
                     </div>
@@ -56,7 +57,8 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Cuumulative Realized PnL</legend>
-                            <input type="number" step="any" class="input w-full" placeholder="" name="cum_realised_pnl"/>
+                            <input type="number" step="any" class="input w-full" placeholder=""
+                                name="cum_realised_pnl" />
                             <!-- Put Error Here -->
                         </fieldset>
                     </div>

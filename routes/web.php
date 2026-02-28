@@ -49,14 +49,12 @@ Route::middleware(['throttle:read'])->group(function () {
     Route::middleware('auth')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::resource('trades', TradeController::class)->only(['index', 'show', 'create', 'edit']);
+        Route::resource('balances', BalanceController::class)->only(['index', 'create']);
     });
-
-    Route::get('/test-account-balance', [BalanceController::class, 'testBalance']);
-    Route::get('/test-trades', [TradeController::class, 'testTrades']);
 });
 
 // Write Routes (Create, Update Delete)
 Route::middleware(['throttle:write', 'auth'])->group(function () {
     Route::resource('trades', TradeController::class)->only(['store', 'update', 'destroy']);
+    Route::resource('balances', BalanceController::class)->only(['store', 'update', 'destroy']);
 });
-Route::resource('balances', BalanceController::class);

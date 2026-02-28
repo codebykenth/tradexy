@@ -1,32 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BalanceRequest;
 use App\Models\Balance;
 use App\Services\BybitService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
-class BalanceController extends Controller
+final class BalanceController extends Controller
 {
-    public function __construct(private BybitService $bybitService)
+    public function __construct(private readonly BybitService $bybitService)
     {
     }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): View
     {
         $balances = Balance::where('user_id', Auth::id())->latest('date')->paginate(10);
+
         return view('balances.index', [
-            'balances' => $balances
+            'balances' => $balances,
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): View
     {
         return view('balances.create');
     }
@@ -34,74 +40,42 @@ class BalanceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(BalanceRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'date' => ['required', 'date', 'before_or_equal:tomorrow'],
-            'wallet_balance' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
-            'total_equity' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
-            'cum_realised_pnl' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
-        ]);
+        $validated = $request->validated();
 
         Balance::create([
             'user_id' => Auth::id(),
-            ...$validated
+            ...$validated,
         ]);
 
-        return redirect()->route('balances.index');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $balance = Balance::where('user_id', Auth::id())->findOrFail($id);
-        return view('balances.show', ['balance' => $balance]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        return view('balances.edit');
+        return redirect()->route('balances.index')->with('success', 'Balance successfully added.');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(BalanceRequest $request, string $id): RedirectResponse
     {
-        $validated = $request->validate([
-            'date' => ['required', 'date', 'before_or_equal:tomorrow'],
-            'wallet_balance' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
-            'total_equity' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
-            'cum_realised_pnl' => ['required', 'numeric', 'min:-9999999999', 'max:9999999999'],
-        ]);
+        $validated = $request->validated();
 
-        $balance = Balance::where('user_id', Auth::id())->findOrFail($id);
-        $balance->update($validated);
+        $this->findOwnedBalance($id)->update($validated);
 
-        return redirect()->route('balances.index');
+        return redirect()->route('balances.index')->with('success', 'Balance updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): RedirectResponse
     {
-        $balance = Balance::where('user_id', Auth::id())->findOrFail($id);
-        $balance->delete();
+        $this->findOwnedBalance($id)->delete();
 
-        return redirect()->route('balances.index');
+        return redirect()->route('balances.index')->with('success', 'Balance deleted successfully.');
     }
 
-    public function testBalance()
+    private function findOwnedBalance(string $id): Balance
     {
-        $balance = $this->bybitService->getAccountBalance()['result']['list'][0];
-        $usdtData = $balance['coin'][0];
-
-        return $usdtData;
+        return Balance::where('user_id', Auth::id())->findOrFail($id);
     }
 }
