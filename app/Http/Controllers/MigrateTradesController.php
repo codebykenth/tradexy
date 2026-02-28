@@ -14,13 +14,13 @@ class MigrateTradesController extends Controller
         $apiToken = config('services.old_journal.token');
 
         if (!$apiUrl || !$apiToken) {
-            return response()->json(['error' => 'OLD_JOURNAL_API_URL and OLD_JOURNAL_API_TOKEN not set in .env'], 500);
+            return response()->json(['error' => 'Migration API configuration is missing.'], 500);
         }
 
         $user = User::where('email', config('services.bybit.user_email'))->first();
 
         if (!$user) {
-            return response()->json(['error' => 'User not found. Set BYBIT_USER_EMAIL in .env'], 404);
+            return response()->json(['error' => 'Migration user not found.'], 404);
         }
 
         $response = Http::withToken($apiToken)->get("$apiUrl/trade-logs");
@@ -53,6 +53,7 @@ class MigrateTradesController extends Controller
                     'order_id' => $old['order_id'],
                 ],
                 [
+                    'strategy_id' => $old['strategy_id'],
                     'symbol' => $old['symbol'],
                     'entry_side' => strtolower($old['entry_side']),
                     'exit_side' => strtolower($old['exit_side']),

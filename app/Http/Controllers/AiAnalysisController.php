@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Trade;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 class AiAnalysisController extends Controller
 {
     public function analyze($id)
     {
-        try {
-            $trade = Trade::with(['strategy', 'lessons', 'reasons'])->findOrFail($id);
+            $trade = Trade::with(['strategy', 'lessons', 'reasons'])->where('user_id', Auth::id())->findOrFail($id);
 
             $lessons = $trade->lessons->pluck('lesson')->implode(', ');
             $entryReasons = $trade->reasons->where('type', 'entry')->pluck('reason')->implode(', ');
@@ -121,8 +121,6 @@ class AiAnalysisController extends Controller
 
             return redirect()->back()->with('success', 'AI Analysis generated successfully!');
 
-        } catch (Exception $e) {
-            dd($e->getMessage());
-        }
+     
     }
 }

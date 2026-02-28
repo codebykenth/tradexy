@@ -29,76 +29,90 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
-        // Validation errors 
+        // Returns real error in dev, friendly message in production
+        $devMessage = fn(Throwable $e, string $fallback): string =>
+            app()->isProduction() ? $fallback : $e->getMessage();
+
+        // Validation errors — let Laravel handle normally
         $exceptions->renderable(function (ValidationException $e) {
             return null;
         });
 
-        // Authentication (not logged in) 
-        $exceptions->renderable(function (AuthenticationException $e) {
-            return redirect()->route('login')->with('error', 'Please log in to continue.');
+        // Authentication (not logged in)
+        $exceptions->renderable(function (AuthenticationException $e) use ($devMessage) {
+            return redirect()->route('login')
+                ->with('error', $devMessage($e, 'Please log in to continue.'));
         });
 
-        // Authorization (forbidden / policy denied) 
-        $exceptions->renderable(function (AuthorizationException $e) {
-            return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+        // Authorization (forbidden / policy denied)
+        $exceptions->renderable(function (AuthorizationException $e) use ($devMessage) {
+            return redirect()->back()
+                ->with('error', $devMessage($e, 'You are not authorized to perform this action.'));
         });
 
-        // Record not found (findOrFail) 
-        $exceptions->renderable(function (ModelNotFoundException $e) {
-            return redirect()->back()->with('error', 'The requested record was not found.');
+        // Record not found (findOrFail)
+        $exceptions->renderable(function (ModelNotFoundException $e) use ($devMessage) {
+            return redirect()->back()
+                ->with('error', $devMessage($e, 'The requested record was not found.'));
         });
 
         // CSRF token mismatch (expired session)
-        $exceptions->renderable(function (TokenMismatchException $e) {
-            return redirect()->back()->withInput()->with('error', 'Your session has expired. Please try again.');
+        $exceptions->renderable(function (TokenMismatchException $e) use ($devMessage) {
+            return redirect()->back()->withInput()
+                ->with('error', $devMessage($e, 'Your session has expired. Please try again.'));
         });
 
-        // Rate limiting (too many requests) 
-        $exceptions->renderable(function (ThrottleRequestsException $e) {
-            return redirect()->back()->with('error', 'Too many requests. Please wait a moment and try again.');
+        // Rate limiting (too many requests)
+        $exceptions->renderable(function (ThrottleRequestsException $e) use ($devMessage) {
+            return redirect()->back()
+                ->with('error', $devMessage($e, 'Too many requests. Please wait a moment and try again.'));
         });
 
-        // Upload too large 
-        $exceptions->renderable(function (PostTooLargeException $e) {
-            return redirect()->back()->with('error', 'The uploaded file is too large.');
+        // Upload too large
+        $exceptions->renderable(function (PostTooLargeException $e) use ($devMessage) {
+            return redirect()->back()
+                ->with('error', $devMessage($e, 'The uploaded file is too large.'));
         });
 
-        // Method not allowed (e.g. GET on a POST-only route) 
-        $exceptions->renderable(function (MethodNotAllowedHttpException $e) {
-            return redirect()->back()->with('error', 'This action is not allowed.');
+        // Method not allowed (e.g. GET on a POST-only route)
+        $exceptions->renderable(function (MethodNotAllowedHttpException $e) use ($devMessage) {
+            return redirect()->back()
+                ->with('error', $devMessage($e, 'This action is not allowed.'));
         });
 
-        // 404 — route or resource not found 
-        $exceptions->renderable(function (NotFoundHttpException $e) {
-            return redirect()->back()->with('error', 'Page not found.');
+        // 404 — route or resource not found
+        $exceptions->renderable(function (NotFoundHttpException $e) use ($devMessage) {
+            return redirect()->back()
+                ->with('error', $devMessage($e, 'Page not found.'));
         });
 
-        // Database errors (constraint violations, etc.) 
-        $exceptions->renderable(function (QueryException $e) {
-            return redirect()->back()->withInput()->with('error', 'A database error occurred. Please try again.');
+        // Database errors (constraint violations, etc.)
+        $exceptions->renderable(function (QueryException $e) use ($devMessage) {
+            return redirect()->back()->withInput()
+                ->with('error', $devMessage($e, 'A database error occurred. Please try again.'));
         });
 
-        // Other HTTP exceptions (500, 503, etc.) 
-        $exceptions->renderable(function (HttpException $e) {
-            $message = match ($e->getStatusCode()) {
+        // Other HTTP exceptions (500, 503, etc.)
+        $exceptions->renderable(function (HttpException $e) use ($devMessage) {
+            $fallback = match ($e->getStatusCode()) {
                 403 => 'Access denied.',
                 500 => 'An internal server error occurred.',
                 503 => 'Service is temporarily unavailable. Please try again later.',
                 default => 'An error occurred. Please try again.',
             };
 
-            return redirect()->back()->with('error', $message);
+            return redirect()->back()->with('error', $devMessage($e, $fallback));
         });
 
-        // Generic catch-all (anything unexpected) 
-        $exceptions->renderable(function (Throwable $e) {
-            // Only handle web requests — let API exceptions return JSON
+        // Generic catch-all (anything unexpected)
+        $exceptions->renderable(function (Throwable $e) use ($devMessage) {
             if (request()->expectsJson()) {
                 return null;
             }
 
-            return redirect()->back()->withInput()->with('error', 'Something went wrong. Please try again.');
+            return redirect()->back()->withInput()
+                ->with('error', $devMessage($e, 'Something went wrong. Please try again.'));
         });
 
     })->create();
+

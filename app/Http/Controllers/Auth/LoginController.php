@@ -50,26 +50,30 @@ class LoginController extends Controller
 
     public function redirectToProvider(string $provider)
     {
+        abort_unless(in_array($provider, ['google', 'facebook']), 404);
         return Socialite::driver($provider)->redirect();
     }
 
     public function handleProviderCallback(string $provider)
     {
+        abort_unless(in_array($provider, ['google', 'facebook']), 404);
+
         $socialiteUser = Socialite::driver($provider)->user();
 
-        // Save profile picture of user
-        $profilePictureUrl = match ($provider) {
-            'facebook' => $socialiteUser->getAvatar() . '?type=large&access_token=' . $socialiteUser->token,
-            'google' => $socialiteUser->getAvatar(),
-            default => 'https://via.placeholder.com/150'
-        };
+        // $profilePictureUrl = match ($provider) {
+        //     'facebook' => $socialiteUser->getAvatar() . '?type=large&access_token=' . $socialiteUser->token,
+        //     'google' => $socialiteUser->getAvatar(),
+        //     default => 'https://via.placeholder.com/150'
+        // };
+        // Use avatar URL without embedding access tokens
+        $profilePictureUrl = $socialiteUser->getAvatar();
 
         // Find user, if it is not existing create a new user
         $user = User::firstOrCreate(
             ['email' => $socialiteUser->getEmail()],
             [
                 'name' => $socialiteUser->getName() ?: $socialiteUser->getEmail(),
-                'password' => bcrypt(Str::random(16)), // Generate a random password
+                'password' => bcrypt(Str::random(16)),
                 'email_verified_at' => now(),
                 'profile_picture' => $profilePictureUrl,
                 'provider_id' => $socialiteUser->getId(),
@@ -78,6 +82,7 @@ class LoginController extends Controller
         );
 
         Auth::login($user);
+        request()->session()->regenerate();
 
         return redirect('/dashboard');
     }
