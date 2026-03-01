@@ -55,7 +55,6 @@ class FetchClosedPnl extends Command
 
             if (($response['retCode'] ?? -1) === 0 && isset($response['result']['list'])) {
                 $trades = $response['result']['list'];
-                dump($trades);
             } else {
                 $errors[] = [
                     'error' => $response['retMsg'] ?? 'Unknown error',
@@ -73,6 +72,7 @@ class FetchClosedPnl extends Command
             $created = 0;
             $skipped = 0;
 
+            DB::beginTransaction();
             foreach ($trades as $trade) {
                 // Bybit's "side" is the CLOSING side, so entry is the opposite
                 $closeSide = strtolower($trade['side']) === 'buy' ? 'long' : 'short';
@@ -83,7 +83,6 @@ class FetchClosedPnl extends Command
                 $closeDatetime = Carbon::createFromTimestampMs((int) $trade['updatedTime']);
 
                 // Use firstOrCreate to prevent duplicate trades
-                DB::beginTransaction();
                 $result = Trade::firstOrCreate(
                     [
                         'user_id' => $user->id,
@@ -93,8 +92,6 @@ class FetchClosedPnl extends Command
                         'symbol' => $trade['symbol'],
                         'entry_side' => $entrySide,
                         'exit_side' => $closeSide,
-                        'entry_price' => $trade['avgEntryPrice'],
-                        'exit_price' => $trade['avgExitPrice'],
                         'quantity' => $trade['closedSize'],
                         'cum_entry_value' => $trade['cumEntryValue'],
                         'cum_exit_value' => $trade['cumExitValue'],
