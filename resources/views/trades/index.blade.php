@@ -2,8 +2,13 @@
     <div class="w-full">
         <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
             <div class="relative h-12 mb-4">
-                <a href="{{ route('trades.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">Add
-                    Trade</a>
+                <a href="{{ route('trades.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add Trade
+                </a>
 
                 <div
                     class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-gray-100 p-2 rounded-lg border border-gray-300">
@@ -41,7 +46,7 @@
                 <div class="border border-gray-300 rounded-lg overflow-x-auto">
                     <table class="w-full">
                         <tr
-                            class="border-b border-gray-300 bg-gray-100 h-10 [&>th:first-child]:pl-4 [&>th:last-child]:pr-4">
+                            class="border-b border-gray-300 bg-gray-100 h-10 [&>th:first-child]:pl-4 [&>th:last-child]:pr-4 uppercase text-sm">
                             <th>
                                 <label>
                                     <input type="checkbox" class="all-trade-checkbox size-4" />
@@ -70,7 +75,7 @@
                                     {{ $ownedTrade->symbol }}
                                 </td>
                                 <td>
-
+                                    {{ $ownedTrade->duration }}
                                 </td>
                                 <td>
                                     {{ strpos((string) $ownedTrade->quantity, '.') !== false ? rtrim(rtrim((string) $ownedTrade->quantity, '0'), '.') : $ownedTrade->quantity }}

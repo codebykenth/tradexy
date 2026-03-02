@@ -55,12 +55,20 @@ class MigrateStrategiesController extends Controller
             $order = 0;
             foreach ($ruleTypeMap as $apiField => $ruleType) {
                 if (!empty($strategy[$apiField])) {
-                    StrategyRules::create([
-                        'strategy_id' => $newStrategy->id,
-                        'type' => $ruleType,
-                        'rule' => $strategy[$apiField],
-                        'order' => $order++,
-                    ]);
+                    $fieldValue = $strategy[$apiField];
+
+                    $rulesList = is_array($fieldValue)
+                        ? $fieldValue
+                        : preg_split('/\r\n|\r|\n/', (string) $fieldValue);
+
+                    foreach (array_filter(array_map('trim', $rulesList)) as $ruleText) {
+                        StrategyRules::create([
+                            'strategy_id' => $newStrategy->id,
+                            'type' => $ruleType,
+                            'rule' => $ruleText,
+                            'order' => $order++,
+                        ]);
+                    }
                 }
             }
         }

@@ -106,6 +106,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Generic catch-all (anything unexpected)
         $exceptions->renderable(function (Throwable $e) use ($devMessage) {
+            if ($e instanceof ValidationException) {
+                return null; // Let Laravel map this to $errors variable
+            }
+
             if (request()->expectsJson()) {
                 return null;
             }

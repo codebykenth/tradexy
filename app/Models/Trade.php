@@ -126,6 +126,6 @@ class Trade extends Model
         }
 
         $rr = $reward / $risk;
-        return '1:' . number_format($rr, 2);
+        return number_format($rr, 2);
     }
 }

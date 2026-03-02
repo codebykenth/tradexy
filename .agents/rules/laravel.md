@@ -48,10 +48,10 @@ Laravel 12 trading journal project — follow these rules strictly:
 
 ## DATA INTEGRITY (ACID + Idempotency)
 
-**Atomicity — use `DB::transaction()` for multi-table writes:**
-- Any operation that writes to more than one table (e.g. trade + reasons + lessons) MUST be wrapped in `DB::transaction()`.
-- If any step fails, ALL changes roll back — prevents partial/corrupted state.
-- Example: `DB::transaction(fn() => [$trade->save(), $this->syncReasons(...), $this->syncLessons(...)]);`
+**Atomicity — Global Transaction Middleware:**
+- The application uses `TransactionalRequest` middleware and exception handling in `app.php`.
+- Do NOT use manual `DB::transaction()` wrappers inside controllers.
+- Multi-table writes (e.g. trade + reasons + lessons) are automatically wrapped by the global transaction lifecycle per request.
 
 **External API calls go OUTSIDE the transaction:**
 - HTTP calls (e.g. FreeImage.host upload) cannot be rolled back by the DB.

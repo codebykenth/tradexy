@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class TradeRequest extends FormRequest
 {
@@ -42,6 +43,7 @@ class TradeRequest extends FormRequest
             'open_datetime' => [$creating ? 'required' : 'sometimes', 'date', 'before_or_equal:now'],
             'close_datetime' => ['sometimes', 'nullable', 'date', 'after_or_equal:open_datetime', 'before_or_equal:now'],
             'timeframe' => ['sometimes', 'nullable', 'string', 'in:1m,5m,15m,30m,1hr,4hr,1d'],
+            'strategy_id' => ['sometimes', 'nullable', Rule::exists('strategies', 'id')->where('user_id', auth()->id())],
 
             // --- Entry Details ---
             'entry_side' => ['sometimes', 'nullable', 'string', 'in:long,short'],
@@ -98,6 +100,7 @@ class TradeRequest extends FormRequest
             'open_datetime.before_or_equal' => 'Open date cannot be in the future.',
             'close_datetime.after_or_equal' => 'Close date must be on or after the open date.',
             'close_datetime.before_or_equal' => 'Close date cannot be in the future.',
+            'strategy_id.exists' => 'The selected strategy is invalid or does not belong to you.',
 
             // Entry
             'avg_entry_price.required' => 'Please enter the average entry price.',

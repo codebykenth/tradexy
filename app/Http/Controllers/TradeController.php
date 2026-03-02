@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TradeRequest;
+use App\Models\Strategy;
 use App\Models\Trade;
 use App\Services\BybitService;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +31,8 @@ final class TradeController extends Controller
 
     public function create()
     {
-        return view('trades.create');
+        $strategies = Strategy::all();
+        return view('trades.create', compact('strategies'));
     }
 
     public function show(int $id)
@@ -43,8 +45,9 @@ final class TradeController extends Controller
     public function edit(int $id)
     {
         $trade = $this->findOwnedTrade($id, ['strategy', 'lessons', 'reasons']);
+        $strategies = Strategy::all();
 
-        return view('trades.edit', compact('trade'));
+        return view('trades.edit', compact('trade', 'strategies'));
     }
 
     public function store(TradeRequest $request): RedirectResponse

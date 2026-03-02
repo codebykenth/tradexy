@@ -60,7 +60,7 @@ Route::middleware(['throttle:read'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::resource('trades', TradeController::class)->only(['index', 'show', 'create', 'edit']);
         Route::resource('balances', BalanceController::class)->only(['index', 'create']);
-        Route::resource('strategies', StrategyController::class)->only(['index', 'create', 'show']);
+        Route::resource('strategies', StrategyController::class)->only(['index', 'create', 'show', 'edit']);
     });
 });
 

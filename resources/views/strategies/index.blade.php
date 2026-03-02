@@ -1,79 +1,77 @@
 <x-layouts.app>
     <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
         <div class="relative h-12 mb-4">
-            <a href="{{ route('strategies.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">New
-                Strategy</a>
+            <a href="{{ route('strategies.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                New Strategy
+            </a>
         </div>
-        @if($strategies)
+        @if($strategies->isNotEmpty())
             <div class="border border-gray-300 rounded-lg overflow-x-auto">
                 <table class="w-full">
                     <tr
-                        class="border-b border-gray-300 bg-gray-100 h-10 [&>th:first-child]:pl-4 [&>th:last-child]:pr-4 uppercase">
-                        <th>Set-up</th>
-                        <th>Net P/L</th>
-                        <th>No. of Trades</th>
-                        <th>Total Win Amt.</th>
-                        <th>Total Loss Amt.</th>
-                        <th>Avg Win</th>
-                        <th>Avg Loss</th>
-                        <th>Hit Ratio (%)</th>
-                        <th>Edge Ratio (x)</th>
-                        <th>Action</th>
+                        class="border-b border-gray-300 bg-gray-100 h-10 [&>th:first-child]:pl-4 [&>th:last-child]:pr-4 uppercase text-sm">
+                        <th class="text-center font-semibold">Set-up</th>
+                        <th class="font-semibold">Net P/L</th>
+                        <th class="font-semibold">No. of Trades</th>
+                        <th class="font-semibold">Total Win Amt.</th>
+                        <th class="font-semibold">Total Loss Amt.</th>
+                        <th class="font-semibold">Avg Win</th>
+                        <th class="font-semibold">Avg Loss</th>
+                        <th class="font-semibold">Hit Ratio (%)</th>
+                        <th class="font-semibold">Edge Ratio (x)</th>
+                        <th class="font-semibold">Action</th>
                     </tr>
-                    @forelse ($strategies as $strategy)
+                    @foreach ($strategies as $strategy)
                         <tr class="border-b border-gray-300 odd:bg-gray-100 even:bg-white hover:bg-gray-200 transition-colors text-center h-12 [&>th:first-child]:pl-4 [&>td:last-child]:pr-4 cursor-pointer"
-                            onclick="document.getElementById('modal_{{ $strategy->id }}').showModal()">
-                            <td>
+                            onclick="window.location='{{ route('strategies.show', $strategy->id) }}'">
+                            <td class="font-medium">
                                 {{ $strategy->name }}
                             </td>
                             <td @class([
-                                'text-green-400' => $strategy->net_pnl > 0,
-                                'text-red-400' => $strategy->net_pnl < 0
+                                'text-green-500 font-bold' => $strategy->net_pnl > 0,
+                                'text-red-500 font-bold' => $strategy->net_pnl < 0
                             ])>
-                                {{ $strategy->net_pnl }}
+                                ${{ number_format($strategy->net_pnl, 2) }}
                             </td>
                             <td>
                                 {{ $strategy->trades_count }}
-
                             </td>
                             <td>
-                                {{ number_format($strategy->total_win_amount, 2) }}
+                                ${{ number_format($strategy->total_win_amount, 2) }}
                             </td>
                             <td>
-                                {{ number_format($strategy->total_loss_amount, 2) }}
+                                -${{ number_format(abs($strategy->total_loss_amount), 2) }}
                             </td>
-                            <td>
-                                {{ number_format($strategy->avg_win, 2) }}
-
+                            <td class="text-green-500">
+                                ${{ number_format($strategy->avg_win, 2) }}
                             </td>
-                            <td>
-                                {{ number_format($strategy->avg_loss, 2) }}
-
+                            <td class="text-red-500">
+                                -${{ number_format(abs($strategy->avg_loss), 2) }}
                             </td>
                             <td @class([
                                 'text-black' => $strategy->hit_ratio == 0,
-                                'text-orange-400' => $strategy->hit_ratio == 50,
-                                'text-green-400' => $strategy->hit_ratio > 50,
-                                'text-red-400' => $strategy->hit_ratio < 50 && $strategy->hit_ratio != 0,
+                                'text-orange-500 font-bold' => $strategy->hit_ratio == 50,
+                                'text-green-500 font-bold' => $strategy->hit_ratio > 50,
+                                'text-red-500 font-bold' => $strategy->hit_ratio < 50 && $strategy->hit_ratio != 0,
                             ])>
-                                {{ number_format($strategy->hit_ratio, 2) }}
-
+                                {{ number_format($strategy->hit_ratio, 1) }}%
                             </td>
                             <td @class([
                                 'text-black' => $strategy->edge_ratio == 0,
-                                'text-red-400' => $strategy->edge_ratio > 0 && $strategy->edge_ratio < 1,
-                                'text-orange-400' => $strategy->edge_ratio == 1,
-                                'text-green-400' => $strategy->edge_ratio > 1 && $strategy->edge_ratio <= 2,
-                                'text-emerald-500 font-bold' => $strategy->edge_ratio > 2,
+                                'text-red-500 font-bold' => $strategy->edge_ratio > 0 && $strategy->edge_ratio < 1,
+                                'text-orange-500 font-bold' => $strategy->edge_ratio == 1,
+                                'text-green-500 font-bold' => $strategy->edge_ratio > 1 && $strategy->edge_ratio <= 2,
+                                'text-emerald-600 font-bold' => $strategy->edge_ratio > 2,
                             ])>
-                                {{ number_format($strategy->edge_ratio, 2) }}
-
+                                {{ number_format($strategy->edge_ratio, 2) }}x
                             </td>
                             <td>
                                 <div class="flex gap-4 items-center justify-center">
-                                    <!-- Edit Icon -->
                                     <button type="button"
-                                        onclick="event.stopPropagation(); document.getElementById('edit_modal_{{ $strategy->id }}').showModal()"
+                                        onclick="event.stopPropagation(); window.location.href='{{ route('strategies.edit', $strategy->id) }}'"
                                         class="text-blue-500 hover:text-blue-700 transition cursor-pointer">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -81,7 +79,6 @@
                                                 d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                                         </svg>
                                     </button>
-                                    <!-- Trash Icon -->
                                     <button type="button"
                                         onclick="event.stopPropagation(); document.getElementById('delete_confirmation_modal_{{ $strategy->id }}').showModal()"
                                         class="text-red-500 hover:text-red-700 transition cursor-pointer">
@@ -94,13 +91,25 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <p class="p-8 text-center">No strategy history yet.</p>
-                    @endforelse
+                    @endforeach
                 </table>
             </div>
         @else
-            <div class="text-lg text-center">No strategy history yet.</div>
+            <div class="mt-8">
+                <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 mb-4">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+
+                    <h3 class="font-bold text-lg text-gray-900 mb-2">No strategies added yet</h3>
+                    <p class="text-gray-500 mb-4">Create your first strategy to start tracking your rules and edge.</p>
+                    <a href="{{ route('strategies.create') }}" class="btn btn-primary">
+                        + Create Strategy
+                    </a>
+                </div>
+            </div>
         @endif
 
         @foreach ($strategies as $strategy)
@@ -125,86 +134,6 @@
                     <button>close</button>
                 </form>
             </dialog>
-            <!-- Show Info -->
-            <!-- <dialog id="modal_{{ $strategy->id }}" class="modal">
-                                                        <div class="modal-box">
-                                                            <h3 class="text-lg font-bold">strategy on {{ $strategy->local_date }}</h3>
-                                                            <div class="py-4 space-y-2 text-left">
-                                                                <p><strong>Wallet strategy:</strong> {{ $strategy->wallet_strategy }}</p>
-                                                                <p><strong>Total Equity:</strong> {{ $strategy->total_equity }}</p>
-                                                                <p><strong>Realised Pnl (Cum):</strong>
-                                                                    <span @class([
-                                                                        'font-bold',
-                                                                        'text-green-500' => $strategy->cum_realised_pnl > 0,
-                                                                        'text-red-500' => $strategy->cum_realised_pnl < 0
-                                                                    ])>{{ $strategy->cum_realised_pnl }}</span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <form method="dialog" class="modal-backdrop">
-                                                            <button>close</button>
-                                                        </form>
-                                                    </dialog> -->
-
-            <!-- Edit Modal -->
-            <!-- <dialog id="edit_modal_{{ $strategy->id }}" class="modal text-left">
-                                                        <div class="modal-box w-11/12 max-w-4xl">
-                                                            <h3 class="text-lg font-bold">Edit strategy Entry</h3>
-                                                            <form action="{{ route('strategies.update', $strategy->id) }}" method="post" class="mt-4" id="form">
-                                                                @csrf
-                                                                @method('PUT')
-                                                                <x-errors />
-                                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                                    <div>
-                                                                        <fieldset class="fieldset w-full">
-                                                                            <legend
-                                                                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
-                                                                                Date & Time</legend>
-                                                                            <input type="datetime-local" class="input w-full" name="date"
-                                                                                value="{{ \Carbon\Carbon::parse($strategy->date)->format('Y-m-d\TH:i') }}"
-                                                                                required />
-                                                                        </fieldset>
-                                                                    </div>
-                                                                    <div>
-                                                                        <fieldset class="fieldset w-full">
-                                                                            <legend
-                                                                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
-                                                                                Wallet strategy</legend>
-                                                                            <input type="number" step="any" class="input w-full" name="wallet_strategy"
-                                                                                value="{{ $strategy->wallet_strategy }}" required />
-                                                                        </fieldset>
-                                                                    </div>
-                                                                    <div>
-                                                                        <fieldset class="fieldset w-full">
-                                                                            <legend
-                                                                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
-                                                                                Total Equity</legend>
-                                                                            <input type="number" step="any" class="input w-full" name="total_equity"
-                                                                                value="{{ $strategy->total_equity }}" required />
-                                                                        </fieldset>
-                                                                    </div>
-                                                                    <div>
-                                                                        <fieldset class="fieldset w-full">
-                                                                            <legend
-                                                                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
-                                                                                Cumulative Realized PnL</legend>
-                                                                            <input type="number" step="any" class="input w-full" name="cum_realised_pnl"
-                                                                                value="{{ $strategy->cum_realised_pnl }}" required />
-                                                                        </fieldset>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="modal-action">
-                                                                    <button type="button" class="btn"
-                                                                        onclick="document.getElementById('edit_modal_{{ $strategy->id }}').close()">Cancel</button>
-                                                                    <button class="btn btn-primary" type="submit">Save Changes</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                        <form method="dialog" class="modal-backdrop">
-                                                            <button>close</button>
-                                                        </form>
-                                                    </dialog> -->
         @endforeach
     </div>
 </x-layouts.app>
