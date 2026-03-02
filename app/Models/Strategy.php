@@ -44,48 +44,48 @@ class Strategy extends Model
 
     public function getNetPnlAttribute()
     {
-        return $this->trades->sum('total_pnl');
+        return $this->attributes['net_pnl'] ?? $this->trades()->sum('total_pnl');
     }
 
     public function getTradesCountAttribute()
     {
-        return $this->trades->count();
+        return $this->attributes['trades_count'] ?? $this->trades()->count();
     }
 
     public function getTotalWinAmountAttribute()
     {
-        return $this->trades->where('total_pnl', '>', 0)->sum('total_pnl');
+        return $this->attributes['total_win_amount'] ?? $this->trades()->where('total_pnl', '>', 0)->sum('total_pnl');
     }
 
     public function getTotalLossAmountAttribute()
     {
-        return $this->trades->where('total_pnl', '<', 0)->sum('total_pnl');
+        return $this->attributes['total_loss_amount'] ?? $this->trades()->where('total_pnl', '<', 0)->sum('total_pnl');
     }
 
     public function getAvgWinAttribute()
     {
-        return $this->trades->where('total_pnl', '>', 0)->avg('total_pnl');
+        return $this->attributes['avg_win'] ?? $this->trades()->where('total_pnl', '>', 0)->avg('total_pnl') ?? 0;
     }
 
     public function getAvgLossAttribute()
     {
-        return $this->trades->where('total_pnl', '<', 0)->avg('total_pnl');
+        return $this->attributes['avg_loss'] ?? $this->trades()->where('total_pnl', '<', 0)->avg('total_pnl') ?? 0;
     }
 
     public function getHitRatioAttribute()
     {
-        $tradesCount = $this->trades->count();
-        if ($tradesCount === 0)
+        $tradesCount = $this->trades_count;
+        if ($tradesCount == 0)
             return 0;
 
-        $winningTradesCount = $this->trades->where('total_pnl', '>', 0)->count();
+        $winningTradesCount = $this->attributes['winning_trades_count'] ?? $this->trades()->where('total_pnl', '>', 0)->count();
         return ($winningTradesCount / $tradesCount) * 100;
     }
 
     public function getEdgeRatioAttribute()
     {
         $avgWin = $this->avg_win;
-        $avgLoss = abs($this->avg_loss ?? 0);
+        $avgLoss = abs($this->avg_loss);
         if ($avgLoss == 0)
             return 0;
 

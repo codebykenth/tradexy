@@ -1,14 +1,15 @@
 <x-layouts.app>
     <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
-        <div class="relative h-12 mb-4">
-            <a href="{{ route('strategies.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                New Strategy
-            </a>
-        </div>
         @if($strategies->isNotEmpty())
+            <div class="relative h-12 mb-4">
+                <a href="{{ route('strategies.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    New Strategy
+                </a>
+            </div>
             <div class="border border-gray-300 rounded-lg overflow-x-auto">
                 <table class="w-full">
                     <tr

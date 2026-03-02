@@ -10,7 +10,7 @@ use App\Models\Trade;
 use App\Services\BybitService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -74,6 +74,8 @@ final class TradeController extends Controller
     {
         $this->findOwnedTrade($id)->delete();
 
+        Cache::forget('strategies_user_' . Auth::id());
+
         return redirect()->route('trades.index')
             ->with('success', 'Trade deleted successfully.');
     }
@@ -102,6 +104,8 @@ final class TradeController extends Controller
         $trade->fill($validated)->save();
         $this->syncReasons($trade, $entryReasons, $exitReasons);
         $this->syncLessons($trade, $lessons);
+
+        Cache::forget('strategies_user_' . Auth::id());
 
         $action = $trade->wasRecentlyCreated ? 'created' : 'updated';
 

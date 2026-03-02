@@ -7,6 +7,7 @@ use App\Models\Strategy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 class StrategyController extends Controller
 {
     /**
@@ -14,11 +15,19 @@ class StrategyController extends Controller
      */
     public function index()
     {
-        $strategies = Strategy::with('trades')
-            ->where('user_id', Auth::id())
-            ->withSum('trades', 'total_pnl')
-            ->orderByDesc('trades_sum_total_pnl')
-            ->get();
+        $userId = Auth::id();
+        $strategies = Cache::remember("strategies_user_{$userId}", now()->addHours(6), function () use ($userId) {
+            return Strategy::where('user_id', $userId)
+                ->withCount('trades as trades_count')
+                ->withSum('trades as net_pnl', 'total_pnl')
+                ->withSum(['trades as total_win_amount' => fn($query) => $query->where('total_pnl', '>', 0)], 'total_pnl')
+                ->withSum(['trades as total_loss_amount' => fn($query) => $query->where('total_pnl', '<', 0)], 'total_pnl')
+                ->withAvg(['trades as avg_win' => fn($query) => $query->where('total_pnl', '>', 0)], 'total_pnl')
+                ->withAvg(['trades as avg_loss' => fn($query) => $query->where('total_pnl', '<', 0)], 'total_pnl')
+                ->withCount(['trades as winning_trades_count' => fn($query) => $query->where('total_pnl', '>', 0)])
+                ->orderByDesc('net_pnl')
+                ->get();
+        });
 
         return view('strategies.index', compact('strategies'));
     }
@@ -40,6 +49,8 @@ class StrategyController extends Controller
         $validated['user_id'] = Auth::id();
         $strategy = Strategy::create($this->extractStrategyData($validated));
         $this->syncRules($strategy, $validated);
+
+        Cache::forget("strategies_user_" . Auth::id());
 
         return redirect()->route('strategies.index')->with('success', 'Strategy created successfully!');
     }
@@ -76,6 +87,8 @@ class StrategyController extends Controller
         $strategy->update($this->extractStrategyData($validated));
         $this->syncRules($strategy, $validated);
 
+        Cache::forget("strategies_user_" . Auth::id());
+
         return redirect()->route('strategies.index')->with('success', 'Strategy updated successfully!');
     }
 
@@ -87,6 +100,8 @@ class StrategyController extends Controller
         $strategy = $this->getOwnedStrategies($id);
         $strategy->rules()->delete();
         $strategy->delete();
+
+        Cache::forget("strategies_user_" . Auth::id());
 
         return redirect()->route('strategies.index')->with('success', 'Strategy deleted successfully!');
     }

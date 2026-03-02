@@ -1,48 +1,48 @@
 <x-layouts.app>
     <div class="w-full">
         <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
-            <div class="relative h-12 mb-4">
-                <a href="{{ route('trades.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Add Trade
-                </a>
-
-                <div
-                    class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-gray-100 p-2 rounded-lg border border-gray-300">
-                    <span class="text-sm font-semibold text-gray-600 px-2">Bulk Actions:</span>
-                    <select class="select select-sm border-gray-300" name="timeframe">
-                        <option disabled selected>Assign timeframe</option>
-                        <option>1m</option>
-                        <option>5m</option>
-                        <option>15m</option>
-                        <option>30m</option>
-                        <option>1hr</option>
-                        <option>4hr</option>
-                        <option>1d</option>
-                    </select>
-                    <select class="select select-sm border-gray-300" name="strategy_id">
-                        <option disabled selected>Assign strategy</option>
-                        <option>Breakout</option>
-                        <option>Breakdown</option>
-                        <option>Range</option>
-                    </select>
-
-                    <button class="btn btn-sm btn-primary" id="apply-bulk">Apply</button>
-                    <div class="w-px h-6 bg-gray-300 mx-1"></div>
-                    <!-- Delete Button -->
-                    <button class="btn btn-sm btn-square btn-error btn-outline" aria-label="Delete Selected">
+            @if($ownedTrades->isNotEmpty())
+                <div class="relative h-12 mb-4">
+                    <a href="{{ route('trades.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-4">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                            stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
-                    </button>
+                        Add Trade
+                    </a>
+
+                    <div
+                        class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-gray-100 p-2 rounded-lg border border-gray-300">
+                        <span class="text-sm font-semibold text-gray-600 px-2">Bulk Actions:</span>
+                        <select class="select select-sm border-gray-300" name="timeframe">
+                            <option disabled selected>Assign timeframe</option>
+                            <option>1m</option>
+                            <option>5m</option>
+                            <option>15m</option>
+                            <option>30m</option>
+                            <option>1hr</option>
+                            <option>4hr</option>
+                            <option>1d</option>
+                        </select>
+                        <select class="select select-sm border-gray-300" name="strategy_id">
+                            <option disabled selected>Assign strategy</option>
+                            <option>Breakout</option>
+                            <option>Breakdown</option>
+                            <option>Range</option>
+                        </select>
+
+                        <button class="btn btn-sm btn-primary" id="apply-bulk">Apply</button>
+                        <div class="w-px h-6 bg-gray-300 mx-1"></div>
+                        <!-- Delete Button -->
+                        <button class="btn btn-sm btn-square btn-error btn-outline" aria-label="Delete Selected">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            @if($ownedTrades)
                 <div class="border border-gray-300 rounded-lg overflow-x-auto">
                     <table class="w-full">
                         <tr
@@ -60,7 +60,7 @@
                             <th>Chart</th>
                             <th>AI</th>
                         </tr>
-                        @forelse ($ownedTrades as $ownedTrade)
+                        @foreach ($ownedTrades as $ownedTrade)
                             <tr class="border-b border-gray-300 odd:bg-gray-100 even:bg-white hover:bg-gray-200 transition-colors text-center h-12 [&>th:first-child]:pl-4 [&>td:last-child]:pr-4 cursor-pointer"
                                 onclick="window.location='/trades/{{ $ownedTrade->id }}'">
                                 <th onclick="event.stopPropagation()">
@@ -145,15 +145,30 @@
                                     @endif
                                 </td>
                             </tr>
-                        @empty
-                            <p class="p-8 text-center">No trades yet.</p>
-                        @endforelse
+                        @endforeach
                     </table>
                 </div>
+
+                <div class="mt-4">
+                    {{ $ownedTrades->links() }}
+                </div>
             @else
-                <div class="text-lg text-center">No trades yet.</div>
+                <div class="mt-8">
+                    <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 mb-4">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m-1.5 4.5h.008v.008H6.75V11.25Zm0 3h.008v.008H6.75V14.25Zm0 3h.008v.008H6.75V17.25ZM12 11.25h.008v.008H12V11.25Zm0 3h.008v.008H12V14.25Zm0 3h.008v.008H12V17.25ZM17.25 11.25h.008v.008h-.008V11.25Zm0 3h.008v.008h-.008V14.25Z" />
+                        </svg>
+
+                        <h3 class="font-bold text-lg text-gray-900 mb-2">No trades added yet</h3>
+                        <p class="text-gray-500 mb-4">Add your first trade to start analyzing your market edge.</p>
+                        <a href="{{ route('trades.create') }}" class="btn btn-primary">
+                            + Add Trade
+                        </a>
+                    </div>
+                </div>
             @endif
-            {{ $ownedTrades->links() }}
         </div>
 
     </div>
