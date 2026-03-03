@@ -34,6 +34,18 @@
         </div>
     </footer>
     <x-toast />
+    @auth
+        <script type="module">
+            if (window.Echo) {
+                window.Echo.private(`App.Models.User.{{ auth()->id() }}`)
+                    .listen('.NewTradesFetched', (e) => {
+                        if (window.showToast) {
+                            window.showToast(e.message, 'success');
+                        }
+                    });
+            }
+        </script>
+    @endauth
 </body>
 
 </html>

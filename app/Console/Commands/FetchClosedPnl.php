@@ -119,6 +119,11 @@ class FetchClosedPnl extends Command
             $this->info("Created: {$created} | Skipped (duplicates): {$skipped}");
             $this->info('Done!');
 
+            if ($created > 0) {
+                \App\Events\NewTradesFetched::dispatch($this->user, "Added {$created} new trades from Bybit!");
+            }
+
+
         } catch (\Exception $e) {
             $this->error("Failed: {$e->getMessage()}");
             Mail::to($this->user->email)->send(new FetchClosedPnlMail($e->getMessage()));

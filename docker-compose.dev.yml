@@ -43,6 +43,20 @@ services:
       - tradexy_dev
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
 
+  reverb:
+    image: ghcr.io/codebykenth/trading-journal-v2:dev
+    container_name: tradexy_reverb_dev
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file: .env
+    environment:
+      - TZ=Asia/Manila
+    depends_on:
+      - app
+    networks:
+      - tradexy_dev
+    command: php artisan reverb:start --host="0.0.0.0" --port=8080
+
 networks:
   tradexy_dev:
 
