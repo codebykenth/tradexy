@@ -2,8 +2,7 @@
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center justify-between my-4">
             <div>
-                <h1 class="text-2xl font-bold">Edit Trade</h1>
-                <p>Update trade details and strategy.</p>
+                <x-page-title title="Edit Trade" subtitle="Update trade details and strategy." />
             </div>
             <div>
                 <a href="{{ route('trades.index') }}"><- Back to trades</a>

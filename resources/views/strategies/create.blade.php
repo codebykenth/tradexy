@@ -2,8 +2,8 @@
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center justify-between my-4">
             <div>
-                <h1 class="text-2xl font-bold">Add New Strategy</h1>
-                <p>Define a new trading strategy to assign to your trades.</p>
+                <x-page-title title="Add New Strategy"
+                    subtitle="Define a new trading strategy to assign to your trades." />
             </div>
             <div>
                 <a href="{{ route('strategies.index') }}"><- Back to strategies</a>
@@ -21,7 +21,7 @@
                             Strategy Name*
                         </legend>
                         <input type="text" class="input w-full @error('name') input-error @enderror" name="name"
-                            value="{{ old('name') }}" placeholder="e.g. Breakout"/>
+                            value="{{ old('name') }}" placeholder="e.g. Breakout" />
                         @error('name') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                     </fieldset>
                 </div>

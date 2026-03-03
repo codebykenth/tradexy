@@ -2,9 +2,8 @@
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center justify-between my-4">
             <div>
-                <h1 class="text-2xl font-bold">Log Manual Balance Entry
-                </h1>
-                <p>Record a snapshot of your account balance and equity.</p>
+                <x-page-title title="Log Manual Balance Entry"
+                    subtitle="Record a snapshot of your account balance and equity." />
             </div>
             <div>
                 <a href="{{ route('balances.index') }}"><- Back to balances</a>

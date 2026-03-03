@@ -1,9 +1,10 @@
 <x-layouts.app>
     <div class="max-w-7xl mx-auto px-6">
+
         <div class="flex items-center justify-between my-4">
             <div>
-                <h1 class="text-2xl font-bold">Add Trade</h1>
-                <p>Manually record a closed position or backfill trade history.</p>
+                <x-page-title title="Add Trade"
+                    subtitle="Manually record a closed position or backfill trade history." />
             </div>
             <div>
                 <a href="{{ route('trades.index') }}"><- Back to trades</a>
@@ -66,7 +67,8 @@
                                 @if($strategies)
                                     @foreach ($strategies as $strategy)
                                         <option value="{{$strategy->id}}" @selected(old('strategy_id') == $strategy->id)>
-                                            {{ $strategy->name }}</option>
+                                            {{ $strategy->name }}
+                                        </option>
 
                                     @endforeach
                                 @else
