@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MigrateBalancesController;
 use App\Http\Controllers\MigrateStrategiesController;
 use App\Http\Controllers\MigrateTradesController;
+use App\Http\Controllers\PnlCalendarController;
 use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\TradeController;
 use Illuminate\Support\Facades\Auth;
@@ -58,6 +59,7 @@ Route::middleware(['throttle:read'])->group(function () {
 
     Route::middleware('auth')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
+        Route::get('pnl-calendar', [PnlCalendarController::class, 'index']);
         Route::resource('trades', TradeController::class)->only(['index', 'show', 'create', 'edit']);
         Route::resource('balances', BalanceController::class)->only(['index', 'create']);
         Route::resource('strategies', StrategyController::class)->only(['index', 'create', 'show', 'edit']);
