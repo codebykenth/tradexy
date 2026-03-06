@@ -10,49 +10,63 @@
 
                 <div class="hidden md:flex items-center gap-6 text-gray-600 dark:text-gray-400">
                     @auth
-                        <a href="/dashboard" class="hover:text-gray-900 dark:hover:text-white transition-colors">Dashboard</a>
+                        <a href="/dashboard"
+                            class="hover:text-gray-900 dark:hover:text-white transition-colors">Dashboard</a>
                         <a href="/trades" class="hover:text-gray-900 dark:hover:text-white transition-colors">Trades</a>
                         <a href="/balances" class="hover:text-gray-900 dark:hover:text-white transition-colors">Balances</a>
-                        <a href="/strategies" class="hover:text-gray-900 dark:hover:text-white transition-colors">Strategies</a>
-                        <a href="/pnl-calendar" class="hover:text-gray-900 dark:hover:text-white transition-colors">PnL Calendar</a>
+                        <a href="/strategies"
+                            class="hover:text-gray-900 dark:hover:text-white transition-colors">Strategies</a>
+                        <a href="/pnl-calendar" class="hover:text-gray-900 dark:hover:text-white transition-colors">PnL
+                            Calendar</a>
                     @else
                         <a href="#features" class="hover:text-gray-900 dark:hover:text-white transition-colors">Features</a>
-                        <a href="#how-it-works" class="hover:text-gray-900 dark:hover:text-white transition-colors">How it Works</a>
-                        <a href="#why-tradexy" class="hover:text-gray-900 dark:hover:text-white transition-colors">Why Tradexy</a>
+                        <a href="#how-it-works" class="hover:text-gray-900 dark:hover:text-white transition-colors">How it
+                            Works</a>
+                        <a href="#why-tradexy" class="hover:text-gray-900 dark:hover:text-white transition-colors">Why
+                            Tradexy</a>
                     @endauth
                 </div>
             </div>
 
             @auth
                 <!-- Desktop Avatar -->
-                <div class="relative w-10 h-10 rounded-full bg-blue-500 text-white md:flex justify-center items-center hidden cursor-pointer"
-                    id="avatar-btn">
-                    @if ($profilePicture)
-                        <img src="" alt="">
-                    @else
-                        @if ($initials)
-                            <span>{{ $initials  }}</span>
+                <div class="relative hidden md:block z-[60]">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex justify-center items-center cursor-pointer shadow hover:bg-blue-600 transition-colors"
+                        id="avatar-btn">
+                        @if ($profilePicture)
+                            <img src="" alt="" class="rounded-full w-full h-full object-cover">
+                        @else
+                            @if (!empty($initials))
+                                <span class="font-medium text-sm">{{ $initials }}</span>
+                            @endif
                         @endif
-
-                    @endif
-                    <!-- Desktop Dropdown -->
-                    <div id="avatar-menu"
-                        class="hidden absolute top-12 right-0 bg-gray-600 text-white py-2 px-6 rounded-md w-50">
-                        <ul class="space-y-4">
-                            <li><a href="/profile">Profile</a></li>
-                            <li><a href="/settings">Settings</a></li>
-                            <li>
-                                <form action="/logout" method="post" class="hidden md:block">
-                                    @csrf
-                                    <button type="submit"
-                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-white transition-colors cursor-pointer">Logout</button>
-                                </form>
-                            </li>
-
-                        </ul>
-
                     </div>
 
+                    <!-- Desktop Dropdown -->
+                    <div id="avatar-menu"
+                        class="hidden absolute top-12 right-0 mt-2 w-56 bg-base-100 rounded-lg shadow-xl border border-base-200 py-1 overflow-hidden z-[60]">
+                        <div class="px-4 py-3 border-b border-base-200 bg-base-200/50">
+                            <p class="text-sm font-medium text-base-content truncate">{{ Auth::user()->name ?? 'User' }}</p>
+                            <p class="text-xs text-base-content/70 truncate">{{ Auth::user()->email ?? '' }}</p>
+                        </div>
+                        <ul class="py-1">
+                            <li><a href="/profile"
+                                    class="block px-4 py-2 text-sm text-base-content hover:bg-base-200 transition-colors">Profile</a>
+                            </li>
+                            <li><a href="/settings"
+                                    class="block px-4 py-2 text-sm text-base-content hover:bg-base-200 transition-colors">Settings</a>
+                            </li>
+                            <li class="border-t border-base-200 mt-1 pt-1">
+                                <form action="/logout" method="post" class="w-full m-0 p-0">
+                                    @csrf
+                                    <button type="submit"
+                                        class="w-full text-left px-4 py-2 text-sm text-error hover:bg-error/10 transition-colors cursor-pointer">
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Hamburger Mobile -->
@@ -200,23 +214,26 @@
 <script>
     let menuBtn = document.getElementById('menu-btn')
     let avatarBtn = document.getElementById('avatar-btn')
-    dropdownMenu = document.getElementById('dropdown-menu')
-    avatarMenu = document.getElementById('avatar-menu')
-    let desktopMenuIsOpen;
+    let dropdownMenu = document.getElementById('dropdown-menu')
+    let avatarMenu = document.getElementById('avatar-menu')
+    if (menuBtn && dropdownMenu) {
+        menuBtn.addEventListener('click', function () {
+            dropdownMenu.classList.toggle('hidden')
+        })
+    }
 
-    menuBtn.addEventListener('click', function () {
-        dropdownMenu.classList.toggle('hidden')
-    })
-    avatarBtn.addEventListener('click', function (event) {
-        event.stopPropagation()
-
-        avatarMenu.classList.toggle('hidden')
-    })
+    if (avatarBtn && avatarMenu) {
+        avatarBtn.addEventListener('click', function (event) {
+            event.stopPropagation()
+            avatarMenu.classList.toggle('hidden')
+        })
+    }
 
     document.addEventListener('click', function (event) {
-        if (!avatarMenu.contains(event.target)) {
-            avatarMenu.classList.add('hidden')
+        if (avatarBtn && avatarMenu) {
+            if (!avatarBtn.contains(event.target) && !avatarMenu.contains(event.target)) {
+                avatarMenu.classList.add('hidden')
+            }
         }
-
     })
 </script>
