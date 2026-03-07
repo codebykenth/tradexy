@@ -34,7 +34,7 @@
                     <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex justify-center items-center cursor-pointer shadow hover:bg-blue-600 transition-colors"
                         id="avatar-btn">
                         @if ($profilePicture)
-                            <img src="" alt="" class="rounded-full w-full h-full object-cover">
+                            <img src="{{ $profilePicture }}" alt="{{ Auth::user()->name ?? 'User' }}" class="rounded-full w-full h-full object-cover">
                         @else
                             @if (!empty($initials))
                                 <span class="font-medium text-sm">{{ $initials }}</span>

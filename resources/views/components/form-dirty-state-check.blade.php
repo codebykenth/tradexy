@@ -1,10 +1,12 @@
 <!-- Form Dirty State Check -->
 <script>
-        (function () {
-            const form = document.getElementById('form');
-            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    (function () {
+        const forms = document.querySelectorAll('#form, .dirty-check');
+        if (forms.length === 0) return;
 
-            if (!form || !submitBtn) return;
+        forms.forEach(form => {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (!submitBtn) return;
 
             /**
              * Serialize only text-based form entries (skip file inputs).
@@ -53,5 +55,6 @@
             // Listen for dynamically added/removed reason/lesson rows
             const observer = new MutationObserver(checkDirtyState);
             observer.observe(form, { childList: true, subtree: true });
-        })();
+        });
+    })();
 </script>

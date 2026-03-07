@@ -10,6 +10,7 @@ use App\Http\Controllers\MigrateBalancesController;
 use App\Http\Controllers\MigrateStrategiesController;
 use App\Http\Controllers\MigrateTradesController;
 use App\Http\Controllers\PnlCalendarController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\TradeController;
 use Illuminate\Support\Facades\Auth;
@@ -63,6 +64,7 @@ Route::middleware(['throttle:read'])->group(function () {
         Route::resource('trades', TradeController::class)->only(['index', 'show', 'create', 'edit']);
         Route::resource('balances', BalanceController::class)->only(['index', 'create']);
         Route::resource('strategies', StrategyController::class)->only(['index', 'create', 'show', 'edit']);
+        Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
     });
 });
 
@@ -71,4 +73,7 @@ Route::middleware(['throttle:write', 'auth'])->group(function () {
     Route::resource('trades', TradeController::class)->only(['store', 'update', 'destroy']);
     Route::resource('balances', BalanceController::class)->only(['store', 'update', 'destroy']);
     Route::resource('strategies', StrategyController::class)->only(['store', 'update', 'destroy']);
+    Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
+    Route::delete('profile/remove-picture', [ProfileController::class, 'removeProfilePicture'])->name('profile.remove-picture');
 });
