@@ -318,7 +318,7 @@
                 @else
                     <p class="italic text-gray-500">No AI analysis yet.</p>
                     @if($trade->chart_picture)
-                        <form action="/analyze/{{ $trade->id }}" method="POST">
+                        <form action="/analyze/{{ $trade->id }}" method="POST" onsubmit="document.getElementById('ai-loading-overlay').classList.remove('hidden')">
                             @csrf
                             @method('PUT')
                             <button type="submit" class="btn btn-primary btn-sm flex items-center gap-2">
@@ -346,5 +346,12 @@
                 @endif
             </div>
         </div>
+    </div>
+
+    <!-- Full Screen Loading Overlay (Hidden by default) -->
+    <div id="ai-loading-overlay" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white">
+        <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
+        <h3 class="text-xl font-bold animate-pulse">Generating AI Analysis...</h3>
+        <p class="text-gray-300 mt-2 text-sm">Please wait, this may take up to 30 seconds.</p>
     </div>
 </x-layouts.app>

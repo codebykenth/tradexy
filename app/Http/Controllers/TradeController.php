@@ -97,7 +97,7 @@ final class TradeController extends Controller
         $validated = $this->computeDerivedFields($validated, $trade->market ?? 'crypto');
 
         // Upload chart before transaction — external API call is not transactional
-        $validated['chart_picture'] = $this->uploadChartImage($request, $validated['chart_picture'] ?? null);
+        $validated['chart_picture'] = $this->uploadChartImage($request, $trade->chart_picture ?? null);
 
         $entryReasons = array_filter($validated['entry_reason'] ?? []);
         $exitReasons = array_filter($validated['exit_reason'] ?? []);

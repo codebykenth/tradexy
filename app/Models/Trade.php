@@ -121,22 +121,32 @@ class Trade extends Model
 
     public function getRiskRewardAttribute()
     {
-        if (!$this->avg_entry_price || !$this->stop_loss_price || !$this->take_profit_price) {
+        if (!$this->avg_entry_price || !$this->stop_loss_price) {
             return 'N/A';
         }
 
         $entry = (float) $this->avg_entry_price;
         $sl = (float) $this->stop_loss_price;
-        $tp = (float) $this->take_profit_price;
-
         $risk = abs($entry - $sl);
-        $reward = abs($tp - $entry);
 
         if ($risk == 0) {
             return 'N/A';
         }
 
+        $isShort = strtolower($this->entry_side) === 'short';
+
+        // Use actual exit if trade is closed, otherwise use planned take profit
+        if ($this->avg_exit_price) {
+            $exit = (float) $this->avg_exit_price;
+            $reward = $isShort ? ($entry - $exit) : ($exit - $entry);
+        } elseif ($this->take_profit_price) {
+            $tp = (float) $this->take_profit_price;
+            $reward = $isShort ? ($entry - $tp) : ($tp - $entry);
+        } else {
+            return 'N/A';
+        }
+
         $rr = $reward / $risk;
-        return number_format($rr, 2);
+        return number_format($rr, 2) . 'R';
     }
 }

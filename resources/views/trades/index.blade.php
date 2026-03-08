@@ -87,7 +87,7 @@
                                     'font-bold',
                                     'text-green-400' => $ownedTrade->total_pnl > 0,
                                     'text-red-400' => $ownedTrade->total_pnl < 0
-                                ])>{{ $ownedTrade->total_pnl }}</span>
+                                ])>{{ number_format($ownedTrade->total_pnl, 2) }}</span>
                             </td>
                             <td onclick="event.stopPropagation()">
                                 @if($ownedTrade->chart_picture)
