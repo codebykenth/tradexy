@@ -48,7 +48,7 @@ class PnlCalendarController extends Controller
             ->exists();
 
         // Group trades by date and calculate daily PnL
-        $dailyPnl = $trades->groupBy(fn($trade) => \Carbon\Carbon::parse($trade->close_datetime)->format('Y-m-d'))
+        $dailyPnl = $trades->groupBy(fn($trade) => \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('Y-m-d'))
             ->map(function ($dayTrades) {
                 return (object) [
                     'pnl' => $dayTrades->sum('total_pnl'),

@@ -90,8 +90,8 @@ class Trade extends Model
             return 'PSE Session';
         }
 
-        // Convert to UTC to standardize the trading session hours
-        $hour = \Carbon\Carbon::parse($this->open_datetime)->timezone('UTC')->hour;
+        // DB stores UTC — parse as UTC to determine session
+        $hour = \Carbon\Carbon::parse($this->open_datetime, 'UTC')->hour;
 
         if ($hour >= 13 && $hour < 17) {
             return 'Overlap (London & NY)';
@@ -112,8 +112,8 @@ class Trade extends Model
             return 'N/A';
         }
 
-        $open = Carbon::parse($this->open_datetime);
-        $close = Carbon::parse($this->close_datetime);
+        $open = Carbon::parse($this->open_datetime, 'UTC');
+        $close = Carbon::parse($this->close_datetime, 'UTC');
 
         // Return the human-readable difference without the "ago" / "after" suffix
         return $open->diffForHumans($close, true);

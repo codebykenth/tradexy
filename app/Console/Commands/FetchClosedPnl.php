@@ -78,9 +78,9 @@ class FetchClosedPnl extends Command
                 $closeSide = strtolower($trade['side']) === 'buy' ? 'long' : 'short';
                 $entrySide = $closeSide === 'long' ? 'short' : 'long';
 
-                // Convert millisecond timestamps to Manila time
-                $openDatetime = Carbon::createFromTimestampMs((int) $trade['createdTime'])->setTimezone('Asia/Manila');
-                $closeDatetime = Carbon::createFromTimestampMs((int) $trade['updatedTime'])->setTimezone('Asia/Manila');
+                // Convert millisecond timestamps — store as UTC in database
+                $openDatetime = Carbon::createFromTimestampMs((int) $trade['createdTime'])->utc();
+                $closeDatetime = Carbon::createFromTimestampMs((int) $trade['updatedTime'])->utc();
 
                 // Use firstOrCreate to prevent duplicate trades
                 $result = Trade::firstOrCreate(

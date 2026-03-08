@@ -82,7 +82,7 @@
                                 <div>
                                     <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Open</p>
                                     <p class="font-medium">
-                                        {{ $trade->open_datetime ? \Carbon\Carbon::parse($trade->open_datetime)->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}
+                                        {{ $trade->open_datetime ? \Carbon\Carbon::parse($trade->open_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}
                                     </p>
                                 </div>
                             </div>
@@ -95,7 +95,7 @@
                                 <div>
                                     <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Close</p>
                                     <p class="font-medium">
-                                        {{ $trade->close_datetime ? \Carbon\Carbon::parse($trade->close_datetime)->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}
+                                        {{ $trade->close_datetime ? \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}
                                     </p>
                                 </div>
                             </div>

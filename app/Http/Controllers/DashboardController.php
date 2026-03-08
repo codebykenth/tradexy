@@ -51,8 +51,8 @@ class DashboardController extends Controller
             $cumulativePnl += $pnl;
             $totalPnl += $pnl;
 
-            // X-Axis formatting (Date with year)
-            $pnlCategories[] = \Carbon\Carbon::parse($trade->close_datetime)->format('M d, y');
+            // X-Axis formatting — convert UTC to Manila for display
+            $pnlCategories[] = \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, y');
             $pnlSeries[] = round($cumulativePnl, 2);
 
             if ($pnl > 0) {
@@ -62,8 +62,8 @@ class DashboardController extends Controller
                 $totalLossAmount += abs($pnl);
             }
 
-            // Time aggregations
-            $closeTime = \Carbon\Carbon::parse($trade->close_datetime);
+            // Time aggregations — parse as UTC, convert to Manila for comparison
+            $closeTime = \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila');
             if ($closeTime->greaterThanOrEqualTo($startOfDay)) {
                 $todayPnl += $pnl;
             }

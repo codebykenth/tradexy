@@ -2,7 +2,8 @@
     <div class="max-w-7xl mx-auto px-6 space-y-6 mb-8 mt-6">
 
         <!-- Welcome & Time -->
-         <x-page-title title="Dashboard" subtitle="Welcome back, {{ Auth::user()->name }} • {{ now()->format('l, F d, Y') }}"/>
+        <x-page-title title="Dashboard"
+            subtitle="Welcome back, {{ Auth::user()->name }} • {{ now()->format('l, F d, Y') }}" />
 
         @if($tradeCount > 0)
             <!-- Top Summary Cards Row -->
@@ -103,7 +104,7 @@
                             +${{ number_format($bestTrade?->total_pnl ?? 0, 2) }}
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
-                            {{ $bestTrade ? \Carbon\Carbon::parse($bestTrade->close_datetime)->format('M d, Y') : '' }}
+                            {{ $bestTrade ? \Carbon\Carbon::parse($bestTrade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') : '' }}
                         </div>
                     </div>
 
@@ -120,7 +121,7 @@
                             -${{ number_format(abs($worstTrade?->total_pnl ?? 0), 2) }}
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
-                            {{ $worstTrade ? \Carbon\Carbon::parse($worstTrade->close_datetime)->format('M d, Y') : '' }}
+                            {{ $worstTrade ? \Carbon\Carbon::parse($worstTrade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') : '' }}
                         </div>
                     </div>
 
@@ -215,7 +216,8 @@
                                             class="{{ $trade->total_pnl >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400' }}">
                                             {{ $trade->total_pnl >= 0 ? '+' : '-' }}${{ number_format(abs($trade->total_pnl), 2) }}
                                         </span>
-                                        &bull; {{ \Carbon\Carbon::parse($trade->close_datetime)->diffForHumans() }}
+                                        &bull;
+                                        {{ \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->diffForHumans() }}
                                     </div>
                                 </div>
                             </div>

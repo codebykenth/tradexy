@@ -67,7 +67,7 @@
                                 </label>
                             </th>
                             <td class="font-medium">
-                                {{ \Carbon\Carbon::parse($ownedTrade->close_datetime)->format('M d, Y') }}
+                                {{ \Carbon\Carbon::parse($ownedTrade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') }}
                             </td>
                             <td>
                                 <div class="flex items-center gap-2">
