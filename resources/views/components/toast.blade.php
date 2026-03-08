@@ -16,7 +16,7 @@ Include once in the app layout — no props needed. --}}
 @endphp
 
 @if (count($toasts) > 0)
-    <div class="toast toast-end toast-top z-50" id="toast-container">
+    <div class="toast toast-end toast-top z-[100]" id="toast-container">
         @foreach ($toasts as $toast)
             <div class="alert {{ $toast['type'] }} shadow-lg transition-all duration-300">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
@@ -48,7 +48,7 @@ Include once in the app layout — no props needed. --}}
         if (!container) {
             container = document.createElement('div');
             container.id = 'toast-container';
-            container.className = 'toast toast-end toast-top z-50';
+            container.className = 'toast toast-end toast-top z-[100]';
             document.body.appendChild(container);
         }
 

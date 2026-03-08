@@ -52,7 +52,7 @@
                             </label>
                         </th>
                         <th>Date</th>
-                        <th>Symbol</th>
+                        <th class="text-center">Symbol</th>
                         <th>Duration</th>
                         <th>Qty</th>
                         <th>Pnl</th>
@@ -70,7 +70,7 @@
                                 {{ \Carbon\Carbon::parse($ownedTrade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') }}
                             </td>
                             <td>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center justify-center gap-2">
                                     {{ $ownedTrade->symbol }}
                                     <span
                                         class="badge badge-outline badge-xs uppercase">{{ $ownedTrade->market ?? 'crypto' }}</span>

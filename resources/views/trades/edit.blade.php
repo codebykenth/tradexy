@@ -9,18 +9,13 @@
             </div>
         </div>
 
-        <!-- Market Toggle -->
+        <!-- Market Type (locked — cannot change after creation) -->
         <div class="flex items-center gap-2 mb-2">
-            <div class="inline-flex rounded-lg bg-gray-200 p-1" id="market-toggle">
-                <button type="button" data-market="crypto"
-                    class="market-tab px-6 py-2 rounded-md text-sm font-bold uppercase tracking-wider transition-all cursor-pointer">
-                    Crypto
-                </button>
-                <button type="button" data-market="pse"
-                    class="market-tab px-6 py-2 rounded-md text-sm font-bold uppercase tracking-wider transition-all cursor-pointer">
-                    PSE
-                </button>
-            </div>
+            <span
+                class="inline-flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider">
+                {{ ($trade->market ?? 'crypto') === 'pse' ? '🇵🇭 PSE' : '₿ Crypto' }}
+            </span>
+            <span class="text-xs text-gray-400">Market type cannot be changed after creation.</span>
         </div>
 
         <form id="form" action="{{ route('trades.update', $trade->id) }}" method="post" enctype="multipart/form-data"
@@ -166,7 +161,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Avg Entry Price</legend>
-                            <input type="number" placeholder=""
+                            <input type="number" step="any" placeholder=""
                                 class="input w-full @error('avg_entry_price') input-error @enderror"
                                 name="avg_entry_price"
                                 value="{{ old('avg_entry_price', $trade->avg_entry_price ?? null) }}"
@@ -180,7 +175,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Quantity</legend>
-                            <input type="number" placeholder=""
+                            <input type="number" step="any" placeholder=""
                                 class="input quantity w-full @error('quantity') input-error @enderror" name="quantity"
                                 value="{{ old('quantity', $trade->quantity ?? null) }}" />
                             @error('quantity') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
@@ -200,7 +195,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Stoploss</legend>
-                            <input type="number" placeholder=""
+                            <input type="number" step="any" placeholder=""
                                 class="input w-full @error('stop_loss_price') input-error @enderror"
                                 name="stop_loss_price"
                                 value="{{ old('stop_loss_price', $trade->stop_loss_price ?? null) }}" />
@@ -213,7 +208,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Take Profit</legend>
-                            <input type="number" placeholder=""
+                            <input type="number" step="any" placeholder=""
                                 class="input w-full @error('take_profit_price') input-error @enderror"
                                 name="take_profit_price"
                                 value="{{ old('take_profit_price', $trade->take_profit_price ?? null) }}" />
@@ -324,7 +319,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Avg Exit Price</legend>
-                            <input type="number" placeholder=""
+                            <input type="number" step="any" placeholder=""
                                 class="input w-full @error('avg_exit_price') input-error @enderror"
                                 name="avg_exit_price"
                                 value="{{ old('avg_exit_price', $trade->avg_exit_price ?? null) }}"
@@ -437,7 +432,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Open Fee</legend>
-                            <input type="number" placeholder=""
+                            <input type="number" step="any" placeholder=""
                                 class="input w-full @error('open_fees') input-error @enderror" name="open_fees"
                                 value="{{ old('open_fees', $trade->open_fees ?? null) }}" id="open-fees" />
                             @error('open_fees') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
@@ -448,7 +443,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Close Fee</legend>
-                            <input type="number" placeholder=""
+                            <input type="number" step="any" placeholder=""
                                 class="input w-full @error('close_fees') input-error @enderror" name="close_fees"
                                 value="{{ old('close_fees', $trade->close_fees ?? null) }}" id="close-fees" />
                             @error('close_fees') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror

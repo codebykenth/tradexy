@@ -164,7 +164,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Avg Entry Price</legend>
-                            <input type="number" placeholder="" class="input" name="avg_entry_price"
+                            <input type="number" step="any" placeholder="" class="input" name="avg_entry_price"
                                 id="avg-entry-price" value="{{ old('avg_entry_price') }}" />
                             @error('avg_entry_price') <span class="text-error text-xs mt-1">{{ $message }}</span>
                             @enderror
@@ -175,7 +175,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Quantity</legend>
-                            <input type="number" placeholder="" class="input quantity" name="quantity"
+                            <input type="number" step="any" placeholder="" class="input quantity" name="quantity"
                                 value="{{ old('quantity') }}" />
                             @error('quantity') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
@@ -197,7 +197,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Stoploss</legend>
-                            <input type="number" placeholder="" class="input" name="stop_loss_price"
+                            <input type="number" step="any" placeholder="" class="input" name="stop_loss_price"
                                 value="{{ old('stop_loss_price') }}" />
                             @error('stop_loss_price') <span class="text-error text-xs mt-1">{{ $message }}</span>
                             @enderror
@@ -208,7 +208,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Take Profit</legend>
-                            <input type="number" placeholder="" class="input" name="take_profit_price"
+                            <input type="number" step="any" placeholder="" class="input" name="take_profit_price"
                                 value="{{ old('take_profit_price') }}" />
                             @error('take_profit_price') <span class="text-error text-xs mt-1">{{ $message }}</span>
                             @enderror
@@ -290,7 +290,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Avg Exit Price</legend>
-                            <input type="number" placeholder="" class="input" name="avg_exit_price" id="avg-exit-price"
+                            <input type="number" step="any" placeholder="" class="input" name="avg_exit_price" id="avg-exit-price"
                                 value="{{ old('avg_exit_price') }}" />
                             @error('avg_exit_price') <span class="text-error text-xs mt-1">{{ $message }}</span>
                             @enderror
@@ -380,7 +380,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Open Fee</legend>
-                            <input type="number" placeholder="" class="input" name="open_fees" id="open-fees"
+                            <input type="number" step="any" placeholder="" class="input" name="open_fees" id="open-fees"
                                 value="{{ old('open_fees') }}" />
                             @error('open_fees') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
@@ -390,7 +390,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Close Fee</legend>
-                            <input type="number" placeholder="" class="input" name="close_fees" id="close-fees"
+                            <input type="number" step="any" placeholder="" class="input" name="close_fees" id="close-fees"
                                 value="{{ old('close_fees') }}" />
                             @error('close_fees') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>

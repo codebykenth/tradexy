@@ -67,6 +67,9 @@ final class TradeController extends Controller
         $validated = $request->validated();
         $trade = $this->findOwnedTrade($id);
 
+        // Market type is immutable after creation — ignore any submitted value
+        unset($validated['market']);
+
         return $this->persistTrade($trade, $validated, $request);
     }
 
@@ -91,7 +94,7 @@ final class TradeController extends Controller
     // Shared persistence logic for store() and update() with atomic transaction
     private function persistTrade(Trade $trade, array $validated, TradeRequest $request): RedirectResponse
     {
-        $validated = $this->computeDerivedFields($validated);
+        $validated = $this->computeDerivedFields($validated, $trade->market ?? 'crypto');
 
         // Upload chart before transaction — external API call is not transactional
         $validated['chart_picture'] = $this->uploadChartImage($request, $validated['chart_picture'] ?? null);
@@ -114,14 +117,15 @@ final class TradeController extends Controller
     }
 
     // Recalculates server-side derived fields (symbol, entry/exit totals, PSE defaults)
-    private function computeDerivedFields(array $validated): array
+    private function computeDerivedFields(array $validated, string $fallbackMarket = 'crypto'): array
     {
         if (isset($validated['symbol'])) {
             $validated['symbol'] = strtoupper($validated['symbol']);
         }
 
+        $market = $validated['market'] ?? $fallbackMarket;
         // PSE trades: force long-only, no leverage, aggregate fees
-        if (($validated['market'] ?? 'crypto') === 'pse') {
+        if ($market === 'pse') {
             $validated['entry_side'] = 'long';
             $validated['exit_side'] = 'short';
             $validated['leverage'] = 1;
@@ -175,7 +179,7 @@ final class TradeController extends Controller
                 'format' => 'json',
             ]);
 
-            return $response->json('image.display_url');
+            return $response->json('image.url');
         } catch (\Exception $e) {
             report($e);
             return null;
