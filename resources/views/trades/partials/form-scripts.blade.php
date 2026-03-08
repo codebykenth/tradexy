@@ -39,9 +39,11 @@
         if (closedSizeEl) closedSizeEl.value = qty > 0 ? qty : '';
         if (totalExitValEl) totalExitValEl.value = totalExit > 0 ? totalExit : '';
 
-        // Calculate Gross PNL
-        let entrySide = entrySideEl && entrySideEl.value ? entrySideEl.value.toLowerCase() : '';
-        let exitSide = exitSideEl && exitSideEl.value ? exitSideEl.value.toLowerCase() : '';
+        // Calculate Gross PNL — PSE is always long
+        let marketInput = document.getElementById('market-input');
+        let currentMarket = marketInput ? marketInput.value : 'crypto';
+        let entrySide = currentMarket === 'pse' ? 'long' : (entrySideEl && entrySideEl.value ? entrySideEl.value.toLowerCase() : '');
+        let exitSide = currentMarket === 'pse' ? 'short' : (exitSideEl && exitSideEl.value ? exitSideEl.value.toLowerCase() : '');
 
         let grossPnl = 0;
 

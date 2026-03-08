@@ -70,7 +70,11 @@
                                 {{ \Carbon\Carbon::parse($ownedTrade->close_datetime)->format('M d, Y') }}
                             </td>
                             <td>
-                                {{ $ownedTrade->symbol }}
+                                <div class="flex items-center gap-2">
+                                    {{ $ownedTrade->symbol }}
+                                    <span
+                                        class="badge badge-outline badge-xs uppercase">{{ $ownedTrade->market ?? 'crypto' }}</span>
+                                </div>
                             </td>
                             <td>
                                 {{ $ownedTrade->duration }}

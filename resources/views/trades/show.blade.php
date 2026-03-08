@@ -55,6 +55,8 @@
                     <div>
                         <div class="flex items-center gap-4">
                             <p class="text-4xl uppercase font-black">{{ $trade->symbol ?? 'N/A'  }}</p>
+                            <div class="badge badge-outline uppercase text-xs font-bold">
+                                {{ $trade->market ?? 'crypto' }}</div>
                             <div @class([
                                 "badge",
                                 "uppercase",
@@ -127,6 +129,21 @@
                             'text-sm',
                             'text-red-400'
                         ])>Fees:    ${{ number_format($trade->open_fees + $trade->close_fees, 2) ?? 'N/A'  }}</p>
+
+                        @if(($trade->market ?? 'crypto') === 'pse')
+                            <div class="text-xs text-gray-400 mt-1 text-right space-y-0.5">
+                                @if($trade->broker_commission)
+                                <p>Broker: ₱{{ number_format($trade->broker_commission, 2) }}</p> @endif
+                                @if($trade->pse_trans_fee)
+                                <p>PSE Trans: ₱{{ number_format($trade->pse_trans_fee, 2) }}</p> @endif
+                                @if($trade->sccp_fee)
+                                <p>SCCP: ₱{{ number_format($trade->sccp_fee, 2) }}</p> @endif
+                                @if($trade->pse_vat)
+                                <p>VAT: ₱{{ number_format($trade->pse_vat, 2) }}</p> @endif
+                                @if($trade->sales_tax)
+                                <p>Sales Tax: ₱{{ number_format($trade->sales_tax, 2) }}</p> @endif
+                            </div>
+                        @endif
 
                     </div>
                 </div>

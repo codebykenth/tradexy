@@ -10,9 +10,25 @@
                 <a href="{{ route('trades.index') }}"><- Back to trades</a>
             </div>
         </div>
+
+        <!-- Market Toggle -->
+        <div class="flex items-center gap-2 mb-2">
+            <div class="inline-flex rounded-lg bg-gray-200 p-1" id="market-toggle">
+                <button type="button" data-market="crypto"
+                    class="market-tab px-6 py-2 rounded-md text-sm font-bold uppercase tracking-wider transition-all cursor-pointer">
+                    Crypto
+                </button>
+                <button type="button" data-market="pse"
+                    class="market-tab px-6 py-2 rounded-md text-sm font-bold uppercase tracking-wider transition-all cursor-pointer">
+                    PSE
+                </button>
+            </div>
+        </div>
+
         <form id="form" action="{{ route('trades.store') }}" enctype="multipart/form-data" method="post"
-            class="bg-gray-100 rounded-lg p-8 my-8">
+            class="bg-gray-100 rounded-lg p-8 my-4">
             @csrf
+            <input type="hidden" name="market" id="market-input" value="{{ old('market', 'crypto') }}" />
             <x-errors />
 
             <!-- General Information -->
@@ -29,7 +45,7 @@
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Symbol</legend>
                             <input type="text" class="input w-full @error('symbol') input-error @enderror"
-                                placeholder="BTCUSDT" name="symbol" value="{{ old('symbol') }}" />
+                                placeholder="BTCUSDT" name="symbol" value="{{ old('symbol') }}" id="symbol-input" />
                             @error('symbol') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
@@ -85,15 +101,25 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Timeframe</legend>
-                            <select class="select w-full" name="timeframe">
+                            <select class="select w-full" name="timeframe" id="timeframe-select">
                                 <option disabled @if(!old('timeframe')) selected @endif>Select timeframe</option>
-                                <option value="1m" @selected(old('timeframe') == '1m')>1m</option>
-                                <option value="5m" @selected(old('timeframe') == '5m')>5m</option>
-                                <option value="15m" @selected(old('timeframe') == '15m')>15m</option>
-                                <option value="30m" @selected(old('timeframe') == '30m')>30m</option>
-                                <option value="1hr" @selected(old('timeframe') == '1hr')>1hr</option>
-                                <option value="4hr" @selected(old('timeframe') == '4hr')>4hr</option>
+                                <!-- Crypto timeframes -->
+                                <option value="1m" class="crypto-timeframe" @selected(old('timeframe') == '1m')>1m
+                                </option>
+                                <option value="5m" class="crypto-timeframe" @selected(old('timeframe') == '5m')>5m
+                                </option>
+                                <option value="15m" class="crypto-timeframe" @selected(old('timeframe') == '15m')>15m
+                                </option>
+                                <option value="30m" class="crypto-timeframe" @selected(old('timeframe') == '30m')>30m
+                                </option>
+                                <option value="1hr" class="crypto-timeframe" @selected(old('timeframe') == '1hr')>1hr
+                                </option>
+                                <option value="4hr" class="crypto-timeframe" @selected(old('timeframe') == '4hr')>4hr
+                                </option>
+                                <!-- Shared timeframes -->
                                 <option value="1d" @selected(old('timeframe') == '1d')>1d</option>
+                                <!-- PSE timeframes -->
+                                <option value="1w" class="pse-timeframe" @selected(old('timeframe') == '1w')>1w</option>
                             </select>
                             @error('timeframe') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
@@ -108,7 +134,8 @@
                     <h2 class="text-xl font-bold text-gray-900">Entry Details</h2>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-                    <div>
+                    <!-- Entry Side (Crypto only) -->
+                    <div class="crypto-only-field">
                         <fieldset class="fieldset w-full">
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
@@ -121,7 +148,8 @@
                             @error('entry_side') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
-                    <div>
+                    <!-- Leverage (Crypto only) -->
+                    <div class="crypto-only-field">
                         <fieldset class="fieldset w-full">
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
@@ -214,7 +242,6 @@
                     <fieldset class="fieldset w-full reasons-fieldset">
                         <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                             Reason for entry</legend>
-                        <!-- <input type="text" placeholder="" class="input" name="type" value="entry" hidden /> -->
 
                         <div class="flex items-center gap-2 w-full reason-container">
                             <input type="text" placeholder="Add reason" class="input flex-grow" name="entry_reason[]"
@@ -244,7 +271,8 @@
                     <h2 class="text-xl font-bold text-gray-900">Exit Details</h2>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div>
+                    <!-- Exit Side (Crypto only) -->
+                    <div class="crypto-only-field">
                         <fieldset class="fieldset w-full">
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
@@ -275,7 +303,6 @@
                                 Closed Size</legend>
                             <input type="number" placeholder=""
                                 class="input bg-gray-200 text-gray-500 cursor-not-allowed" readonly id="closed-size" />
-                            <!-- Put Error Here -->
                         </fieldset>
                     </div>
                     <div>
@@ -317,7 +344,6 @@
                     <fieldset class="fieldset w-full reasons-fieldset">
                         <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                             Reason for exit</legend>
-                        <!-- <input type="text" placeholder="" class="input" name="type" value="exit" hidden /> -->
 
                         <div class="flex items-center gap-2 w-full reason-container">
                             <input type="text" placeholder="Add reason" class="input flex-grow" name="exit_reason[]"
@@ -346,7 +372,9 @@
                         class="bg-blue-600 text-white rounded py-1 px-3 text-sm font-bold flex items-center justify-center">4</span>
                     <h2 class="text-xl font-bold text-gray-900">PnL & Fees</h2>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+                <!-- Crypto Fees -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 crypto-only-field">
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
@@ -367,6 +395,70 @@
                             @error('close_fees') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
+                </div>
+
+                <!-- PSE Fees (auto-calculated from MyTrade rates) -->
+                <div class="pse-only-field">
+                    <p class="text-xs text-gray-400 mb-3">Fees auto-calculated based on MyTrade rates. You can override
+                        values manually.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6 pse-only-field">
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                Commission (0.25%)</legend>
+                            <input type="number" step="any" placeholder="" class="input pse-fee-input"
+                                name="broker_commission" value="{{ old('broker_commission') }}" />
+                            @error('broker_commission') <span class="text-error text-xs mt-1">{{ $message }}</span>
+                            @enderror
+                        </fieldset>
+                    </div>
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                PSE Trans (0.005%)</legend>
+                            <input type="number" step="any" placeholder="" class="input pse-fee-input"
+                                name="pse_trans_fee" value="{{ old('pse_trans_fee') }}" />
+                            @error('pse_trans_fee') <span class="text-error text-xs mt-1">{{ $message }}</span>
+                            @enderror
+                        </fieldset>
+                    </div>
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                SCCP (0.01%)</legend>
+                            <input type="number" step="any" placeholder="" class="input pse-fee-input" name="sccp_fee"
+                                value="{{ old('sccp_fee') }}" />
+                            @error('sccp_fee') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
+                        </fieldset>
+                    </div>
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                VAT (12% of Comm)</legend>
+                            <input type="number" step="any" placeholder="" class="input pse-fee-input" name="pse_vat"
+                                value="{{ old('pse_vat') }}" />
+                            @error('pse_vat') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
+                        </fieldset>
+                    </div>
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                Sales Tax (0.1% Sell)</legend>
+                            <input type="number" step="any" placeholder="" class="input pse-fee-input" name="sales_tax"
+                                value="{{ old('sales_tax') }}" />
+                            @error('sales_tax') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- PnL Summary (shared) -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
@@ -449,4 +541,5 @@
     </div>
 </x-layouts.app>
 @include('trades.partials.form-scripts')
+@include('trades.partials.market-toggle-script')
 @include('components.form-dirty-state-check')

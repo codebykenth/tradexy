@@ -37,12 +37,15 @@ class TradeRequest extends FormRequest
         $creating = $this->isCreating();
 
         return [
+            // --- Market Type ---
+            'market' => [$creating ? 'required' : 'sometimes', 'string', 'in:crypto,pse'],
+
             // --- General Info ---
             // On create: required. On update: 'sometimes' so unchanged fields don't need re-sending.
             'symbol' => [$creating ? 'required' : 'sometimes', 'string', 'max:20', 'alpha_num:ascii'],
             'open_datetime' => [$creating ? 'required' : 'sometimes', 'date', 'before_or_equal:now'],
             'close_datetime' => ['sometimes', 'nullable', 'date', 'after_or_equal:open_datetime', 'before_or_equal:now'],
-            'timeframe' => ['sometimes', 'nullable', 'string', 'in:1m,5m,15m,30m,1hr,4hr,1d'],
+            'timeframe' => ['sometimes', 'nullable', 'string', 'in:1m,5m,15m,30m,1hr,4hr,1d,1w'],
             'strategy_id' => ['sometimes', 'nullable', Rule::exists('strategies', 'id')->where('user_id', auth()->id())],
 
             // --- Entry Details ---
@@ -81,6 +84,13 @@ class TradeRequest extends FormRequest
             // --- Chart Upload ---
             // On update: always nullable so user doesn't have to re-upload an existing chart.
             'chart_picture' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+
+            // --- PSE Fees (only applicable when market = pse) ---
+            'broker_commission' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:999999'],
+            'pse_trans_fee' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:999999'],
+            'sccp_fee' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:999999'],
+            'pse_vat' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:999999'],
+            'sales_tax' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:999999'],
         ];
     }
 
@@ -125,6 +135,10 @@ class TradeRequest extends FormRequest
             'chart_picture.image' => 'The chart must be an image file.',
             'chart_picture.mimes' => 'Chart must be a JPG, PNG, or WebP image.',
             'chart_picture.max' => 'Chart image must be smaller than 5MB.',
+
+            // Market
+            'market.required' => 'Please select a market type (Crypto or PSE).',
+            'market.in' => 'Market must be Crypto or PSE.',
         ];
     }
 }

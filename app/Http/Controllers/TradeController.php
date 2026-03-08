@@ -113,11 +113,37 @@ final class TradeController extends Controller
             ->with('success', "Trade {$action} successfully.");
     }
 
-    // Recalculates server-side derived fields (symbol, entry/exit totals)
+    // Recalculates server-side derived fields (symbol, entry/exit totals, PSE defaults)
     private function computeDerivedFields(array $validated): array
     {
         if (isset($validated['symbol'])) {
             $validated['symbol'] = strtoupper($validated['symbol']);
+        }
+
+        // PSE trades: force long-only, no leverage, aggregate fees
+        if (($validated['market'] ?? 'crypto') === 'pse') {
+            $validated['entry_side'] = 'long';
+            $validated['exit_side'] = 'short';
+            $validated['leverage'] = 1;
+
+            // Sum all PSE fee fields into open_fees + close_fees for unified PnL calc
+            $brokerComm = (float) ($validated['broker_commission'] ?? 0);
+            $pseTrans = (float) ($validated['pse_trans_fee'] ?? 0);
+            $sccp = (float) ($validated['sccp_fee'] ?? 0);
+            $vat = (float) ($validated['pse_vat'] ?? 0);
+            $salesTax = (float) ($validated['sales_tax'] ?? 0);
+            $totalPseFees = $brokerComm + $pseTrans + $sccp + $vat + $salesTax;
+
+            // Split evenly into open/close fees for the standard PnL calculation
+            $validated['open_fees'] = round($totalPseFees / 2, 8);
+            $validated['close_fees'] = round($totalPseFees - $validated['open_fees'], 8);
+        } else {
+            // Crypto trades: clear PSE-specific fee fields
+            $validated['broker_commission'] = null;
+            $validated['pse_trans_fee'] = null;
+            $validated['sccp_fee'] = null;
+            $validated['pse_vat'] = null;
+            $validated['sales_tax'] = null;
         }
 
         if (isset($validated['avg_entry_price'], $validated['quantity'])) {

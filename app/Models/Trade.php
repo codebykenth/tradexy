@@ -13,6 +13,7 @@ class Trade extends Model
         'user_id',
         'strategy_id',
         'order_id',
+        'market',
         'symbol',
         'entry_side',
         'exit_side',
@@ -30,6 +31,11 @@ class Trade extends Model
         'chart_picture',
         'open_fees',
         'close_fees',
+        'broker_commission', // 0.25% of gross value	
+        'pse_trans_fee', // 0.005% of gross value	
+        'sccp_fee', // 0.01% of gross value	
+        'pse_vat', // 12% of the commission	
+        'sales_tax', // 0.1% of gross value
         'closed_pnl',
         'total_pnl',
         'open_datetime',
@@ -78,6 +84,11 @@ class Trade extends Model
     {
         if (!$this->open_datetime)
             return 'N/A';
+
+        // PSE trades always run during the PSE session (9:30 AM – 3:30 PM PHT)
+        if ($this->market === 'pse') {
+            return 'PSE Session';
+        }
 
         // Convert to UTC to standardize the trading session hours
         $hour = \Carbon\Carbon::parse($this->open_datetime)->timezone('UTC')->hour;
