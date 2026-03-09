@@ -29,6 +29,23 @@ final class TradeController extends Controller
         return view('trades.index', compact('ownedTrades'));
     }
 
+    public function gallery()
+    {
+        $winningTrades = Trade::where('user_id', Auth::id())
+            ->whereNotNull('chart_picture')
+            ->where('total_pnl', '>', 0)
+            ->latest('close_datetime')
+            ->paginate(10, ['*'], 'win_page');
+
+        $losingTrades = Trade::where('user_id', Auth::id())
+            ->whereNotNull('chart_picture')
+            ->where('total_pnl', '<', 0)
+            ->latest('close_datetime')
+            ->paginate(10, ['*'], 'loss_page');
+
+        return view('trades.gallery', compact('winningTrades', 'losingTrades'));
+    }
+
     public function create()
     {
         $strategies = Strategy::all();

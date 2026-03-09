@@ -13,6 +13,8 @@
                         <a href="/dashboard"
                             class="hover:text-gray-900 dark:hover:text-white transition-colors">Dashboard</a>
                         <a href="/trades" class="hover:text-gray-900 dark:hover:text-white transition-colors">Trades</a>
+                        <a href="/trades/gallery"
+                            class="hover:text-gray-900 dark:hover:text-white transition-colors">Win/Loss Gallery</a>
                         <a href="/balances" class="hover:text-gray-900 dark:hover:text-white transition-colors">Balances</a>
                         <a href="/strategies"
                             class="hover:text-gray-900 dark:hover:text-white transition-colors">Strategies</a>
@@ -34,7 +36,8 @@
                     <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex justify-center items-center cursor-pointer shadow hover:bg-blue-600 transition-colors"
                         id="avatar-btn">
                         @if ($profilePicture)
-                            <img src="{{ $profilePicture }}" alt="{{ Auth::user()->name ?? 'User' }}" class="rounded-full w-full h-full object-cover">
+                            <img src="{{ $profilePicture }}" alt="{{ Auth::user()->name ?? 'User' }}"
+                                class="rounded-full w-full h-full object-cover">
                         @else
                             @if (!empty($initials))
                                 <span class="font-medium text-sm">{{ $initials }}</span>
@@ -103,6 +106,18 @@
                                             d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
                                     </svg>
                                     Trades
+                                </a>
+                            </li>
+                            <li class="py-4">
+                                <a href="/trades/gallery"
+                                    class="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    {{-- Gallery Icon (Heroicons: photo) --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                    </svg>
+                                    Win/Loss Gallery
                                 </a>
                             </li>
                             <li class="py-4">

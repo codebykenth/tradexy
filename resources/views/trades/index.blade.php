@@ -99,7 +99,7 @@
                                         </svg>
                                     </button>
                                     <dialog id="modal_chart_{{ $ownedTrade->id }}" class="modal">
-                                        <div class="modal-box w-11/12 max-w-5xl">
+                                        <div class="modal-box w-11/12 max-w-5xl cursor-auto">
                                             <h3 class="text-lg font-bold">Chart</h3>
                                             <img src="{{ $ownedTrade->direct_chart_url ?? "" }}" alt="">
                                         </div>
@@ -119,7 +119,7 @@
                                                     </svg>
                                                 </button>
                                                 <dialog id="modal_ai_{{ $ownedTrade->id }}" class="modal">
-                                                    <div class="modal-box w-11/12 max-w-4xl">
+                                                    <div class="modal-box w-11/12 max-w-4xl cursor-auto">
                                                         <h3 class="text-2xl font-bold mb-6 text-indigo-700">Trade Analysis</h3>
 
                                                         <!-- AI Content Container with dynamic styling for markdown elements -->

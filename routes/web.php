@@ -61,6 +61,7 @@ Route::middleware(['throttle:read'])->group(function () {
     Route::middleware('auth')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::get('pnl-calendar', [PnlCalendarController::class, 'index']);
+        Route::get('trades/gallery', [TradeController::class, 'gallery'])->name('trades.gallery');
         Route::resource('trades', TradeController::class)->only(['index', 'show', 'create', 'edit']);
         Route::resource('balances', BalanceController::class)->only(['index', 'create']);
         Route::resource('strategies', StrategyController::class)->only(['index', 'create', 'show', 'edit']);
