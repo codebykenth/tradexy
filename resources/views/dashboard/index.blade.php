@@ -296,17 +296,4 @@
             </div>
         @endif
     </div>
-
-    <script>
-        // Listen for real-time trade updates and refresh the dashboard
-        if (window.Echo) {
-            window.Echo.private(`App.Models.User.{{ auth()->id() }}`)
-                .listen('.NewTradesFetched', (e) => {
-                    // Wait 2 seconds so the user can see the toast message before reloading
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                });
-        }
-    </script>
 </x-layouts.app>

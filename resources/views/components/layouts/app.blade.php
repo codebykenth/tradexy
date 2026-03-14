@@ -77,8 +77,32 @@
             if (window.Echo) {
                 window.Echo.private(`App.Models.User.{{ auth()->id() }}`)
                     .listen('.NewTradesFetched', (e) => {
+                        // 1. Show the notification
                         if (window.showToast) {
                             window.showToast(e.message, 'success');
+                        }
+
+                        // 2. Trigger auto-reload if on Trades Index or Dashboard
+                        const path = window.location.pathname;
+                        if (path.includes('/trades') || path.includes('/dashboard')) {
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        }
+                    });
+
+                // Market News Updates (Public Channel)
+                window.Echo.channel('market-insights')
+                    .listen('MarketNewsGenerated', (e) => {
+                        if (window.showToast) {
+                            window.showToast(e.message, 'info');
+                        }
+
+                        const path = window.location.pathname;
+                        if (path.includes('/insights') || path.includes('/dashboard')) {
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
                         }
                     });
             }

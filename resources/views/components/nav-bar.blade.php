@@ -17,9 +17,8 @@
                         <a href="/balances" class="hover:text-base-content transition-colors font-medium">Balances</a>
                         <a href="/strategies" class="hover:text-base-content transition-colors font-medium">Strategies</a>
                         <a href="/pnl-calendar" class="hover:text-base-content transition-colors font-medium">PnL Calendar</a>
-                        <a href="{{ route('daily-news.index') }}" class="hover:text-base-content transition-colors font-medium flex items-center gap-1.5">
+                        <a href="{{ route('daily-news.index') }}" class="hover:text-base-content transition-colors font-medium">
                             Insights
-                            <span class="badge badge-xs badge-primary font-black uppercase text-[8px] px-1 py-1.5">New</span>
                         </a>
                     </div>
                 @else

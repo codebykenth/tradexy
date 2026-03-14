@@ -42,6 +42,9 @@ class GenerateDailyNews extends Command
                 'ai_analysis' => $news['aiAnalysis'],
             ]);
 
+            // Broadcast real-time update
+            event(new \App\Events\MarketNewsGenerated());
+
             $email = config('services.bybit.user_email');
             if ($email) {
                 Mail::to($email)->send(new DailyNewsMail($news['aiAnalysis']));

@@ -276,15 +276,4 @@
     bulkBtn.addEventListener('click', () => performBulkAction('update'));
     document.getElementById('bulk-delete').addEventListener('click', () => performBulkAction('delete'));
     allTradesBtn.addEventListener('click', selectAllTrades)
-
-    // Listen for real-time trade updates and refresh the table
-    if (window.Echo) {
-        window.Echo.private(`App.Models.User.{{ auth()->id() }}`)
-            .listen('.NewTradesFetched', (e) => {
-                // Wait 2 seconds so the user can see the toast message before reloading
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
-            });
-    }
 </script>
