@@ -23,12 +23,20 @@ final class BalanceController extends Controller
      */
     public function index(): View
     {
-        $isDemo = session('account_mode', 'real') === 'demo';
+        $accountMode = session('account_mode', 'real');
+        $marketMode = session('market_type', 'crypto');
 
-        $balances = Balance::where('user_id', Auth::id())
-            ->where('is_demo', $isDemo)
-            ->latest('date')
-            ->paginate(10);
+        $query = Balance::where('user_id', Auth::id());
+        
+        if ($accountMode !== 'all') {
+            $query->where('is_demo', $accountMode === 'demo');
+        }
+
+        if ($marketMode !== 'all') {
+            $query->where('market', $marketMode);
+        }
+
+        $balances = $query->latest('date')->paginate(10);
 
         return view('balances.index', [
             'balances' => $balances,

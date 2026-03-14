@@ -28,7 +28,7 @@
         <form id="form" action="{{ route('trades.store') }}" enctype="multipart/form-data" method="post"
             class="bg-gray-100 rounded-lg p-8 my-4">
             @csrf
-            <input type="hidden" name="market" id="market-input" value="{{ old('market', 'crypto') }}" />
+            <input type="hidden" name="market" id="market-input" value="{{ old('market', session('market_type') === 'all' ? 'crypto' : session('market_type', 'crypto')) }}" />
             <x-errors />
 
             <!-- General Information -->

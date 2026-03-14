@@ -91,6 +91,7 @@ class FetchClosedPnl extends Command
                         'is_demo' => $isDemo,
                     ],
                     [
+                        'market' => 'crypto',
                         'symbol' => $trade['symbol'],
                         'entry_side' => $entrySide,
                         'exit_side' => $closeSide,

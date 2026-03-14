@@ -23,12 +23,20 @@ final class TradeController extends Controller
 
     public function index()
     {
-        $isDemo = session('account_mode', 'real') === 'demo';
+        $accountMode = session('account_mode', 'real');
+        $marketMode = session('market_type', 'crypto');
         
-        $ownedTrades = Trade::where('user_id', Auth::id())
-            ->where('is_demo', $isDemo)
-            ->latest('close_datetime')
-            ->paginate(10);
+        $query = Trade::where('user_id', Auth::id());
+
+        if ($accountMode !== 'all') {
+            $query->where('is_demo', $accountMode === 'demo');
+        }
+
+        if ($marketMode !== 'all') {
+            $query->where('market', $marketMode);
+        }
+
+        $ownedTrades = $query->latest('close_datetime')->paginate(10);
 
         return view('trades.index', compact('ownedTrades'));
     }

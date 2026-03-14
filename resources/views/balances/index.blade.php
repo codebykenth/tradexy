@@ -27,6 +27,11 @@
                                 @if($balance->is_demo)
                                     <span class="badge badge-warning badge-xs font-bold uppercase py-2">Demo</span>
                                 @endif
+                                <span @class([
+                                    'badge badge-xs font-bold uppercase py-2',
+                                    'badge-secondary' => $balance->market === 'crypto',
+                                    'badge-accent' => $balance->market === 'pse',
+                                ])>{{ $balance->market }}</span>
                             </div>
                         </td>                                
                         <td>
@@ -185,7 +190,18 @@
                                 <fieldset class="fieldset w-full">
                                     <legend
                                         class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
-                                        Entry Type</legend>
+                                        Market</legend>
+                                    <select class="select w-full" name="market">
+                                        <option value="crypto" @selected($balance->market === 'crypto')>Crypto</option>
+                                        <option value="pse" @selected($balance->market === 'pse')>PSE</option>
+                                    </select>
+                                </fieldset>
+                            </div>
+                            <div>
+                                <fieldset class="fieldset w-full">
+                                    <legend
+                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                        Account Mode</legend>
                                     <label class="label cursor-pointer justify-start gap-4 h-full">
                                         <input type="hidden" name="is_demo" value="0">
                                         <input type="checkbox" name="is_demo" value="1" class="checkbox checkbox-warning" {{ $balance->is_demo ? 'checked' : '' }} />

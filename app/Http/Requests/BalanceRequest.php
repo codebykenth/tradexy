@@ -42,7 +42,8 @@ final class BalanceRequest extends FormRequest
         
                     $query = Balance::where('user_id', auth()->id())
                         ->whereDate('date', '=', $date)
-                        ->where('is_demo', $this->boolean('is_demo'));
+                        ->where('is_demo', $this->boolean('is_demo'))
+                        ->where('market', $this->input('market', 'crypto'));
 
                     // On update, ignore the current record
                     if (!$this->isCreating()) {
@@ -58,6 +59,7 @@ final class BalanceRequest extends FormRequest
             'total_equity' => [$creating ? 'required' : 'sometimes', 'numeric', 'min:-9999999999', 'max:9999999999'],
             'cum_realised_pnl' => [$creating ? 'required' : 'sometimes', 'numeric', 'min:-9999999999', 'max:9999999999'],
             'is_demo' => ['sometimes', 'boolean'],
+            'market' => [$creating ? 'required' : 'sometimes', 'string', 'in:crypto,pse'],
         ];
     }
 

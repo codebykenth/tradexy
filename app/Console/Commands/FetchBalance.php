@@ -54,6 +54,7 @@ class FetchBalance extends Command
                 'wallet_balance' => $usdtData['walletBalance'],
                 'cum_realised_pnl' => $usdtData['cumRealisedPnl'],
                 'is_demo' => $isDemo,
+                'market' => 'crypto',
             ]);
             DB::commit();
             $this->info('Done!');

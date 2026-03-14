@@ -14,7 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SharedTradeController;
 use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\TradeController;
-use App\Http\Controllers\AccountModeController;
+use App\Http\Controllers\TradingModeController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -90,5 +90,5 @@ Route::middleware(['throttle:write', 'auth'])->group(function () {
     Route::delete('profile/remove-picture', [ProfileController::class, 'removeProfilePicture'])->name('profile.remove-picture');
     Route::post('trades/{id}/share', [SharedTradeController::class, 'generate'])->name('trades.share.generate');
     Route::delete('trades/{id}/share', [SharedTradeController::class, 'revoke'])->name('trades.share.revoke');
-    Route::post('account-mode', [AccountModeController::class, 'update'])->name('account-mode.update');
+    Route::post('trading-mode', [TradingModeController::class, 'update'])->name('trading-mode.update');
 });

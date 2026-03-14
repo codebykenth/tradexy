@@ -35,21 +35,36 @@ class PnlCalendarController extends Controller
             $nextYear++;
         }
 
-        $isDemo = session('account_mode', 'real') === 'demo';
+        $accountMode = session('account_mode', 'real');
+        $marketMode = session('market_type', 'crypto');
 
         // Fetch trades for the selected month
-        $trades = Trade::where('user_id', $userId)
-            ->where('is_demo', $isDemo)
+        $tradeQuery = Trade::where('user_id', $userId)
             ->whereNotNull('close_datetime')
             ->whereYear('close_datetime', $currentYear)
-            ->whereMonth('close_datetime', $currentMonth)
-            ->get();
+            ->whereMonth('close_datetime', $currentMonth);
+
+        if ($accountMode !== 'all') {
+            $tradeQuery->where('is_demo', $accountMode === 'demo');
+        }
+        if ($marketMode !== 'all') {
+            $tradeQuery->where('market', $marketMode);
+        }
+
+        $trades = $tradeQuery->get();
 
         // Check if user has any trades at all
-        $hasTrades = Trade::where('user_id', $userId)
-            ->where('is_demo', $isDemo)
-            ->whereNotNull('close_datetime')
-            ->exists();
+        $hasTradesQuery = Trade::where('user_id', $userId)
+            ->whereNotNull('close_datetime');
+
+        if ($accountMode !== 'all') {
+            $hasTradesQuery->where('is_demo', $accountMode === 'demo');
+        }
+        if ($marketMode !== 'all') {
+            $hasTradesQuery->where('market', $marketMode);
+        }
+
+        $hasTrades = $hasTradesQuery->exists();
 
         // Group trades by date and calculate daily PnL
         $dailyPnl = $trades->groupBy(fn($trade) => \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('Y-m-d'))

@@ -23,6 +23,8 @@ class MigrateBalancesController extends Controller
             Balance::updateOrCreate([
                 'user_id' => $user->id,
                 'date' => $balance['date'],
+                'market' => 'crypto',
+                'is_demo' => false,
             ], [
                 'total_equity' => $balance['total_equity'],
                 'wallet_balance' => $balance['wallet_balance'],

@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-final class EnsureAccountModeSet
+final class EnsureTradingModeSet
 {
     /**
      * Handle an incoming request.
@@ -17,6 +17,10 @@ final class EnsureAccountModeSet
     {
         if (!session()->has('account_mode')) {
             session(['account_mode' => 'real']);
+        }
+
+        if (!session()->has('market_type')) {
+            session(['market_type' => 'crypto']);
         }
 
         return $next($request);

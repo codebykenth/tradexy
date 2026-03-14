@@ -16,18 +16,29 @@ class StrategyController extends Controller
     public function index()
     {
         $userId = Auth::id();
-        $isDemo = session('account_mode', 'real') === 'demo';
-        $cacheKey = "strategies_user_{$userId}_mode_" . ($isDemo ? 'demo' : 'real');
+        $accountMode = session('account_mode', 'real');
+        $marketMode = session('market_type', 'crypto');
+        $cacheKey = "strategies_user_{$userId}_mode_{$accountMode}_market_{$marketMode}";
 
-        $strategies = Cache::remember($cacheKey, now()->addHours(6), function () use ($userId, $isDemo) {
-            return Strategy::where('user_id', $userId)
-                ->withCount(['trades as trades_count' => fn($query) => $query->where('is_demo', $isDemo)])
-                ->withSum(['trades as net_pnl' => fn($query) => $query->where('is_demo', $isDemo)], 'total_pnl')
-                ->withSum(['trades as total_win_amount' => fn($query) => $query->where('total_pnl', '>', 0)->where('is_demo', $isDemo)], 'total_pnl')
-                ->withSum(['trades as total_loss_amount' => fn($query) => $query->where('total_pnl', '<', 0)->where('is_demo', $isDemo)], 'total_pnl')
-                ->withAvg(['trades as avg_win' => fn($query) => $query->where('total_pnl', '>', 0)->where('is_demo', $isDemo)], 'total_pnl')
-                ->withAvg(['trades as avg_loss' => fn($query) => $query->where('total_pnl', '<', 0)->where('is_demo', $isDemo)], 'total_pnl')
-                ->withCount(['trades as winning_trades_count' => fn($query) => $query->where('total_pnl', '>', 0)->where('is_demo', $isDemo)])
+        $strategies = Cache::remember($cacheKey, now()->addHours(6), function () use ($userId, $accountMode, $marketMode) {
+            $query = Strategy::where('user_id', $userId);
+
+            $tradeFilter = function ($q) use ($accountMode, $marketMode) {
+                if ($accountMode !== 'all') {
+                    $q->where('is_demo', $accountMode === 'demo');
+                }
+                if ($marketMode !== 'all') {
+                    $q->where('market', $marketMode);
+                }
+            };
+
+            return $query->withCount(['trades as trades_count' => $tradeFilter])
+                ->withSum(['trades as net_pnl' => $tradeFilter], 'total_pnl')
+                ->withSum(['trades as total_win_amount' => fn($q) => $tradeFilter($q->where('total_pnl', '>', 0))], 'total_pnl')
+                ->withSum(['trades as total_loss_amount' => fn($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
+                ->withAvg(['trades as avg_win' => fn($q) => $tradeFilter($q->where('total_pnl', '>', 0))], 'total_pnl')
+                ->withAvg(['trades as avg_loss' => fn($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
+                ->withCount(['trades as winning_trades_count' => fn($q) => $tradeFilter($q->where('total_pnl', '>', 0))])
                 ->orderByDesc('net_pnl')
                 ->get();
         });
@@ -64,10 +75,17 @@ class StrategyController extends Controller
     public function show(int $id)
     {
         $strategy = $this->getOwnedStrategies($id);
-        $isDemo = session('account_mode', 'real') === 'demo';
+        $accountMode = session('account_mode', 'real');
+        $marketMode = session('market_type', 'crypto');
 
-        $strategy->load(['rules', 'trades' => function ($query) use ($isDemo) {
-            $query->where('is_demo', $isDemo)->latest('close_datetime');
+        $strategy->load(['rules', 'trades' => function ($query) use ($accountMode, $marketMode) {
+            if ($accountMode !== 'all') {
+                $query->where('is_demo', $accountMode === 'demo');
+            }
+            if ($marketMode !== 'all') {
+                $query->where('market', $marketMode);
+            }
+            $query->latest('close_datetime');
         }]);
 
         return view('strategies.show', compact('strategy'));

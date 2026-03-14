@@ -14,6 +14,7 @@ class Balance extends Model
         'wallet_balance',
         'cum_realised_pnl',
         'is_demo',
+        'market',
     ];
 
     protected $casts = [

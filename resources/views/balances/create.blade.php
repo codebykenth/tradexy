@@ -65,7 +65,18 @@
                         <fieldset class="fieldset w-full">
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
-                                Entry Type</legend>
+                                Market</legend>
+                            <select class="select w-full" name="market">
+                                <option value="crypto" @selected(old('market', session('market_type') === 'all' ? 'crypto' : session('market_type', 'crypto')) === 'crypto')>Crypto</option>
+                                <option value="pse" @selected(old('market', session('market_type') === 'all' ? 'crypto' : session('market_type', 'crypto')) === 'pse')>PSE</option>
+                            </select>
+                        </fieldset>
+                    </div>
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                Account Mode</legend>
                             <label class="label cursor-pointer justify-start gap-4">
                                 <input type="checkbox" name="is_demo" value="1" class="checkbox checkbox-warning" {{ old('is_demo', session('account_mode') === 'demo') ? 'checked' : '' }} />
                                 <span class="label-text font-bold text-warning uppercase">Demo Entry</span>

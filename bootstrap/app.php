@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Middleware\TransactionalRequest;
-use App\Http\Middleware\EnsureAccountModeSet;
+use App\Http\Middleware\EnsureTradingModeSet;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -28,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->appendToGroup('web', TransactionalRequest::class);
-        $middleware->appendToGroup('web', EnsureAccountModeSet::class);
+        $middleware->appendToGroup('web', EnsureTradingModeSet::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
@@ -55,7 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Record not found (findOrFail)
         $exceptions->renderable(function (ModelNotFoundException $e) use ($devMessage) {
-            return redirect()->back()
+            return redirect()->to('/dashboard')
                 ->with('error', $devMessage($e, 'The requested record was not found.'));
         });
 
@@ -83,10 +83,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->with('error', $devMessage($e, 'This action is not allowed.'));
         });
 
-        // 404 — route or resource not found
-        $exceptions->renderable(function (NotFoundHttpException $e) use ($devMessage) {
-            return redirect()->back()
-                ->with('error', $devMessage($e, 'Page not found.'));
+        // 404 — route or resource not found - let Laravel show the 404 view
+        $exceptions->renderable(function (NotFoundHttpException $e) {
+            return null;
         });
 
         // Database errors (constraint violations, etc.)
@@ -97,27 +96,37 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Other HTTP exceptions (500, 503, etc.)
         $exceptions->renderable(function (HttpException $e) use ($devMessage) {
-            $fallback = match ($e->getStatusCode()) {
+            $fallbackMsg = match ($e->getStatusCode()) {
                 403 => 'Access denied.',
                 500 => 'An internal server error occurred.',
                 503 => 'Service is temporarily unavailable. Please try again later.',
                 default => 'An error occurred. Please try again.',
             };
 
-            return redirect()->back()->with('error', $devMessage($e, $fallback));
+            // If it's a 500 or similar, don't redirect back to avoid loops if the page itself is broken
+            if ($e->getStatusCode() >= 500) {
+                return null; 
+            }
+
+            return redirect()->intended('/dashboard')->with('error', $devMessage($e, $fallbackMsg));
         });
 
         // Generic catch-all (anything unexpected)
         $exceptions->renderable(function (Throwable $e) use ($devMessage) {
             if ($e instanceof ValidationException) {
-                return null; // Let Laravel map this to $errors variable
+                return null;
             }
 
             if (request()->expectsJson()) {
                 return null;
             }
 
-            return redirect()->back()->withInput()
+            // In local/dev, show the full error page (don't redirect) to help debugging
+            if (!app()->isProduction()) {
+                return null;
+            }
+
+            return redirect()->to('/dashboard')
                 ->with('error', $devMessage($e, 'Something went wrong. Please try again.'));
         });
 
