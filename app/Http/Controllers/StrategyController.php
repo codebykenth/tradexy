@@ -16,15 +16,18 @@ class StrategyController extends Controller
     public function index()
     {
         $userId = Auth::id();
-        $strategies = Cache::remember("strategies_user_{$userId}", now()->addHours(6), function () use ($userId) {
+        $isDemo = session('account_mode', 'real') === 'demo';
+        $cacheKey = "strategies_user_{$userId}_mode_" . ($isDemo ? 'demo' : 'real');
+
+        $strategies = Cache::remember($cacheKey, now()->addHours(6), function () use ($userId, $isDemo) {
             return Strategy::where('user_id', $userId)
-                ->withCount('trades as trades_count')
-                ->withSum('trades as net_pnl', 'total_pnl')
-                ->withSum(['trades as total_win_amount' => fn($query) => $query->where('total_pnl', '>', 0)], 'total_pnl')
-                ->withSum(['trades as total_loss_amount' => fn($query) => $query->where('total_pnl', '<', 0)], 'total_pnl')
-                ->withAvg(['trades as avg_win' => fn($query) => $query->where('total_pnl', '>', 0)], 'total_pnl')
-                ->withAvg(['trades as avg_loss' => fn($query) => $query->where('total_pnl', '<', 0)], 'total_pnl')
-                ->withCount(['trades as winning_trades_count' => fn($query) => $query->where('total_pnl', '>', 0)])
+                ->withCount(['trades as trades_count' => fn($query) => $query->where('is_demo', $isDemo)])
+                ->withSum(['trades as net_pnl' => fn($query) => $query->where('is_demo', $isDemo)], 'total_pnl')
+                ->withSum(['trades as total_win_amount' => fn($query) => $query->where('total_pnl', '>', 0)->where('is_demo', $isDemo)], 'total_pnl')
+                ->withSum(['trades as total_loss_amount' => fn($query) => $query->where('total_pnl', '<', 0)->where('is_demo', $isDemo)], 'total_pnl')
+                ->withAvg(['trades as avg_win' => fn($query) => $query->where('total_pnl', '>', 0)->where('is_demo', $isDemo)], 'total_pnl')
+                ->withAvg(['trades as avg_loss' => fn($query) => $query->where('total_pnl', '<', 0)->where('is_demo', $isDemo)], 'total_pnl')
+                ->withCount(['trades as winning_trades_count' => fn($query) => $query->where('total_pnl', '>', 0)->where('is_demo', $isDemo)])
                 ->orderByDesc('net_pnl')
                 ->get();
         });
@@ -61,7 +64,11 @@ class StrategyController extends Controller
     public function show(int $id)
     {
         $strategy = $this->getOwnedStrategies($id);
-        $strategy->load('rules', 'trades'); // Load relations for UI
+        $isDemo = session('account_mode', 'real') === 'demo';
+
+        $strategy->load(['rules', 'trades' => function ($query) use ($isDemo) {
+            $query->where('is_demo', $isDemo)->latest('close_datetime');
+        }]);
 
         return view('strategies.show', compact('strategy'));
     }

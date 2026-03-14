@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\TransactionalRequest;
+use App\Http\Middleware\EnsureAccountModeSet;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->appendToGroup('web', TransactionalRequest::class);
+        $middleware->appendToGroup('web', EnsureAccountModeSet::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 

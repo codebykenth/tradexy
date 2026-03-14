@@ -8,6 +8,7 @@ use App\Http\Requests\TradeRequest;
 use App\Models\Strategy;
 use App\Models\Trade;
 use App\Services\BybitService;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -22,7 +23,10 @@ final class TradeController extends Controller
 
     public function index()
     {
+        $isDemo = session('account_mode', 'real') === 'demo';
+        
         $ownedTrades = Trade::where('user_id', Auth::id())
+            ->where('is_demo', $isDemo)
             ->latest('close_datetime')
             ->paginate(10);
 

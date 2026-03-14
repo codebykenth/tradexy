@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BalanceRequest;
 use App\Models\Balance;
 use App\Services\BybitService;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -22,7 +23,12 @@ final class BalanceController extends Controller
      */
     public function index(): View
     {
-        $balances = Balance::where('user_id', Auth::id())->latest('date')->paginate(10);
+        $isDemo = session('account_mode', 'real') === 'demo';
+
+        $balances = Balance::where('user_id', Auth::id())
+            ->where('is_demo', $isDemo)
+            ->latest('date')
+            ->paginate(10);
 
         return view('balances.index', [
             'balances' => $balances,

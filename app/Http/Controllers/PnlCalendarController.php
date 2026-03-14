@@ -35,8 +35,11 @@ class PnlCalendarController extends Controller
             $nextYear++;
         }
 
+        $isDemo = session('account_mode', 'real') === 'demo';
+
         // Fetch trades for the selected month
         $trades = Trade::where('user_id', $userId)
+            ->where('is_demo', $isDemo)
             ->whereNotNull('close_datetime')
             ->whereYear('close_datetime', $currentYear)
             ->whereMonth('close_datetime', $currentMonth)
@@ -44,6 +47,7 @@ class PnlCalendarController extends Controller
 
         // Check if user has any trades at all
         $hasTrades = Trade::where('user_id', $userId)
+            ->where('is_demo', $isDemo)
             ->whereNotNull('close_datetime')
             ->exists();
 

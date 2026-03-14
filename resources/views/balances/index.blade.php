@@ -21,7 +21,7 @@
                 </x-slot:header>
                 @foreach ($balances as $balance)
                     <x-table.row onclick="document.getElementById('modal_{{ $balance->id }}').showModal()" class="cursor-pointer">
-                        <td class="font-medium text-center text-xs">
+                        <td class="font-medium text-center">
                             <div class="flex items-center justify-center gap-2">
                                 {{ \Carbon\Carbon::parse($balance->local_date)->format('M d, Y') ?? $balance->local_date }}
                                 @if($balance->is_demo)

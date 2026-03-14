@@ -12,9 +12,11 @@ class DashboardController extends Controller
     public function index()
     {
         $userId = Auth::id();
+        $isDemo = session('account_mode', 'real') === 'demo';
 
         // 1. Fetch Balances for Equity Curve
         $balances = Balance::where('user_id', $userId)
+            ->where('is_demo', $isDemo)
             ->orderBy('date', 'asc')
             ->get();
 
@@ -23,6 +25,7 @@ class DashboardController extends Controller
 
         // 2. Fetch Trades for PnL Curve and Overall Stats
         $trades = Trade::where('user_id', $userId)
+            ->where('is_demo', $isDemo)
             ->whereNotNull('close_datetime')
             ->orderBy('close_datetime', 'asc')
             ->get();
@@ -123,6 +126,7 @@ class DashboardController extends Controller
         // Top Symbols
         $topSymbols = Trade::selectRaw('symbol, COUNT(*) as trades_count, SUM(total_pnl) as net_pnl, SUM(CASE WHEN total_pnl > 0 THEN 1 ELSE 0 END) as win_count')
             ->where('user_id', $userId)
+            ->where('is_demo', $isDemo)
             ->whereNotNull('close_datetime')
             ->groupBy('symbol')
             ->orderByDesc('trades_count')
@@ -135,6 +139,7 @@ class DashboardController extends Controller
 
         // Recent Activity
         $recentActivity = Trade::where('user_id', $userId)
+            ->where('is_demo', $isDemo)
             ->whereNotNull('close_datetime')
             ->orderByDesc('close_datetime')
             ->limit(5)

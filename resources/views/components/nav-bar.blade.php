@@ -31,6 +31,34 @@
             </div>
 
             @auth
+                <!-- Global Account Switcher -->
+                <div class="hidden lg:flex items-center bg-base-200 p-1 rounded-xl shadow-inner border border-base-300">
+                    <form action="{{ route('account-mode.update') }}" method="POST" id="mode-switcher-real" class="m-0">
+                        @csrf
+                        <input type="hidden" name="mode" value="real">
+                        <button type="submit" @class([
+                            'px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all',
+                            'bg-primary text-primary-content shadow-sm scale-105' => session('account_mode', 'real') === 'real',
+                            'text-base-content/50 hover:text-base-content' => session('account_mode') !== 'real'
+                        ])>
+                            Real
+                        </button>
+                    </form>
+                    <form action="{{ route('account-mode.update') }}" method="POST" id="mode-switcher-demo" class="m-0">
+                        @csrf
+                        <input type="hidden" name="mode" value="demo">
+                        <button type="submit" @class([
+                            'px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all',
+                            'bg-warning text-warning-content shadow-sm scale-105' => session('account_mode') === 'demo',
+                            'text-base-content/50 hover:text-base-content' => session('account_mode') !== 'demo'
+                        ])>
+                            Demo
+                        </button>
+                    </form>
+                </div>
+            @endauth
+
+            @auth
                 <!-- Desktop Avatar -->
                 <div class="relative hidden md:block z-[60]">
                     <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex justify-center items-center cursor-pointer shadow hover:bg-blue-600 transition-colors"
@@ -157,11 +185,41 @@
                                 </a>
                             </li>
                             <li class="py-4">
-                                <form action="/logout" method="post">
+                                <form action="/logout" method="post" class="m-0">
                                     @csrf
                                     <button type="submit"
-                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-white transition-colors cursor-pointer">Logout</button>
+                                        class="flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-white transition-colors cursor-pointer">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                                        </svg>
+                                        Logout
+                                    </button>
                                 </form>
+                            </li>
+                            <li class="py-4 border-t border-gray-300">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold uppercase text-gray-500">Account Mode</span>
+                                    <div class="flex bg-base-300 p-1 rounded-lg">
+                                        <form action="{{ route('account-mode.update') }}" method="POST" class="m-0">
+                                            @csrf
+                                            <input type="hidden" name="mode" value="real">
+                                            <button type="submit" @class([
+                                                'px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all',
+                                                'bg-primary text-primary-content' => session('account_mode', 'real') === 'real',
+                                                'text-gray-500' => session('account_mode') !== 'real'
+                                            ])>Real</button>
+                                        </form>
+                                        <form action="{{ route('account-mode.update') }}" method="POST" class="m-0">
+                                            @csrf
+                                            <input type="hidden" name="mode" value="demo">
+                                            <button type="submit" @class([
+                                                'px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all',
+                                                'bg-warning text-warning-content' => session('account_mode') === 'demo',
+                                                'text-gray-500' => session('account_mode') !== 'demo'
+                                            ])>Demo</button>
+                                        </form>
+                                    </div>
+                                </div>
                             </li>
                         </ul>
                     @else
