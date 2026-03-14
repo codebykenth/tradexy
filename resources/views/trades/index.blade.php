@@ -74,6 +74,9 @@
                                     {{ $ownedTrade->symbol }}
                                     <span
                                         class="badge badge-outline badge-xs uppercase">{{ $ownedTrade->market ?? 'crypto' }}</span>
+                                    @if($ownedTrade->is_demo)
+                                        <span class="badge badge-warning badge-xs uppercase">Demo</span>
+                                    @endif
                                 </div>
                             </td>
                             <td>

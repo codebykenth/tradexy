@@ -61,6 +61,17 @@
                             <!-- Put Error Here -->
                         </fieldset>
                     </div>
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                Entry Type</legend>
+                            <label class="label cursor-pointer justify-start gap-4">
+                                <input type="checkbox" name="is_demo" value="1" class="checkbox checkbox-warning" />
+                                <span class="label-text font-bold text-warning uppercase">Demo Entry</span>
+                            </label>
+                        </fieldset>
+                    </div>
                 </div>
             </div>
 

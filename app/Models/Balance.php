@@ -13,10 +13,12 @@ class Balance extends Model
         'total_equity',
         'wallet_balance',
         'cum_realised_pnl',
+        'is_demo',
     ];
 
     protected $casts = [
-        'date' => 'datetime'
+        'date' => 'datetime',
+        'is_demo' => 'boolean',
     ];
 
     public function getLocalDateAttribute(): string

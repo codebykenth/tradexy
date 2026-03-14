@@ -121,6 +121,11 @@
                                 "badge-error" => $trade->exit_side === "long"
                             ])>{{ $trade->entry_side }}</div>
                             <div class="badge badge-neutral">{{ $trade->leverage ?? 'N/A'  }}x</div>
+                            @if($trade->is_demo)
+                                <div class="badge badge-warning uppercase text-xs font-bold font-mono tracking-tighter shadow-sm border border-warning/30">
+                                    Demo
+                                </div>
+                            @endif
 
                         </div>
                         @if ($trade->order_id)

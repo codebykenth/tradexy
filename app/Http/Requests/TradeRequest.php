@@ -91,6 +91,9 @@ class TradeRequest extends FormRequest
             'sccp_fee' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:999999'],
             'pse_vat' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:999999'],
             'sales_tax' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:999999'],
+
+            // --- Type ---
+            'is_demo' => ['sometimes', 'boolean'],
         ];
     }
 

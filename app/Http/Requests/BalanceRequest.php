@@ -41,7 +41,8 @@ final class BalanceRequest extends FormRequest
                     $date = Carbon::parse($value)->toDateString(); // extract calendar date only
         
                     $query = Balance::where('user_id', auth()->id())
-                        ->whereDate('date', '=', $date);
+                        ->whereDate('date', '=', $date)
+                        ->where('is_demo', $this->boolean('is_demo'));
 
                     // On update, ignore the current record
                     if (!$this->isCreating()) {
@@ -56,6 +57,7 @@ final class BalanceRequest extends FormRequest
             'wallet_balance' => [$creating ? 'required' : 'sometimes', 'numeric', 'min:-9999999999', 'max:9999999999'],
             'total_equity' => [$creating ? 'required' : 'sometimes', 'numeric', 'min:-9999999999', 'max:9999999999'],
             'cum_realised_pnl' => [$creating ? 'required' : 'sometimes', 'numeric', 'min:-9999999999', 'max:9999999999'],
+            'is_demo' => ['sometimes', 'boolean'],
         ];
     }
 

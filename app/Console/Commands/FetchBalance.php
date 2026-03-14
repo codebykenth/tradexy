@@ -18,7 +18,7 @@ class FetchBalance extends Command
      *
      * @var string
      */
-    protected $signature = 'account:fetch-balance';
+    protected $signature = 'account:fetch-balance {--demo}';
 
     /**
      * The console command description.
@@ -35,10 +35,11 @@ class FetchBalance extends Command
         $this->user = User::where('email', config('services.bybit.user_email'))->first();
         $this->info('Fetching account balance from Bybit...');
         try {
-            $bybitService = new BybitService();
+            $isDemo = $this->option('demo');
+            $bybitService = new BybitService($isDemo);
             $user = $this->user;
 
-            $this->info("Fetching for: {$user->name}");
+            $this->info("Fetching for: {$user->name}" . ($isDemo ? ' [DEMO]' : ' [MAIN]'));
 
             $balance = $bybitService->getAccountBalance()['result']['list'][0];
 
@@ -52,6 +53,7 @@ class FetchBalance extends Command
                 'total_equity' => $usdtData['equity'],
                 'wallet_balance' => $usdtData['walletBalance'],
                 'cum_realised_pnl' => $usdtData['cumRealisedPnl'],
+                'is_demo' => $isDemo,
             ]);
             DB::commit();
             $this->info('Done!');

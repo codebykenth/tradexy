@@ -25,6 +25,9 @@
                             "badge-error" => $trade->exit_side === "long"
                         ])>{{ $trade->entry_side }}</div>
                         <div class="badge badge-neutral">{{ $trade->leverage ?? 'N/A' }}x</div>
+                        @if($trade->is_demo)
+                            <div class="badge badge-warning uppercase text-xs font-bold font-mono">Demo</div>
+                        @endif
                     </div>
 
                     <div class="flex gap-8 mt-4">

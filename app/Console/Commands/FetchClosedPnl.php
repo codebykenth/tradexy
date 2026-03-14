@@ -19,7 +19,7 @@ class FetchClosedPnl extends Command
      *
      * @var string
      */
-    protected $signature = 'trades:fetch-pnl';
+    protected $signature = 'trades:fetch-pnl {--demo}';
 
     /**
      * The console command description.
@@ -37,7 +37,8 @@ class FetchClosedPnl extends Command
         $this->info('Fetching closed PnL from Bybit...');
 
         try {
-            $bybit = new BybitService();
+            $isDemo = $this->option('demo');
+            $bybit = new BybitService($isDemo);
 
             $user = $this->user;
 
@@ -46,7 +47,7 @@ class FetchClosedPnl extends Command
                 return 1;
             }
 
-            $this->info("Fetching for: {$user->name}");
+            $this->info("Fetching for: {$user->name}" . ($isDemo ? ' [DEMO]' : ' [MAIN]'));
 
             $response = $bybit->getClosedPnl(days: 2);
 
@@ -87,6 +88,7 @@ class FetchClosedPnl extends Command
                     [
                         'user_id' => $user->id,
                         'order_id' => $trade['orderId'],
+                        'is_demo' => $isDemo,
                     ],
                     [
                         'symbol' => $trade['symbol'],
@@ -120,7 +122,8 @@ class FetchClosedPnl extends Command
             $this->info('Done!');
 
             if ($created > 0) {
-                \App\Events\NewTradesFetched::dispatch($this->user, "Added {$created} new trades from Bybit!");
+                $accountType = $isDemo ? 'Demo' : 'Bybit';
+                \App\Events\NewTradesFetched::dispatch($this->user, "Added {$created} new trades from {$accountType}!");
             }
 
 

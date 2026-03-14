@@ -69,8 +69,11 @@ return [
     'bybit' => [
         'key' => env('BYBIT_API_KEY'),
         'secret' => env('BYBIT_API_SECRET'),
+        'demo_key' => env('BYBIT_DEMO_API_KEY'),
+        'demo_secret' => env('BYBIT_DEMO_API_SECRET'),
         'user_email' => env('BYBIT_USER_EMAIL'),
         'base_url' => env('BYBIT_BASE_URL', 'https://api.bybit.com'),
+        'demo_base_url' => env('BYBIT_DEMO_BASE_URL', 'https://api-testnet.bybit.com'),
     ],
 
     'old_journal' => [

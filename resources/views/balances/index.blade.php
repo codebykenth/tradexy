@@ -13,7 +13,7 @@
             </div>
             <x-table>
                 <x-slot:header>
-                    <th class="py-4 uppercase">Date</td>
+                    <th class="py-4 uppercase text-center">Date</th>
                     <th class="py-4 uppercase">Wallet Balance</th>
                     <th class="py-4 uppercase">Total Equity</th>
                     <th class="py-4 uppercase">Realised Pnl (Cum)</th>
@@ -21,8 +21,13 @@
                 </x-slot:header>
                 @foreach ($balances as $balance)
                     <x-table.row onclick="document.getElementById('modal_{{ $balance->id }}').showModal()" class="cursor-pointer">
-                        <td class="font-medium">
-                            {{ \Carbon\Carbon::parse($balance->local_date)->format('M d, Y') ?? $balance->local_date }}
+                        <td class="font-medium text-center text-xs">
+                            <div class="flex items-center justify-center gap-2">
+                                {{ \Carbon\Carbon::parse($balance->local_date)->format('M d, Y') ?? $balance->local_date }}
+                                @if($balance->is_demo)
+                                    <span class="badge badge-warning badge-xs font-bold uppercase py-2">Demo</span>
+                                @endif
+                            </div>
                         </td>                                
                         <td>
                             ${{ number_format($balance->wallet_balance, 2) }}
@@ -174,6 +179,18 @@
                                         Cumulative Realized PnL</legend>
                                     <input type="number" step="any" class="input w-full" name="cum_realised_pnl"
                                         value="{{ $balance->cum_realised_pnl }}" required />
+                                </fieldset>
+                            </div>
+                            <div>
+                                <fieldset class="fieldset w-full">
+                                    <legend
+                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                        Entry Type</legend>
+                                    <label class="label cursor-pointer justify-start gap-4 h-full">
+                                        <input type="hidden" name="is_demo" value="0">
+                                        <input type="checkbox" name="is_demo" value="1" class="checkbox checkbox-warning" {{ $balance->is_demo ? 'checked' : '' }} />
+                                        <span class="label-text font-bold text-warning uppercase">Demo Entry</span>
+                                    </label>
                                 </fieldset>
                             </div>
                         </div>

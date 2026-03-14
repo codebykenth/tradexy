@@ -13,14 +13,20 @@ class BybitService
     private string $baseUrl;
     private string $recvWindow = '50000';
 
-    public function __construct()
+    public function __construct(bool $isDemo = false)
     {
-        $this->apiKey = trim((string) config('services.bybit.key'));
-        $this->apiSecret = trim((string) config('services.bybit.secret'));
-        $this->baseUrl = config('services.bybit.base_url', 'https://api.bybit.com');
+        if ($isDemo) {
+            $this->apiKey = trim((string) config('services.bybit.demo_key'));
+            $this->apiSecret = trim((string) config('services.bybit.demo_secret'));
+            $this->baseUrl = config('services.bybit.demo_base_url', 'https://api-testnet.bybit.com');
+        } else {
+            $this->apiKey = trim((string) config('services.bybit.key'));
+            $this->apiSecret = trim((string) config('services.bybit.secret'));
+            $this->baseUrl = config('services.bybit.base_url', 'https://api.bybit.com');
+        }
 
         if (!$this->apiKey || !$this->apiSecret) {
-            throw new Exception('Bybit API credentials not configured');
+            throw new Exception($isDemo ? 'Bybit Demo API credentials not configured' : 'Bybit API credentials not configured');
         }
     }
 

@@ -124,6 +124,17 @@
                             @error('timeframe') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                Trade Type</legend>
+                            <label class="label cursor-pointer justify-start gap-4 h-full">
+                                <input type="checkbox" name="is_demo" value="1" class="checkbox checkbox-warning" {{ old('is_demo') ? 'checked' : '' }} />
+                                <span class="label-text font-bold text-warning uppercase">Demo Trade</span>
+                            </label>
+                        </fieldset>
+                    </div>
                 </div>
             </div>
             <!-- Entry Details -->
