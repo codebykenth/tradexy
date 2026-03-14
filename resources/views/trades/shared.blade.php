@@ -1,7 +1,7 @@
 @php
     $winLoss = $trade->total_pnl > 0 ? 'Win' : 'Loss';
     $pnlAmount = number_format(abs($trade->total_pnl), 2);
-    $shareDescription = "{$trade->symbol} {$trade->entry_side} | {$winLoss} of \${$pnlAmount} | Leverage: {$trade->leverage}x";
+    $shareDescription = $trade->symbol . ' ' . $trade->entry_side . ' | ' . $winLoss . ' of $' . $pnlAmount . ' | Leverage: ' . $trade->leverage . 'x';
 @endphp
 <x-layouts.app 
     :title="$trade->symbol . ' Trade Review | ' . config('app.name')"
