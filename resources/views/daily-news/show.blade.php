@@ -102,10 +102,22 @@
                                     <p class="text-sm italic opacity-40">No significant risks identified.</p>
                                 @endforelse
                              </div>
-                        </div>
+                        {{-- Top Signal --}}
+                        @if(isset($gd['top_news_source']) && !empty($gd['top_news_source']['headline']))
+                            <div class="pt-6 border-t border-base-200">
+                                <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-primary mb-3">Top Market Signal</h4>
+                                <div class="bg-primary/5 rounded-2xl p-4 border border-primary/10">
+                                    <p class="text-sm font-black leading-tight mb-2">{{ $gd['top_news_source']['headline'] }}</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-[10px] uppercase font-bold opacity-40">{{ $gd['top_news_source']['source_name'] }}</span>
+                                        <a href="{{ $gd['top_news_source']['url'] }}" target="_blank" class="btn btn-xs btn-primary font-black uppercase tracking-widest text-[9px]">Verify Source</a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
-            @endif
+@endif
 
             {{-- Bitcoin Section --}}
             @if(isset($news->ai_analysis['crypto']))
@@ -185,11 +197,22 @@
                                @empty
                                    <p class="text-sm italic opacity-40">No significant risks identified.</p>
                                @endforelse
+                        {{-- Top Signal --}}
+                        @if(isset($cd['top_news_source']) && !empty($cd['top_news_source']['headline']))
+                            <div class="pt-6 border-t border-base-200">
+                                <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-[#f7931a] mb-3">Top Market Signal</h4>
+                                <div class="bg-[#f7931a]/5 rounded-2xl p-4 border border-[#f7931a]/10">
+                                    <p class="text-sm font-black leading-tight mb-2">{{ $cd['top_news_source']['headline'] }}</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-[10px] uppercase font-bold opacity-40">{{ $cd['top_news_source']['source_name'] }}</span>
+                                        <a href="{{ $cd['top_news_source']['url'] }}" target="_blank" class="btn btn-xs btn-[#f7931a] bg-[#f7931a] text-white hover:bg-[#e88a1a] border-none font-black uppercase tracking-widest text-[9px]">Verify Source</a>
+                                    </div>
+                                </div>
                             </div>
-                       </div>
+                        @endif
                     </div>
                 </div>
-            @endif
+@endif
         </div>
 
         {{-- Footer Warning --}}

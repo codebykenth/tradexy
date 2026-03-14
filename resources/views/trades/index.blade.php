@@ -178,6 +178,37 @@
 
 </x-layouts.app>
 
+<!-- Bulk Delete Confirmation Modal -->
+<dialog id="bulk_delete_confirm_modal" class="modal">
+    <div class="modal-box border-2 border-error/20 shadow-2xl">
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-error/10 flex items-center justify-center text-error border border-error/20">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-xl font-black uppercase tracking-tight italic">Confirm <span class="text-error">Bulk Delete</span></h3>
+                <p class="text-xs font-bold opacity-40 uppercase tracking-widest">Irreversible Security Action</p>
+            </div>
+        </div>
+        
+        <p class="text-sm font-medium opacity-70 mb-6 leading-relaxed">
+            You are about to permanently delete <span id="delete-count-display" class="font-black text-error">0</span> selected trades. This action will remove all associated data including PnL, strategies, and AI analysis.
+        </p>
+
+        <div class="modal-action">
+            <form method="dialog" class="flex gap-3 w-full">
+                <button class="btn flex-1 font-black uppercase tracking-widest text-[10px]">Back</button>
+                <button type="button" onclick="executeBulkDelete()" class="btn btn-error flex-2 font-black uppercase tracking-widest text-[10px] px-8">Confirm Delete</button>
+            </form>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
 <script>
     let bulkBtn = document.getElementById('apply-bulk')
     let allTradesBtn = document.querySelector('.all-trade-checkbox')
@@ -203,15 +234,28 @@
         })
     }
 
+    function executeBulkDelete() {
+        submitBulkAction('delete');
+    }
+
     function performBulkAction(action) {
         let checkedTrades = document.querySelectorAll('.trade-checkbox:checked');
         let tradeIds = Array.from(checkedTrades).map(cb => cb.value);
 
         if (tradeIds.length === 0) return;
 
-        if (action === 'delete' && !confirm(`Are you sure you want to delete ${tradeIds.length} trades?`)) {
+        if (action === 'delete') {
+            document.getElementById('delete-count-display').textContent = tradeIds.length;
+            document.getElementById('bulk_delete_confirm_modal').showModal();
             return;
         }
+
+        submitBulkAction('update');
+    }
+
+    function submitBulkAction(action) {
+        let checkedTrades = document.querySelectorAll('.trade-checkbox:checked');
+        let tradeIds = Array.from(checkedTrades).map(cb => cb.value);
 
         let payload = {
             trade_ids: tradeIds,
@@ -224,7 +268,11 @@
             payload.strategy_id = document.getElementById('bulk-strategy').value;
 
             if (!payload.timeframe && !payload.strategy_id) {
-                alert('Please select a timeframe or strategy to update.');
+                if (window.showToast) {
+                    window.showToast('Please select a timeframe or strategy to update.', 'error');
+                } else {
+                    alert('Please select a timeframe or strategy to update.');
+                }
                 return;
             }
         }

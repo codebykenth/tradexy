@@ -2,8 +2,8 @@
 
 if (app()->environment(['production'])) {
     // Fetch trades every 5 mins for faster updates
-    Schedule::command('trades:fetch-pnl')->everyFiveMinutes()->withoutOverlapping();
-    Schedule::command('trades:fetch-pnl --demo')->everyFiveMinutes()->withoutOverlapping();
+    Schedule::command('trades:fetch-pnl')->everyFourHours()->withoutOverlapping();
+    Schedule::command('trades:fetch-pnl --demo')->everyFourHours()->withoutOverlapping();
 
     // Fetch account balance daily at 2:00 AM (local time)
     Schedule::command('account:fetch-balance')->dailyAt('02:00')->timezone('Asia/Manila')->withoutOverlapping();
