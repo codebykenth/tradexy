@@ -65,11 +65,9 @@ class BybitService
      */
     public function get(string $endpoint, array $params = []): array
     {
-        ksort($params);
-        
-        // Build query string — Bybit v5 expects typical GET query string
+        // Build query string preserving param order — DO NOT sort; signature must match exactly
         $queryString = http_build_query($params, '', '&', PHP_QUERY_RFC3986);
-        
+
         $headers = $this->generateAuthHeaders($queryString);
 
         $url = $this->baseUrl . $endpoint . ($queryString ? '?' . $queryString : '');
@@ -80,9 +78,8 @@ class BybitService
 
         if ($response->failed()) {
             $body = $response->body();
-            // Log 401 details for debugging (avoid logging the actual secret)
             if ($response->status() === 401) {
-                Log::error("Bybit 401 Error. URL: {$url}. Headers (redacted): " . json_encode(array_merge($headers, ['X-BAPI-SIGN' => 'HIDDEN'])));
+                Log::error("Bybit 401 Error. URL: {$url}. Timestamp mismatch or invalid key. Headers (redacted): " . json_encode(array_merge($headers, ['X-BAPI-SIGN' => 'HIDDEN'])));
             }
             throw new Exception("Bybit API Error (GET {$endpoint}): Status {$response->status()} - Body: {$body}");
         }

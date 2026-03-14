@@ -17,14 +17,17 @@ case $ENV in
     dev)
         PROJECT_DIR="/var/www/tradexy-dev"
         IMAGE_TAG="dev"
+        COMPOSE_FILE="docker-compose.dev.yml"
         ;;
     staging)
         PROJECT_DIR="/var/www/tradexy-staging"
         IMAGE_TAG="staging"
+        COMPOSE_FILE="docker-compose.staging.yml"
         ;;
     production)
         PROJECT_DIR="/var/www/tradexy-prod"
         IMAGE_TAG="main"
+        COMPOSE_FILE="docker-compose.prod.yml"
         ;;
     *)
         echo "❌ Invalid environment: $ENV"
@@ -56,34 +59,32 @@ echo "🐳 Step 3: Pulling latest image..."
 docker pull ghcr.io/codebykenth/trading-journal-v2:$IMAGE_TAG
 
 echo "🛑 Step 4: Stopping old containers..."
-docker-compose down
+docker-compose -f $COMPOSE_FILE down --remove-orphans
 
 echo "🚀 Step 5: Starting containers..."
-docker-compose up -d
+docker-compose -f $COMPOSE_FILE up -d --remove-orphans
 
 echo "⏳ Step 6: Waiting for health check..."
 sleep 15
 
 echo "📂 Step 7: Running migrations..."
-docker-compose exec -T app php artisan migrate --force
+docker-compose -f $COMPOSE_FILE exec -T app php artisan migrate --force
 
 echo "🔗 Step 8: Creating storage link..."
-docker-compose exec -T app php artisan storage:link || true
+docker-compose -f $COMPOSE_FILE exec -T app php artisan storage:link || true
 
 if [ "$ENV" != "dev" ]; then
     echo "⚡ Step 9: Caching for $ENV..."
-    docker-compose exec -T app php artisan config:cache
-    docker-compose exec -T app php artisan route:cache
-    docker-compose exec -T app php artisan view:cache
+    # Clear first to avoid serving stale config after .env changes
+    docker-compose -f $COMPOSE_FILE exec -T app php artisan optimize:clear
+    docker-compose -f $COMPOSE_FILE exec -T app php artisan optimize
 else
     echo "⚡ Step 9: Clearing cache for dev..."
-    docker-compose exec -T app php artisan config:clear
-    docker-compose exec -T app php artisan route:clear
-    docker-compose exec -T app php artisan view:clear
+    docker-compose -f $COMPOSE_FILE exec -T app php artisan optimize:clear
 fi
 
 echo "🔒 Step 10: Setting permissions..."
-docker-compose exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+docker-compose -f $COMPOSE_FILE exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 echo "🧹 Step 11: Cleaning old images..."
 docker image prune -a --force --filter "until=168h"
