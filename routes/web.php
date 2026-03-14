@@ -11,6 +11,7 @@ use App\Http\Controllers\MigrateStrategiesController;
 use App\Http\Controllers\MigrateTradesController;
 use App\Http\Controllers\PnlCalendarController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SharedTradeController;
 use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\TradeController;
 use Illuminate\Support\Facades\Auth;
@@ -49,6 +50,9 @@ Route::middleware(['throttle:read'])->group(function () {
         return response()->view('errors.404', [], 404);
     });
 
+    // Public shared trade view (no auth required)
+    Route::get('shared/trades/{token}', [SharedTradeController::class, 'show'])->name('trades.shared');
+
     Route::middleware('guest')->group(function () {
         Route::get('/', function () {
             return view('index');
@@ -77,4 +81,6 @@ Route::middleware(['throttle:write', 'auth'])->group(function () {
     Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
     Route::delete('profile/remove-picture', [ProfileController::class, 'removeProfilePicture'])->name('profile.remove-picture');
+    Route::post('trades/{id}/share', [SharedTradeController::class, 'generate'])->name('trades.share.generate');
+    Route::delete('trades/{id}/share', [SharedTradeController::class, 'revoke'])->name('trades.share.revoke');
 });

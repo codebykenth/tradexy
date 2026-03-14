@@ -10,13 +10,14 @@ class BybitService
 {
     private string $apiKey;
     private string $apiSecret;
-    private string $baseUrl = 'https://api.bybit.com';
+    private string $baseUrl;
     private string $recvWindow = '50000';
 
     public function __construct()
     {
-        $this->apiKey = config('services.bybit.key');
-        $this->apiSecret = config('services.bybit.secret');
+        $this->apiKey = trim((string) config('services.bybit.key'));
+        $this->apiSecret = trim((string) config('services.bybit.secret'));
+        $this->baseUrl = config('services.bybit.base_url', 'https://api.bybit.com');
 
         if (!$this->apiKey || !$this->apiSecret) {
             throw new Exception('Bybit API credentials not configured');
@@ -25,25 +26,17 @@ class BybitService
 
     /**
      * Generate authentication headers for Bybit API
-     * Equivalent of the Express.js bybitAuth middleware
      *
-     * @param string $method - 'GET' or 'POST'
-     * @param array $params - Query params (GET) or body (POST)
+     * @param string $payload - The exact stringified query/body being sent
      * @return array - Headers array for the request
      */
-    private function generateAuthHeaders(string $method, array $params = []): array
+    private function generateAuthHeaders(string $payload): array
     {
-        // Generate timestamp in milliseconds
-        $timestamp = (string) round(microtime(true) * 1000);
+        // Generate timestamp in milliseconds (safer float-to-int cast)
+        $timestamp = (string) (int) (microtime(true) * 1000);
 
-        // Build the query string for signing
-        if ($method === 'POST') {
-            // For POST: timestamp + apiKey + recvWindow + JSON body
-            $queryString = $timestamp . $this->apiKey . $this->recvWindow . json_encode($params);
-        } else {
-            // For GET: timestamp + apiKey + recvWindow + URL params
-            $queryString = $timestamp . $this->apiKey . $this->recvWindow . http_build_query($params);
-        }
+        // The query string to sign MUST precisely match the payload sent
+        $queryString = $timestamp . $this->apiKey . $this->recvWindow . $payload;
 
         // Generate HMAC-SHA256 signature
         $signature = hash_hmac('sha256', $queryString, $this->apiSecret);
@@ -54,6 +47,8 @@ class BybitService
             'X-BAPI-TIMESTAMP' => $timestamp,
             'X-BAPI-RECV-WINDOW' => $this->recvWindow,
             'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            'User-Agent' => 'TradingJournal/1.0',
         ];
     }
 
@@ -66,12 +61,29 @@ class BybitService
      */
     public function get(string $endpoint, array $params = []): array
     {
-        $headers = $this->generateAuthHeaders('GET', $params);
+        ksort($params); // Always sort params before signature for Bybit GET
+        // Build exact query string
+        $queryString = http_build_query($params, '', '&', PHP_QUERY_RFC3986);
+        
+        // Pass exact string to signature generator
+        $headers = $this->generateAuthHeaders($queryString);
+
+        // Append query string manually to ensure Guzzle doesn't rebuild it differently
+        $url = $this->baseUrl . $endpoint;
+        if ($queryString !== '') {
+            $url .= '?' . $queryString;
+        }
 
         $response = Http::withHeaders($headers)
-            ->get($this->baseUrl . $endpoint, $params);
+            ->get($url);
 
-        return $response->json();
+        $data = $response->json();
+
+        if ($data === null) {
+            throw new Exception("Bybit API Error (GET {$endpoint}): Status {$response->status()} - Body: " . $response->body());
+        }
+
+        return $data;
     }
 
     /**
@@ -83,12 +95,22 @@ class BybitService
      */
     public function post(string $endpoint, array $body = []): array
     {
-        $headers = $this->generateAuthHeaders('POST', $body);
+        // Encode JSON explicitly with unescaped slashes to match how Bybit expects it
+        $jsonBody = empty($body) ? '' : json_encode($body, JSON_UNESCAPED_SLASHES);
+        
+        $headers = $this->generateAuthHeaders($jsonBody);
 
         $response = Http::withHeaders($headers)
-            ->post($this->baseUrl . $endpoint, $body);
+            ->withBody($jsonBody, 'application/json')
+            ->post($this->baseUrl . $endpoint);
 
-        return $response->json();
+        $data = $response->json();
+
+        if ($data === null) {
+            throw new Exception("Bybit API Error (POST {$endpoint}): Status {$response->status()} - Body: " . $response->body());
+        }
+
+        return $data;
     }
 
     /**

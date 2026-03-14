@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ $trade->symbol }} Trade Review | {{ config('app.name') }}</title>
+    <meta name="description" content="Trade review for {{ $trade->symbol }} — {{ $trade->total_pnl > 0 ? 'Win' : 'Loss' }} of ${{ number_format(abs($trade->total_pnl), 2) }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="w-full border-b border-gray-200 py-4 bg-white">
+        <div class="max-w-5xl mx-auto px-6 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8">
+                <span class="font-bold text-lg">{{ config('app.name') }}</span>
+            </div>
+            <span class="badge badge-outline text-xs uppercase tracking-wider">Shared Trade Review</span>
+        </div>
+    </header>
+
+    <div class="max-w-5xl mx-auto px-6 py-8">
+        <!-- Trade Header -->
+        <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between gap-4 w-full">
+                <div>
+                    <div class="flex items-center gap-4">
+                        <p class="text-4xl uppercase font-black">{{ $trade->symbol ?? 'N/A' }}</p>
+                        <div class="badge badge-outline uppercase text-xs font-bold">{{ $trade->market ?? 'crypto' }}</div>
+                        <div @class([
+                            "badge uppercase",
+                            "badge-success" => $trade->exit_side === "short",
+                            "badge-error" => $trade->exit_side === "long"
+                        ])>{{ $trade->entry_side }}</div>
+                        <div class="badge badge-neutral">{{ $trade->leverage ?? 'N/A' }}x</div>
+                    </div>
+
+                    <div class="flex gap-8 mt-4">
+                        <div class="flex items-center gap-2 text-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                            </svg>
+                            <div>
+                                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Open</p>
+                                <p class="font-medium text-sm">{{ $trade->open_datetime ? \Carbon\Carbon::parse($trade->open_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-12 3h12" />
+                            </svg>
+                            <div>
+                                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Close</p>
+                                <p class="font-medium text-sm">{{ $trade->close_datetime ? \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            <div>
+                                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Duration</p>
+                                <p class="font-medium text-sm">{{ $trade->duration }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <p class="uppercase text-sm text-gray-500">Net P&L</p>
+                    <p @class([
+                        'text-4xl font-black',
+                        'text-red-500' => $trade->total_pnl < 0,
+                        'text-green-500' => $trade->total_pnl > 0,
+                    ])>${{ number_format($trade->total_pnl, 2) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Entry Price</p>
+                <p class="text-lg font-semibold mt-1">{{ $trade->avg_entry_price ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Exit Price</p>
+                <p class="text-lg font-semibold mt-1">{{ $trade->avg_exit_price ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Risk Reward</p>
+                <p class="text-lg font-semibold mt-1">{{ $trade->risk_reward }}</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-6 mt-6">
+            <!-- Chart -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 w-full md:w-2/3">
+                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-4">Chart Snapshot</p>
+                @if($trade->chart_picture)
+                    <img src="{{ $trade->direct_chart_url ?? '' }}" alt="Chart Snapshot" class="w-full rounded-lg shadow-sm">
+                @else
+                    <p class="italic text-gray-400">No chart image available.</p>
+                @endif
+            </div>
+
+            <!-- Setup Context -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 w-full md:w-1/3 space-y-4">
+                <div>
+                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Strategy</p>
+                    @if($trade->strategy)
+                        <p class="font-medium">{{ $trade->strategy->name }}</p>
+                    @else
+                        <p class="italic text-gray-400">No strategy assigned</p>
+                    @endif
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-1">Timeframe</p>
+                        <p class="font-medium">{{ $trade->timeframe ?? 'N/A' }}</p>
+                    </div>
+                    <div>
+                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-1">Session</p>
+                        <p class="font-medium">{{ $trade->session }}</p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-200 pt-4">
+                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Entry Triggers</p>
+                    @if($trade->reasons->where('type', 'entry')->isNotEmpty())
+                        <ul class="list-disc ml-4 space-y-1 text-gray-700 text-sm">
+                            @foreach($trade->reasons->where('type', 'entry') as $reason)
+                                <li>{{ $reason->reason }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="italic text-gray-400 text-sm">No entry reasons logged.</p>
+                    @endif
+                </div>
+                <div class="border-t border-gray-200 pt-4">
+                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Exit Triggers</p>
+                    @if($trade->reasons->where('type', 'exit')->isNotEmpty())
+                        <ul class="list-disc ml-4 space-y-1 text-gray-700 text-sm">
+                            @foreach($trade->reasons->where('type', 'exit') as $reason)
+                                <li>{{ $reason->reason }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="italic text-gray-400 text-sm">No exit reasons logged.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Analysis -->
+        @if($trade->ai_analysis)
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mt-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-indigo-100 p-2 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-indigo-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                        </svg>
+                    </div>
+                    <p class="text-xl font-bold">AI Analysis</p>
+                </div>
+                <div class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900">
+                    {!! \Illuminate\Support\Str::markdown($trade->ai_analysis, [
+                        'html_input' => 'strip',
+                        'allow_unsafe_links' => false
+                    ]) !!}
+                </div>
+            </div>
+        @endif
+
+        <!-- Lessons -->
+        @if($trade->lessons->isNotEmpty())
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mt-6">
+                <p class="uppercase font-bold mb-4">Key Takeaways</p>
+                <ul class="list-disc ml-4 space-y-2 text-gray-700">
+                    @foreach($trade->lessons as $lesson)
+                        <li>{{ $lesson->lesson }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <!-- Footer -->
+        <div class="text-center py-8 text-xs text-gray-400">
+            <p>Shared via <a href="{{ url('/') }}" class="text-primary hover:underline font-medium">{{ config('app.name') }}</a></p>
+        </div>
+    </div>
+</body>
+</html>

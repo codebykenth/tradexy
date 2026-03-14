@@ -15,6 +15,17 @@
                     <p>Edit Log</p>
                 </a>
 
+                <!-- Share Button -->
+                <button type="button" class="btn btn-outline btn-info"
+                    onclick="document.getElementById('share_modal').showModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                    </svg>
+                    <p>Share</p>
+                </button>
+
                 <button type="button" class="btn btn-error"
                     onclick="event.stopPropagation(); document.getElementById('delete_confirmation_modal_{{ $trade->id }}').showModal()">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -26,6 +37,55 @@
                 </button>
             </div>
         </div>
+
+        <!-- Share Modal -->
+        <dialog id="share_modal" class="modal">
+            <div class="modal-box cursor-auto">
+                <h3 class="text-lg font-bold mb-4">Share Trade Review</h3>
+                @if($trade->share_token)
+                    <p class="text-sm text-gray-500 mb-3">Anyone with this link can view a read-only version of this trade.</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="share-url" readonly
+                            class="input input-bordered w-full text-sm bg-gray-50"
+                            value="{{ route('trades.shared', $trade->share_token) }}" />
+                        <button type="button" class="btn btn-primary btn-sm" onclick="copyShareUrl()">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                    <p class="text-xs text-green-600 mt-2 hidden" id="copy-feedback">Copied to clipboard!</p>
+                    <div class="divider"></div>
+                    <form action="{{ route('trades.share.revoke', $trade->id) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline btn-error btn-sm w-full">
+                            Revoke Share Link
+                        </button>
+                    </form>
+                @else
+                    <p class="text-sm text-gray-500 mb-4">Generate a unique, read-only public link for this trade. Perfect for sharing on Discord, with a mentor, or for review.</p>
+                    <form action="{{ route('trades.share.generate', $trade->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-primary w-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                            </svg>
+                            Generate Share Link
+                        </button>
+                    </form>
+                @endif
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn">Close</button>
+                    </form>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
         <!-- Delete Confirmation Modal -->
         <dialog id="delete_confirmation_modal_{{ $trade->id }}" class="modal">
             <div class="modal-box">
@@ -354,4 +414,15 @@
         <h3 class="text-xl font-bold animate-pulse">Generating AI Analysis...</h3>
         <p class="text-gray-300 mt-2 text-sm">Please wait, this may take up to 30 seconds.</p>
     </div>
+
+    <script>
+        function copyShareUrl() {
+            const input = document.getElementById('share-url');
+            const feedback = document.getElementById('copy-feedback');
+            navigator.clipboard.writeText(input.value).then(() => {
+                feedback.classList.remove('hidden');
+                setTimeout(() => feedback.classList.add('hidden'), 2000);
+            });
+        }
+    </script>
 </x-layouts.app>

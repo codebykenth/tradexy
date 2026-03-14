@@ -104,6 +104,7 @@ class FetchClosedPnl extends Command
                         'total_pnl' => $trade['closedPnl'],
                         'open_datetime' => $openDatetime,
                         'close_datetime' => $closeDatetime,
+                        'is_demo' => str_contains(config('services.bybit.base_url'), 'demo'),
                     ]
                 );
                 $result->wasRecentlyCreated ? $created++ : $skipped++;

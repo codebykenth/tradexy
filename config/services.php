@@ -70,6 +70,7 @@ return [
         'key' => env('BYBIT_API_KEY'),
         'secret' => env('BYBIT_API_SECRET'),
         'user_email' => env('BYBIT_USER_EMAIL'),
+        'base_url' => env('BYBIT_BASE_URL', 'https://api.bybit.com'),
     ],
 
     'old_journal' => [

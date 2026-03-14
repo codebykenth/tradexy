@@ -40,7 +40,13 @@ class Trade extends Model
         'total_pnl',
         'open_datetime',
         'close_datetime',
-        'ai_analysis'
+        'ai_analysis',
+        'share_token',
+        'is_demo',
+    ];
+
+    protected $casts = [
+        'is_demo' => 'boolean',
     ];
 
     public function user(): BelongsTo
