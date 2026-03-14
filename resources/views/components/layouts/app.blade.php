@@ -12,8 +12,32 @@
     <meta name="reverb-port" content="{{ config('broadcasting.connections.reverb.options.port') }}">
     <meta name="reverb-scheme" content="{{ config('broadcasting.connections.reverb.options.scheme') }}">
 
-    <title>{{ $title ?? config('app.name') }}</title>
+    @php
+        $pageTitle = $title ?? config('app.name');
+        $pageDescription = $description ?? 'Tradexy — A modern trading journal designed for Crypto and PSE (PH Market) traders to track setups, analyze performance, and refine their edge.';
+        $pageImage = $image ?? asset('images/logo.png');
+        $pageUrl = url()->current();
+    @endphp
+
+    <title>{{ $pageTitle }}</title>
     
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="{{ $pageTitle }}">
+    <meta name="description" content="{{ $pageDescription }}">
+    
+    <!-- Open Graph / Facebook / Discord -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ $pageUrl }}">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDescription }}">
+    <meta property="og:image" content="{{ $pageImage }}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ $pageUrl }}">
+    <meta property="twitter:title" content="{{ $pageTitle }}">
+    <meta property="twitter:description" content="{{ $pageDescription }}">
+    <meta property="twitter:image" content="{{ $pageImage }}">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}" />
 

@@ -16,9 +16,9 @@
 
                 <div class="space-y-6">
                     <h1
-                        class="text-5xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1] text-balance">
-                        Stop Guessing. <br>
-                        <span class="text-gray-400 dark:text-gray-600">Start Trading.</span>
+                        class="text-4xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1] text-balance">
+                        The Best <span class="text-primary">Crypto & PSE (PH Market)</span> Trading Journal. <br>
+                        <span class="text-gray-400 dark:text-gray-600">Scale Your Edge.</span>
                     </h1>
                     <p class="text-lg text-gray-600 dark:text-gray-400 leading-relaxed max-w-lg text-balance">
                         The professional trading journal that helps you find your edge. Log your trades, backtest

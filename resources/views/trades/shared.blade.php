@@ -1,4 +1,13 @@
-<x-layouts.app :title="$trade->symbol . ' Trade Review | ' . config('app.name')">
+@php
+    $winLoss = $trade->total_pnl > 0 ? 'Win' : 'Loss';
+    $pnlAmount = number_format(abs($trade->total_pnl), 2);
+    $shareDescription = "{$trade->symbol} {$trade->entry_side} | {$winLoss} of ${$pnlAmount} | Leverage: {$trade->leverage}x";
+@endphp
+<x-layouts.app 
+    :title="$trade->symbol . ' Trade Review | ' . config('app.name')"
+    :description="$shareDescription"
+    :image="$trade->direct_chart_url ?? $trade->chart_picture ?? asset('images/logo.png')"
+>
     <div class="max-w-5xl mx-auto px-6 py-8">
         <div class="mb-6 flex items-center justify-between mt-4">
             <span class="badge w-full md:w-auto badge-outline text-xs border-primary text-primary uppercase tracking-wider font-bold">Shared Trade Review</span>
@@ -196,4 +205,20 @@
 
 
 
+    <!-- CTA for Visitors -->
+    <div class="max-w-5xl mx-auto px-6 mb-12">
+        <div class="bg-gray-900 dark:bg-zinc-900 rounded-2xl p-8 text-center shadow-xl border border-white/5 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-indigo-600/20 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+            <div class="relative z-10">
+                <h3 class="text-2xl font-bold text-white mb-2">Ready to level up your trading?</h3>
+                <p class="text-gray-400 mb-6 max-w-lg mx-auto">Join thousands of traders using {{ config('app.name') }} to track setups, analyze data, and build their edge.</p>
+                <a href="{{ route('register') }}" class="btn btn-primary btn-wide">
+                    Start Your Journal Free
+                </a>
+            </div>
+        </div>
+        <div class="text-center mt-6 text-xs text-gray-500 uppercase tracking-widest font-medium">
+            Shared via <a href="{{ url('/') }}" class="hover:text-primary transition-colors">{{ config('app.name') }}</a>
+        </div>
+    </div>
 </x-layouts.app>

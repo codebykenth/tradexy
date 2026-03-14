@@ -46,6 +46,12 @@ Route::middleware(['throttle:auth'])->group(function () {
 
 // Read Routes
 Route::middleware(['throttle:read'])->group(function () {
+    Route::get('sitemap.xml', function () {
+        return response()->view('sitemap', [
+            'trades' => \App\Models\Trade::whereNotNull('share_token')->get()
+        ])->header('Content-Type', 'text/xml');
+    });
+
     Route::fallback(function () {
         return response()->view('errors.404', [], 404);
     });

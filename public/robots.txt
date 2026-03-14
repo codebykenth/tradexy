@@ -1,2 +1,12 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /dashboard
+Disallow: /trades
+Disallow: /balances
+Disallow: /strategies
+Disallow: /pnl-calendar
+Disallow: /profile
+Disallow: /settings
+Disallow: /logout
+
+Sitemap: {{ url('sitemap.xml') }}
