@@ -181,33 +181,16 @@
                     <p class="text-xl font-bold">AI Analysis</p>
                 </div>
                 <div class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900">
-
-
-    <!-- AI Analysis -->
-    @if($trade->ai_analysis)
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mt-6">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="bg-indigo-100 p-2 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-indigo-600">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                    </svg>
+                    {!! \Illuminate\Support\Str::markdown($trade->ai_analysis, [
+                        'html_input' => 'strip',
+                        'allow_unsafe_links' => false
+                    ]) !!}
                 </div>
-                <p class="text-xl font-bold">AI Analysis</p>
             </div>
-            <div class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900">
-                {!! \Illuminate\Support\Str::markdown($trade->ai_analysis, [
-                    'html_input' => 'strip',
-                    'allow_unsafe_links' => false
-                ]) !!}
-            </div>
-        </div>
-    @endif
+        @endif
 
-
-
-    <!-- CTA for Visitors -->
-    <div class="max-w-5xl mx-auto px-6 mb-12">
-        <div class="bg-gray-900 dark:bg-zinc-900 rounded-2xl p-8 text-center shadow-xl border border-white/5 relative overflow-hidden group">
+        <!-- CTA for Visitors -->
+        <div class="mt-12 bg-gray-900 dark:bg-zinc-900 rounded-2xl p-8 text-center shadow-xl border border-white/5 relative overflow-hidden group">
             <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-indigo-600/20 opacity-50 group-hover:opacity-100 transition-opacity"></div>
             <div class="relative z-10">
                 <h3 class="text-2xl font-bold text-white mb-2">Ready to level up your trading?</h3>
