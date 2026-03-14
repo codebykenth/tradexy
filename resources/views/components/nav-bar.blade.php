@@ -80,6 +80,9 @@
                                 <p class="text-xs truncate text-base-content/60">{{ Auth::user()->email }}</p>
                             </div>
                             <ul class="py-2">
+                                @if(Auth::user()->is_admin)
+                                    <li><a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-2.5 text-sm font-bold text-primary hover:bg-primary/5 transition-colors">Admin Dashboard</a></li>
+                                @endif
                                 <li><a href="/profile" class="flex items-center px-4 py-2.5 text-sm hover:bg-base-200 transition-colors">Your Profile</a></li>
                                 <li class="border-t border-base-200 mt-2 pt-2">
                                     <form action="/logout" method="post" class="m-0">

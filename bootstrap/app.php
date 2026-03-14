@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->appendToGroup('web', TransactionalRequest::class);
         $middleware->appendToGroup('web', EnsureTradingModeSet::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\TrackUserActivity::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
@@ -113,7 +114,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Generic catch-all (anything unexpected)
         $exceptions->renderable(function (Throwable $e) use ($devMessage) {
-            if ($e instanceof ValidationException) {
+            if ($e instanceof ValidationException || $e instanceof AuthenticationException) {
                 return null;
             }
 
@@ -124,6 +125,12 @@ return Application::configure(basePath: dirname(__DIR__))
             // In local/dev, show the full error page (don't redirect) to help debugging
             if (!app()->isProduction()) {
                 return null;
+            }
+
+            // Avoid redirect loops if the dashboard or login page is broken
+            $currentPath = request()->path();
+            if ($currentPath === 'dashboard' || $currentPath === 'login' || $currentPath === '/') {
+                return null; 
             }
 
             return redirect()->to('/dashboard')

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Mail\Errors\FetchClosedPnlMail;
+use App\Models\ActivityLog;
 use App\Models\Trade;
 use App\Models\User;
 use App\Services\BybitService;
@@ -10,6 +11,7 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Request;
 
 class FetchClosedPnl extends Command
 {
@@ -65,7 +67,7 @@ class FetchClosedPnl extends Command
             // Sort by updatedTime ascending (oldest first)
             usort($trades, function ($a, $b) {
                 $timeA = (int) ($a['updatedTime'] ?? $a['createdTime'] ?? 0);
-                $timeB = (int) ($b['updatedTime'] ?? $b['createdTime'] ?? 0);
+                $timeB = (int) ($a['updatedTime'] ?? $a['createdTime'] ?? 0);
                 return $timeA - $timeB;
             });
 
@@ -112,6 +114,16 @@ class FetchClosedPnl extends Command
                 $result->wasRecentlyCreated ? $created++ : $skipped++;
             }
             DB::commit();
+
+            // Log successful sync
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'action' => 'bybit_sync',
+                'description' => "Synced trades from Bybit (" . ($isDemo ? 'Demo' : 'Main') . "). Created: {$created}, Skipped: {$skipped}",
+                'ip_address' => gethostbyname(gethostname()),
+                'user_agent' => 'Artisan: trades:fetch-pnl (' . php_uname('n') . ')',
+            ]);
+
             if (count($errors) > 0) {
                 foreach ($errors as $error) {
                     $this->error("Error: {$error['error']}");
@@ -130,7 +142,19 @@ class FetchClosedPnl extends Command
 
         } catch (\Exception $e) {
             $this->error("Failed: {$e->getMessage()}");
-            Mail::to($this->user->email)->send(new FetchClosedPnlMail($e->getMessage()));
+
+            // Log failed sync
+            if ($this->user) {
+                ActivityLog::create([
+                    'user_id' => $this->user->id,
+                    'action' => 'bybit_sync_failed',
+                    'description' => "Bybit sync failed: " . substr($e->getMessage(), 0, 255),
+                    'ip_address' => gethostbyname(gethostname()),
+                    'user_agent' => 'Artisan: trades:fetch-pnl (' . php_uname('n') . ')',
+                ]);
+            }
+
+            Mail::to($this->user->email ?? config('mail.from.address'))->send(new FetchClosedPnlMail($e->getMessage()));
             DB::rollBack();
             return 1;
         }
@@ -138,4 +162,5 @@ class FetchClosedPnl extends Command
         return 0;
     }
 }
+
 

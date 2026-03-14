@@ -2,11 +2,16 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\Listeners\ActivityLogSubscriber;
+use App\Models\Balance;
+use App\Models\Strategy;
+use App\Models\Trade;
+use App\Observers\ModelActivityObserver;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +28,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Activity Logging
+        \Illuminate\Support\Facades\Event::subscribe(ActivityLogSubscriber::class);
+        
+        Trade::observe(ModelActivityObserver::class);
+        Balance::observe(ModelActivityObserver::class);
+        Strategy::observe(ModelActivityObserver::class);
+
         // Only users with id === 1 can access developer routes
         Gate::define('developer', fn($user) => $user->developer());
 

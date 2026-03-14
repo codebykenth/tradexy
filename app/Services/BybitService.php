@@ -5,24 +5,25 @@ namespace App\Services;
 use App\Models\Trade;
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log; // Added for logging
 
 class BybitService
 {
     private string $apiKey;
     private string $apiSecret;
     private string $baseUrl;
-    private string $recvWindow = '50000';
+    private string $recvWindow = '20000'; // 20s is safer than 50s for some gateway checks
 
     public function __construct(bool $isDemo = false)
     {
         if ($isDemo) {
             $this->apiKey = trim((string) config('services.bybit.demo_key'));
             $this->apiSecret = trim((string) config('services.bybit.demo_secret'));
-            $this->baseUrl = config('services.bybit.demo_base_url', 'https://api-testnet.bybit.com');
+            $this->baseUrl = rtrim((string) config('services.bybit.demo_base_url', 'https://api-testnet.bybit.com'), '/');
         } else {
             $this->apiKey = trim((string) config('services.bybit.key'));
             $this->apiSecret = trim((string) config('services.bybit.secret'));
-            $this->baseUrl = config('services.bybit.base_url', 'https://api.bybit.com');
+            $this->baseUrl = rtrim((string) config('services.bybit.base_url', 'https://api.bybit.com'), '/');
         }
 
         if (!$this->apiKey || !$this->apiSecret) {
@@ -31,21 +32,19 @@ class BybitService
     }
 
     /**
-     * Generate authentication headers for Bybit API
+     * Generate authentication headers for Bybit API V5
      *
      * @param string $payload - The exact stringified query/body being sent
      * @return array - Headers array for the request
      */
     private function generateAuthHeaders(string $payload): array
     {
-        // Generate timestamp in milliseconds (safer float-to-int cast)
-        $timestamp = (string) (int) (microtime(true) * 1000);
+        // Use Carbon for precise millisecond timestamp
+        $timestamp = (string) now()->getTimestampMs();
 
-        // The query string to sign MUST precisely match the payload sent
-        $queryString = $timestamp . $this->apiKey . $this->recvWindow . $payload;
-
-        // Generate HMAC-SHA256 signature
-        $signature = hash_hmac('sha256', $queryString, $this->apiSecret);
+        // Signature for V5: timestamp + api_key + recv_window + payload
+        $signatureString = $timestamp . $this->apiKey . $this->recvWindow . $payload;
+        $signature = hash_hmac('sha256', $signatureString, $this->apiSecret);
 
         return [
             'X-BAPI-API-KEY' => $this->apiKey,
@@ -53,13 +52,12 @@ class BybitService
             'X-BAPI-TIMESTAMP' => $timestamp,
             'X-BAPI-RECV-WINDOW' => $this->recvWindow,
             'Content-Type' => 'application/json',
-            'Accept' => 'application/json',
-            'User-Agent' => 'TradingJournal/1.0',
+            'User-Agent' => 'TradingJournal/2.0',
         ];
     }
 
     /**
-     * Make an authenticated GET request to Bybit API
+     * Make an authenticated GET request
      *
      * @param string $endpoint - API endpoint (e.g. '/v5/position/closed-pnl')
      * @param array $params - Query parameters
@@ -67,33 +65,33 @@ class BybitService
      */
     public function get(string $endpoint, array $params = []): array
     {
-        ksort($params); // Always sort params before signature for Bybit GET
-        // Build exact query string
+        ksort($params);
+        
+        // Build query string — Bybit v5 expects typical GET query string
         $queryString = http_build_query($params, '', '&', PHP_QUERY_RFC3986);
         
-        // Pass exact string to signature generator
         $headers = $this->generateAuthHeaders($queryString);
 
-        // Append query string manually to ensure Guzzle doesn't rebuild it differently
-        $url = $this->baseUrl . $endpoint;
-        if ($queryString !== '') {
-            $url .= '?' . $queryString;
-        }
+        $url = $this->baseUrl . $endpoint . ($queryString ? '?' . $queryString : '');
 
         $response = Http::withHeaders($headers)
+            ->timeout(30)
             ->get($url);
 
-        $data = $response->json();
-
-        if ($data === null) {
-            throw new Exception("Bybit API Error (GET {$endpoint}): Status {$response->status()} - Body: " . $response->body());
+        if ($response->failed()) {
+            $body = $response->body();
+            // Log 401 details for debugging (avoid logging the actual secret)
+            if ($response->status() === 401) {
+                Log::error("Bybit 401 Error. URL: {$url}. Headers (redacted): " . json_encode(array_merge($headers, ['X-BAPI-SIGN' => 'HIDDEN'])));
+            }
+            throw new Exception("Bybit API Error (GET {$endpoint}): Status {$response->status()} - Body: {$body}");
         }
 
-        return $data;
+        return $response->json();
     }
 
     /**
-     * Make an authenticated POST request to Bybit API
+     * Make an authenticated POST request
      *
      * @param string $endpoint - API endpoint
      * @param array $body - Request body
@@ -101,59 +99,50 @@ class BybitService
      */
     public function post(string $endpoint, array $body = []): array
     {
-        // Encode JSON explicitly with unescaped slashes to match how Bybit expects it
         $jsonBody = empty($body) ? '' : json_encode($body, JSON_UNESCAPED_SLASHES);
         
         $headers = $this->generateAuthHeaders($jsonBody);
 
         $response = Http::withHeaders($headers)
             ->withBody($jsonBody, 'application/json')
+            ->timeout(30)
             ->post($this->baseUrl . $endpoint);
 
-        $data = $response->json();
-
-        if ($data === null) {
+        if ($response->failed()) {
             throw new Exception("Bybit API Error (POST {$endpoint}): Status {$response->status()} - Body: " . $response->body());
         }
 
-        return $data;
+        return $response->json();
     }
 
     /**
-     * Fetch closed PnL from Bybit API for the last N days
+     * Fetch closed PnL
      *
      * @param int $days - Number of days to look back (default: 2)
      * @return array - ['trades' => [...], 'errors' => [...], 'summary' => [...]]
      */
     public function getClosedPnl(int $days = 2): array
     {
-        $endDate = now();
-        $startDate = now()->subDays($days);
-
         $params = [
             'category' => 'linear',
-            'startTime' => (string) ($startDate->getTimestampMs()),
-            'endTime' => (string) ($endDate->getTimestampMs()),
+            'startTime' => (string) now()->subDays($days)->getTimestampMs(),
+            'endTime' => (string) now()->getTimestampMs(),
+            'limit' => '100',
         ];
 
-        $response = $this->get('/v5/position/closed-pnl', $params);
-
-        return $response;
+        return $this->get('/v5/position/closed-pnl', $params);
     }
 
-    public function getAccountBalance()
+    /**
+     * Fetch account balance
+     *
+     * @return array - API response containing account balance information
+     */
+    public function getAccountBalance(): array
     {
-        try {
-            $response = $this->get('/v5/account/wallet-balance', [
-                'coin' => 'USDT',
-                'accountType' => 'UNIFIED',
-
-            ]);
-            return $response;
-        } catch (Exception $e) {
-            return [
-                'error' => $e
-            ];
-        }
+        return $this->get('/v5/account/wallet-balance', [
+            'coin' => 'USDT',
+            'accountType' => 'UNIFIED',
+        ]);
     }
 }
