@@ -153,7 +153,8 @@ class DashboardController extends Controller
             });
 
         // Recent Activity
-        $recentActivityQuery = Trade::where('user_id', $userId)
+        $recentActivityQuery = Trade::with(['strategy', 'reasons'])
+            ->where('user_id', $userId)
             ->whereNotNull('close_datetime');
 
         if ($accountMode !== 'all') {

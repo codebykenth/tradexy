@@ -98,5 +98,7 @@ Route::middleware(['throttle:write', 'auth'])->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
         Route::get('/logs', [AdminDashboardController::class, 'logs'])->name('logs');
+        Route::post('/toggle-maintenance', [AdminDashboardController::class, 'toggleMaintenance'])->name('maintenance.toggle');
+        Route::post('/flush-cache', [AdminDashboardController::class, 'flushCache'])->name('cache.flush');
     });
 });

@@ -26,7 +26,7 @@ final class TradeController extends Controller
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
         
-        $query = Trade::where('user_id', Auth::id());
+        $query = Trade::with(['strategy', 'reasons'])->where('user_id', Auth::id());
 
         if ($accountMode !== 'all') {
             $query->where('is_demo', $accountMode === 'demo');
@@ -43,13 +43,15 @@ final class TradeController extends Controller
 
     public function gallery()
     {
-        $winningTrades = Trade::where('user_id', Auth::id())
+        $winningTrades = Trade::with(['strategy', 'reasons'])
+            ->where('user_id', Auth::id())
             ->whereNotNull('chart_picture')
             ->where('total_pnl', '>', 0)
             ->latest('close_datetime')
             ->paginate(10, ['*'], 'win_page');
 
-        $losingTrades = Trade::where('user_id', Auth::id())
+        $losingTrades = Trade::with(['strategy', 'reasons'])
+            ->where('user_id', Auth::id())
             ->whereNotNull('chart_picture')
             ->where('total_pnl', '<', 0)
             ->latest('close_datetime')
