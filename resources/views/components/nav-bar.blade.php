@@ -17,6 +17,10 @@
                         <a href="/balances" class="hover:text-base-content transition-colors font-medium">Balances</a>
                         <a href="/strategies" class="hover:text-base-content transition-colors font-medium">Strategies</a>
                         <a href="/pnl-calendar" class="hover:text-base-content transition-colors font-medium">PnL Calendar</a>
+                        <a href="{{ route('daily-news.index') }}" class="hover:text-base-content transition-colors font-medium flex items-center gap-1.5">
+                            Insights
+                            <span class="badge badge-xs badge-primary font-black uppercase text-[8px] px-1 py-1.5">New</span>
+                        </a>
                     </div>
                 @else
                     <div class="hidden lg:flex items-center gap-6 text-base-content/70">
@@ -149,6 +153,7 @@
                     <a href="/balances" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Account Balances</a>
                     <a href="/strategies" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">My Strategies</a>
                     <a href="/pnl-calendar" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg text-primary">PnL Calendar</a>
+                    <a href="{{ route('daily-news.index') }}" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Market Insights</a>
                 </div>
 
                 <!-- Global Modes (Mobile) -->

@@ -83,6 +83,58 @@
                 </div>
             </div>
 
+            @if($latestNews)
+                <!-- Market Insights Snippet -->
+                <div class="bg-gradient-to-br from-primary/5 via-base-100 to-base-100 dark:from-primary/10 dark:via-[#1A1C23] dark:to-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 mb-6 shadow-sm overflow-hidden relative">
+                    <div class="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                        <div class="space-y-1">
+                            <h3 class="text-sm font-black uppercase tracking-[0.2em] text-primary/60">Macro Intel</h3>
+                            <h2 class="text-2xl font-black italic tracking-tighter">AI Market <span class="text-primary">Insights</span></h2>
+                            <p class="text-xs font-medium opacity-50 uppercase tracking-widest">{{ $latestNews->date_range }}</p>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-4 items-center">
+                            @if(isset($latestNews->ai_analysis['gold']))
+                                @php $gold = $latestNews->ai_analysis['gold']; @endphp
+                                <div class="flex items-center gap-3 bg-white dark:bg-base-200 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                    <div class="w-8 h-8 rounded-lg bg-[#d4af37] flex items-center justify-center text-white shadow-lg shadow-[#d4af37]/20 text-[10px] font-black">AU</div>
+                                    <div>
+                                        <p class="text-[8px] font-black uppercase opacity-40 leading-none mb-1">Gold Bias</p>
+                                        <p @class([
+                                            'text-xs font-black uppercase tracking-wider leading-none',
+                                            'text-green-500' => ($gold['bias'] ?? '') === 'Bullish',
+                                            'text-red-500' => ($gold['bias'] ?? '') === 'Bearish',
+                                        ])>{{ $gold['bias'] ?? 'N/A' }}</p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if(isset($latestNews->ai_analysis['crypto']))
+                                @php $crypto = $latestNews->ai_analysis['crypto']; @endphp
+                                <div class="flex items-center gap-3 bg-white dark:bg-base-200 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                    <div class="w-8 h-8 rounded-lg bg-[#f7931a] flex items-center justify-center text-white shadow-lg shadow-[#f7931a]/20 text-[10px] font-black">BTC</div>
+                                    <div>
+                                        <p class="text-[8px] font-black uppercase opacity-40 leading-none mb-1">BTC Bias</p>
+                                        <p @class([
+                                            'text-xs font-black uppercase tracking-wider leading-none',
+                                            'text-green-500' => ($crypto['bias'] ?? '') === 'Bullish',
+                                            'text-red-500' => ($crypto['bias'] ?? '') === 'Bearish',
+                                        ])>{{ $crypto['bias'] ?? 'N/A' }}</p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <a href="{{ route('daily-news.show', $latestNews->id) }}" class="btn btn-primary btn-sm rounded-xl px-5 gap-2 group">
+                                View Brief
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Bottom Widgets Row -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 

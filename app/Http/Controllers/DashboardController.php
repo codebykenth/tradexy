@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Balance;
 use App\Models\Trade;
+use App\Models\MarketNews;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,6 +15,8 @@ class DashboardController extends Controller
         $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
+
+        $latestNews = MarketNews::latest()->first();
 
         // 1. Fetch Balances for Equity Curve
         $balanceQuery = Balance::where('user_id', $userId);
@@ -188,7 +191,8 @@ class DashboardController extends Controller
             'bestTrade',
             'worstTrade',
             'topSymbols',
-            'recentActivity'
+            'recentActivity',
+            'latestNews'
         ));
     }
 }

@@ -17,6 +17,7 @@ use App\Http\Controllers\TradeController;
 use App\Http\Controllers\TradingModeController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\TradeBulkController;
+use App\Http\Controllers\DailyNewsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -79,6 +80,11 @@ Route::middleware(['throttle:read'])->group(function () {
         Route::resource('balances', BalanceController::class)->only(['index', 'create']);
         Route::resource('strategies', StrategyController::class)->only(['index', 'create', 'show', 'edit']);
         Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
+
+        // AI Market Insights
+        Route::get('insights/latest', [DailyNewsController::class, 'latest'])->name('daily-news.latest');
+        Route::get('insights', [DailyNewsController::class, 'index'])->name('daily-news.index');
+        Route::get('insights/{id}', [DailyNewsController::class, 'show'])->name('daily-news.show');
     });
 });
 

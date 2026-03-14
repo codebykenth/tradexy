@@ -36,6 +36,12 @@ class GenerateDailyNews extends Command
             $this->info("Gold Articles: {$news['gold']['count']}");
             $this->info("Crypto Articles: {$news['crypto']['count']}");
 
+            // Persist to database for the AI News View
+            \App\Models\MarketNews::create([
+                'date_range' => $news['dateRange'],
+                'ai_analysis' => $news['aiAnalysis'],
+            ]);
+
             $email = config('services.bybit.user_email');
             if ($email) {
                 Mail::to($email)->send(new DailyNewsMail($news['aiAnalysis']));
