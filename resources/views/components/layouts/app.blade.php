@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" prefix="og: https://ogp.me/ns#">
 
 <head>
     <meta charset="utf-8">
@@ -24,6 +24,7 @@
     <!-- Primary Meta Tags -->
     <meta name="title" content="{{ $pageTitle }}">
     <meta name="description" content="{{ $pageDescription }}">
+    <meta name="theme-color" content="#3b82f6">
     
     <!-- Open Graph / Facebook / Discord -->
     <meta property="og:type" content="website">
@@ -31,6 +32,10 @@
     <meta property="og:title" content="{{ $pageTitle }}">
     <meta property="og:description" content="{{ $pageDescription }}">
     <meta property="og:image" content="{{ $pageImage }}">
+    <meta property="og:image:alt" content="{{ $pageTitle }}">
+    <meta property="og:site_name" content="Tradexy">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">

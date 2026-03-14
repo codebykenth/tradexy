@@ -77,7 +77,7 @@ class Trade extends Model
                 $fileId = $matches[1];
 
                 // Bypasses the 403 Forbidden error
-                return "https://lh3.googleusercontent.com/d/{$fileId}";
+                return "https://lh3.googleusercontent.com/d/{$fileId}?scale=1&.png";
             }
         }
 
