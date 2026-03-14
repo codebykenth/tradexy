@@ -15,8 +15,8 @@
                     <div
                         class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-gray-100 p-2 rounded-lg border border-gray-300">
                         <span class="text-sm font-semibold text-gray-600 px-2">Bulk Actions:</span>
-                        <select class="select select-sm border-gray-300" name="timeframe">
-                            <option disabled selected>Assign timeframe</option>
+                        <select class="select select-sm border-gray-300" name="timeframe" id="bulk-timeframe">
+                            <option value="">Timeframe...</option>
                             <option>1m</option>
                             <option>5m</option>
                             <option>15m</option>
@@ -25,17 +25,17 @@
                             <option>4hr</option>
                             <option>1d</option>
                         </select>
-                        <select class="select select-sm border-gray-300" name="strategy_id">
-                            <option disabled selected>Assign strategy</option>
-                            <option>Breakout</option>
-                            <option>Breakdown</option>
-                            <option>Range</option>
+                        <select class="select select-sm border-gray-300" name="strategy_id" id="bulk-strategy">
+                            <option value="">Strategy...</option>
+                            @foreach($strategies as $strategy)
+                                <option value="{{ $strategy->id }}">{{ $strategy->name }}</option>
+                            @endforeach
                         </select>
 
-                        <button class="btn btn-sm btn-primary" id="apply-bulk">Apply</button>
+                        <button class="btn btn-sm btn-primary" id="apply-bulk">Update</button>
                         <div class="w-px h-6 bg-gray-300 mx-1"></div>
                         <!-- Delete Button -->
-                        <button class="btn btn-sm btn-square btn-error btn-outline" aria-label="Delete Selected">
+                        <button class="btn btn-sm btn-square btn-error btn-outline" id="bulk-delete" aria-label="Delete Selected">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                 stroke="currentColor" class="size-4">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -203,41 +203,62 @@
         })
     }
 
-    function applyBulk() {
-        let checkedTrades = document.querySelectorAll('.trade-checkbox:checked')
-        let trades = []
+    function performBulkAction(action) {
+        let checkedTrades = document.querySelectorAll('.trade-checkbox:checked');
+        let tradeIds = Array.from(checkedTrades).map(cb => cb.value);
 
-        for (let i = 0; i < checkedTrades.length; i++) {
-            trades.push(checkedTrades[i].value)
+        if (tradeIds.length === 0) return;
+
+        if (action === 'delete' && !confirm(`Are you sure you want to delete ${tradeIds.length} trades?`)) {
+            return;
         }
 
-        console.log(trades)
-        /* 
-        fetch('/trades-bulk-action', {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                // Wrap the array in an object to send it
-                trades: trades
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Success:", data);
-            })
-            .catch((error) => {
-                console.error("Error:", error);
-            });
-        */
+        let payload = {
+            trade_ids: tradeIds,
+            action: action,
+            _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        };
+
+        if (action === 'update') {
+            payload.timeframe = document.getElementById('bulk-timeframe').value;
+            payload.strategy_id = document.getElementById('bulk-strategy').value;
+
+            if (!payload.timeframe && !payload.strategy_id) {
+                alert('Please select a timeframe or strategy to update.');
+                return;
+            }
+        }
+
+        // We use a hidden form to submit so we can handle redirection and session messages easily
+        let form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ route('trades.bulk') }}";
+
+        for (let key in payload) {
+            if (Array.isArray(payload[key])) {
+                payload[key].forEach(val => {
+                    let input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `${key}[]`;
+                    input.value = val;
+                    form.appendChild(input);
+                });
+            } else {
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = payload[key];
+                form.appendChild(input);
+            }
+        }
+
+        document.body.appendChild(form);
+        form.submit();
     }
 
     function selectAllTrades() {
         let isChecked = allTradesBtn.checked
         let allTradesCheckbox = document.querySelectorAll('.trade-checkbox')
-
 
         for (let i = 0; i < allTradesCheckbox.length; i++) {
             allTradesCheckbox[i].checked = isChecked
@@ -247,13 +268,23 @@
 
         if (checkedCount == 0) {
             bulkContainer.classList.add('hidden')
-
         } else {
             bulkContainer.classList.remove('hidden')
-
         }
     }
 
-    bulkBtn.addEventListener('click', applyBulk)
+    bulkBtn.addEventListener('click', () => performBulkAction('update'));
+    document.getElementById('bulk-delete').addEventListener('click', () => performBulkAction('delete'));
     allTradesBtn.addEventListener('click', selectAllTrades)
+
+    // Listen for real-time trade updates and refresh the table
+    if (window.Echo) {
+        window.Echo.private(`App.Models.User.{{ auth()->id() }}`)
+            .listen('.NewTradesFetched', (e) => {
+                // Wait 2 seconds so the user can see the toast message before reloading
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            });
+    }
 </script>

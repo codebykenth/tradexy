@@ -37,8 +37,9 @@ final class TradeController extends Controller
         }
 
         $ownedTrades = $query->latest('close_datetime')->paginate(10);
+        $strategies = Strategy::where('user_id', Auth::id())->get();
 
-        return view('trades.index', compact('ownedTrades'));
+        return view('trades.index', compact('ownedTrades', 'strategies'));
     }
 
     public function gallery()

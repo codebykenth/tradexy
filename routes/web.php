@@ -16,6 +16,7 @@ use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\TradeController;
 use App\Http\Controllers\TradingModeController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\TradeBulkController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -92,6 +93,7 @@ Route::middleware(['throttle:write', 'auth'])->group(function () {
     Route::post('trades/{id}/share', [SharedTradeController::class, 'generate'])->name('trades.share.generate');
     Route::delete('trades/{id}/share', [SharedTradeController::class, 'revoke'])->name('trades.share.revoke');
     Route::post('trading-mode', [TradingModeController::class, 'update'])->name('trading-mode.update');
+    Route::post('trades/bulk', [TradeBulkController::class, 'handle'])->name('trades.bulk');
 
     // Admin Routes
     Route::middleware('can:developer')->prefix('admin')->name('admin.')->group(function () {
