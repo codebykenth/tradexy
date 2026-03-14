@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app title="Win/Loss Gallery - Tradexy">
     <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8 w-full">
         <x-page-title title="Win/Loss Gallery" subtitle="Visual overview of your trade charts separated into wins and losses" />
         

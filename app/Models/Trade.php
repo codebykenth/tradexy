@@ -42,11 +42,9 @@ class Trade extends Model
         'close_datetime',
         'ai_analysis',
         'share_token',
-        'is_demo',
     ];
 
     protected $casts = [
-        'is_demo' => 'boolean',
     ];
 
     public function user(): BelongsTo

@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app title="Page Not Found - Tradexy">
     <div class="min-h-[70vh] flex flex-col items-center justify-center px-6 py-24 sm:py-32 lg:px-8">
         <div class="text-center">
             <p class="text-6xl font-semibold text-primary">404</p>

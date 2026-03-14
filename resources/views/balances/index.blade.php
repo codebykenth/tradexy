@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app title="Balances - Tradexy">
     <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
         <x-page-title title="Balance & Equity History" />
         @if($balances->isNotEmpty())

@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app title="Create Strategy - Tradexy">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center justify-between my-4">
             <div>

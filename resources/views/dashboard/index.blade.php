@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app title="Dashboard - Tradexy">
     <div class="max-w-7xl mx-auto px-6 space-y-6 mb-8 mt-6">
 
         <!-- Welcome & Time -->

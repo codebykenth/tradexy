@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app title="Strategies - Tradexy">
     <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
         <x-page-title title="Trading Strategies"
             subtitle="Define and track your trading playbooks with performance analytics." />

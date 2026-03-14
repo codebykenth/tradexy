@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app :title="$trade->symbol . ' Trade Details | ' . config('app.name')">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex justify-between items-center">
             <div>
@@ -66,15 +66,12 @@
                     </form>
                 @else
                     <p class="text-sm text-gray-500 mb-4">Generate a unique, read-only public link for this trade. Perfect for sharing on Discord, with a mentor, or for review.</p>
-                    <form action="{{ route('trades.share.generate', $trade->id) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn btn-primary w-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-                            </svg>
-                            Generate Share Link
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-primary w-full" id="generate-btn" onclick="generateAndCopyShareLink({{ $trade->id }})">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                        </svg>
+                        Generate & Copy Share Link
+                    </button>
                 @endif
                 <div class="modal-action">
                     <form method="dialog">
@@ -422,6 +419,36 @@
             navigator.clipboard.writeText(input.value).then(() => {
                 feedback.classList.remove('hidden');
                 setTimeout(() => feedback.classList.add('hidden'), 2000);
+            });
+        }
+
+        function generateAndCopyShareLink(tradeId) {
+            const btn = document.getElementById('generate-btn');
+            btn.innerHTML = '<span class="loading loading-spinner"></span> Generating...';
+            btn.disabled = true;
+
+            fetch(`/trades/${tradeId}/share`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.url) {
+                    navigator.clipboard.writeText(data.url).then(() => {
+                        window.location.reload();
+                    }).catch(err => {
+                        console.error('Failed to copy: ', err);
+                        window.location.reload();
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.innerHTML = 'Error generating link';
             });
         }
     </script>

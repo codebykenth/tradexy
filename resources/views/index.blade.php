@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app title="Tradexy">
 
     <main class="w-full">
         <!-- Hero -->

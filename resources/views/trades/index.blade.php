@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app title="Trade Logs - Tradexy">
     <div class="w-full">
         <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
             <x-page-title title="Logs" subtitle="List of all your trades" />

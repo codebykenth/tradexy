@@ -1,25 +1,8 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $trade->symbol }} Trade Review | {{ config('app.name') }}</title>
-    <meta name="description" content="Trade review for {{ $trade->symbol }} — {{ $trade->total_pnl > 0 ? 'Win' : 'Loss' }} of ${{ number_format(abs($trade->total_pnl), 2) }}">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <header class="w-full border-b border-gray-200 py-4 bg-white">
-        <div class="max-w-5xl mx-auto px-6 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8">
-                <span class="font-bold text-lg">{{ config('app.name') }}</span>
-            </div>
-            <span class="badge badge-outline text-xs uppercase tracking-wider">Shared Trade Review</span>
-        </div>
-    </header>
-
+<x-layouts.app :title="$trade->symbol . ' Trade Review | ' . config('app.name')">
     <div class="max-w-5xl mx-auto px-6 py-8">
+        <div class="mb-6 flex items-center justify-between mt-4">
+            <span class="badge w-full md:w-auto badge-outline text-xs border-primary text-primary uppercase tracking-wider font-bold">Shared Trade Review</span>
+        </div>
         <!-- Trade Header -->
         <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
             <div class="flex items-center justify-between gap-4 w-full">
@@ -98,7 +81,21 @@
             <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 w-full md:w-2/3">
                 <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-4">Chart Snapshot</p>
                 @if($trade->chart_picture)
-                    <img src="{{ $trade->direct_chart_url ?? '' }}" alt="Chart Snapshot" class="w-full rounded-lg shadow-sm">
+                    <img src="{{ $trade->direct_chart_url ?? '' }}" alt="Chart Snapshot" class="w-full rounded-lg shadow-sm cursor-pointer hover:scale-[1.02] transition-transform duration-300 ease-in-out" onclick="chartModal.showModal()">
+                    
+                    <dialog id="chartModal" class="modal">
+                        <div class="modal-box w-11/12 max-w-[75vw]">
+                            <img src="{{ $trade->direct_chart_url ?? '' }}" alt="Chart Snapshot" class="w-full rounded-lg shadow-sm">
+                            <div class="flex justify-end w-full mt-4">
+                                <a href="{{ $trade->chart_picture }}" target="_blank" class="btn btn-primary">
+                                    View Image
+                                </a>
+                            </div>
+                        </div>
+                        <form method="dialog" class="modal-backdrop">
+                            <button>close</button>
+                        </form>
+                    </dialog>
                 @else
                     <p class="italic text-gray-400">No chart image available.</p>
                 @endif
@@ -148,6 +145,18 @@
                         <p class="italic text-gray-400 text-sm">No exit reasons logged.</p>
                     @endif
                 </div>
+                <div class="border-t border-gray-200 pt-4">
+                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Lessons Learned</p>
+                    @if($trade->lessons->isNotEmpty())
+                        <ul class="list-disc ml-4 space-y-1 text-gray-700 text-sm">
+                            @foreach($trade->lessons as $lesson)
+                                <li>{{ $lesson->lesson }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="italic text-gray-400 text-sm">No lessons recorded.</p>
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -163,30 +172,28 @@
                     <p class="text-xl font-bold">AI Analysis</p>
                 </div>
                 <div class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900">
-                    {!! \Illuminate\Support\Str::markdown($trade->ai_analysis, [
-                        'html_input' => 'strip',
-                        'allow_unsafe_links' => false
-                    ]) !!}
+
+
+    <!-- AI Analysis -->
+    @if($trade->ai_analysis)
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mt-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="bg-indigo-100 p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-indigo-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                    </svg>
                 </div>
+                <p class="text-xl font-bold">AI Analysis</p>
             </div>
-        @endif
-
-        <!-- Lessons -->
-        @if($trade->lessons->isNotEmpty())
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mt-6">
-                <p class="uppercase font-bold mb-4">Key Takeaways</p>
-                <ul class="list-disc ml-4 space-y-2 text-gray-700">
-                    @foreach($trade->lessons as $lesson)
-                        <li>{{ $lesson->lesson }}</li>
-                    @endforeach
-                </ul>
+            <div class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900">
+                {!! \Illuminate\Support\Str::markdown($trade->ai_analysis, [
+                    'html_input' => 'strip',
+                    'allow_unsafe_links' => false
+                ]) !!}
             </div>
-        @endif
-
-        <!-- Footer -->
-        <div class="text-center py-8 text-xs text-gray-400">
-            <p>Shared via <a href="{{ url('/') }}" class="text-primary hover:underline font-medium">{{ config('app.name') }}</a></p>
         </div>
-    </div>
-</body>
-</html>
+    @endif
+
+
+
+</x-layouts.app>

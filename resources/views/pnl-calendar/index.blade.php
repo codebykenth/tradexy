@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app title="PnL Calendar - Tradexy">
     <div class="max-w-7xl mx-auto px-6 space-y-6 mb-8 mt-6">
         <x-page-title title="PnL Calendar" subtitle="Visualize your daily trading performance" />
 

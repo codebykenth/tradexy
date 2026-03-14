@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app :title="'Edit ' . $trade->symbol . ' - Tradexy'">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex items-center justify-between my-4">
             <div>
@@ -51,7 +51,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Open Trade Date Time</legend>
-                            <input type="datetime-local"
+                            <input type="datetime-local" step="1"
                                 class="input w-full @error('open_datetime') input-error @enderror" name="open_datetime"
                                 value="{{ old('open_datetime', $trade->open_datetime ?? '') }}" />
                             @error('open_datetime') <span class="text-error mt-1 text-sm">{{ $message }}</span>
@@ -63,7 +63,7 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Close Trade Date Time</legend>
-                            <input type="datetime-local"
+                            <input type="datetime-local" step="1"
                                 class="input w-full @error('close_datetime') input-error @enderror"
                                 name="close_datetime"
                                 value="{{ old('close_datetime', $trade->close_datetime ?? '') }}" />

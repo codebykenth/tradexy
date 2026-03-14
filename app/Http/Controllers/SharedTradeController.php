@@ -12,12 +12,18 @@ use Illuminate\View\View;
 
 final class SharedTradeController extends Controller
 {
-    // Generates a unique share token for the trade
-    public function generate(int $id): RedirectResponse
+    public function generate(int $id)
     {
         $trade = Trade::where('user_id', Auth::id())->findOrFail($id);
 
         $trade->update(['share_token' => Str::random(32)]);
+
+        if (request()->wantsJson()) {
+            session()->flash('success', 'Share link generated & copied to clipboard 🎉');
+            return response()->json([
+                'url' => route('trades.shared', $trade->share_token)
+            ]);
+        }
 
         return redirect()->route('trades.show', $id)
             ->with('success', 'Share link generated successfully.');
