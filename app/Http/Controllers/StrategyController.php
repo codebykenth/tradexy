@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+
 class StrategyController extends Controller
 {
     /**
@@ -34,11 +35,11 @@ class StrategyController extends Controller
 
             return $query->withCount(['trades as trades_count' => $tradeFilter])
                 ->withSum(['trades as net_pnl' => $tradeFilter], 'total_pnl')
-                ->withSum(['trades as total_win_amount' => fn($q) => $tradeFilter($q->where('total_pnl', '>', 0))], 'total_pnl')
-                ->withSum(['trades as total_loss_amount' => fn($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
-                ->withAvg(['trades as avg_win' => fn($q) => $tradeFilter($q->where('total_pnl', '>', 0))], 'total_pnl')
-                ->withAvg(['trades as avg_loss' => fn($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
-                ->withCount(['trades as winning_trades_count' => fn($q) => $tradeFilter($q->where('total_pnl', '>', 0))])
+                ->withSum(['trades as total_win_amount' => fn ($q) => $tradeFilter($q->where('total_pnl', '>', 0))], 'total_pnl')
+                ->withSum(['trades as total_loss_amount' => fn ($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
+                ->withAvg(['trades as avg_win' => fn ($q) => $tradeFilter($q->where('total_pnl', '>', 0))], 'total_pnl')
+                ->withAvg(['trades as avg_loss' => fn ($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
+                ->withCount(['trades as winning_trades_count' => fn ($q) => $tradeFilter($q->where('total_pnl', '>', 0))])
                 ->orderByDesc('net_pnl')
                 ->get();
         });
@@ -64,7 +65,7 @@ class StrategyController extends Controller
         $strategy = Strategy::create($this->extractStrategyData($validated));
         $this->syncRules($strategy, $validated);
 
-        Cache::forget("strategies_user_" . Auth::id());
+        $this->clearStrategyCache();
 
         return redirect()->route('strategies.index')->with('success', 'Strategy created successfully!');
     }
@@ -112,7 +113,7 @@ class StrategyController extends Controller
         $strategy->update($this->extractStrategyData($validated));
         $this->syncRules($strategy, $validated);
 
-        Cache::forget("strategies_user_" . Auth::id());
+        $this->clearStrategyCache();
 
         return redirect()->route('strategies.index')->with('success', 'Strategy updated successfully!');
     }
@@ -126,7 +127,7 @@ class StrategyController extends Controller
         $strategy->rules()->delete();
         $strategy->delete();
 
-        Cache::forget("strategies_user_" . Auth::id());
+        $this->clearStrategyCache();
 
         return redirect()->route('strategies.index')->with('success', 'Strategy deleted successfully!');
     }
@@ -176,6 +177,22 @@ class StrategyController extends Controller
                         'order' => $order++,
                     ]);
                 }
+            }
+        }
+    }
+
+    /**
+     * Clear all possible strategy cache permutations for the current user.
+     */
+    private function clearStrategyCache(): void
+    {
+        $userId = Auth::id();
+        $accountModes = ['real', 'demo', 'all'];
+        $marketTypes = ['crypto', 'pse', 'forex', 'stocks', 'indices', 'commodities', 'all'];
+
+        foreach ($accountModes as $mode) {
+            foreach ($marketTypes as $market) {
+                Cache::forget("strategies_user_{$userId}_mode_{$mode}_market_{$market}");
             }
         }
     }
