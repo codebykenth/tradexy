@@ -10,7 +10,7 @@ services:
     volumes:
       - app_storage_dev:/var/www/storage
       - app_public_dev:/var/www/public-shared
-      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json:ro
+      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json
     networks:
       - tradexy_dev
 
@@ -38,7 +38,7 @@ services:
       - TZ=Asia/Manila
     volumes:
       - app_storage_dev:/var/www/storage
-      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json:ro
+      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json
     depends_on:
       - app
     networks:
