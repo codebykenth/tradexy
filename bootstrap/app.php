@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Middleware\TransactionalRequest;
 use App\Http\Middleware\EnsureTradingModeSet;
+use App\Http\Middleware\TransactionalRequest;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -20,13 +20,19 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         channels: __DIR__.'/../routes/channels.php',
-        web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
-        commands: __DIR__ . '/../routes/console.php',
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
+
+        $middleware->redirectTo(
+            guests: '/login',
+            users: '/dashboard'
+        );
+
         $middleware->appendToGroup('web', TransactionalRequest::class);
         $middleware->appendToGroup('web', EnsureTradingModeSet::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackUserActivity::class);
@@ -34,8 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
 
         // Returns real error in dev, friendly message in production
-        $devMessage = fn(Throwable $e, string $fallback): string =>
-            app()->isProduction() ? $fallback : $e->getMessage();
+        $devMessage = fn (Throwable $e, string $fallback): string => app()->isProduction() ? $fallback : $e->getMessage();
 
         // Validation errors — let Laravel handle normally
         $exceptions->renderable(function (ValidationException $e) {
@@ -106,7 +111,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // If it's a 500 or similar, don't redirect back to avoid loops if the page itself is broken
             if ($e->getStatusCode() >= 500) {
-                return null; 
+                return null;
             }
 
             return redirect()->intended('/dashboard')->with('error', $devMessage($e, $fallbackMsg));
@@ -118,8 +123,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
-            if (request()->expectsJson()) {
-                return null;
+            if (request()->expectsJson() || request()->ajax()) {
+                return response()->json([
+                    'message' => $devMessage($e, 'Something went wrong.'),
+                    'status' => 500,
+                ], 500);
             }
 
             // In local/dev, show the full error page (don't redirect) to help debugging
@@ -127,15 +135,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
-            // Avoid redirect loops if the dashboard or login page is broken
-            $currentPath = request()->path();
-            if ($currentPath === 'dashboard' || $currentPath === 'login' || $currentPath === '/') {
-                return null; 
+            // Avoid redirect loops - never redirect to the current path
+            $path = request()->path();
+            if ($path === 'dashboard' || $path === 'login' || $path === '/' || empty($path)) {
+                return null;
             }
 
-            return redirect()->to('/dashboard')
-                ->with('error', $devMessage($e, 'Something went wrong. Please try again.'));
+            // Only redirect to dashboard if authenticated
+            if (auth()->check()) {
+                return redirect()->to('/dashboard')
+                    ->with('error', $devMessage($e, 'Something went wrong. Please try again.'));
+            }
+
+            return null;
         });
 
     })->create();
-

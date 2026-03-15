@@ -1,0 +1,18 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - database/
+        - routes/
+
+    # Level 5 is a good balance between strictness and developer speed
+    level: 5
+
+    ignoreErrors:
+        # Ignore common false positives or specific Laravel magic if needed
+        # - '#PHPDoc tag @var# '
+
+    excludePaths:
+        # - ./*/*/FileToBeExcluded.php
