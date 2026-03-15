@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             {{-- Gold Section --}}
             @if(isset($news->ai_analysis['gold']))
                 @php
@@ -102,6 +102,8 @@
                                     <p class="text-sm italic opacity-40">No significant risks identified.</p>
                                 @endforelse
                              </div>
+                        </div>
+
                         {{-- Top Signal --}}
                         @if(isset($gd['top_news_source']) && !empty($gd['top_news_source']['headline']))
                             <div class="pt-6 border-t border-base-200">
@@ -182,21 +184,24 @@
                          {{-- Risk Factors --}}
                          <div>
                             <h4 class="text-xs font-black uppercase tracking-widest opacity-40 mb-4">Risk Profile</h4>
-                            <div class="space-y-3">
-                               @forelse($cd['risk_factors'] ?? [] as $risk)
-                                   <div class="flex gap-3 text-sm font-medium">
-                                       <div class="mt-1.5 w-1.5 h-1.5 rounded-full bg-error shrink-0"></div>
-                                       <p class="opacity-80">
-                                           @if(is_array($risk))
-                                               <span class="font-black text-base-content">{{ $risk['theme'] ?? '' }}:</span> {{ $risk['explanation'] ?? '' }}
-                                           @else
-                                               {{ $risk }}
-                                           @endif
-                                       </p>
-                                   </div>
-                               @empty
-                                   <p class="text-sm italic opacity-40">No significant risks identified.</p>
-                               @endforelse
+                             <div class="space-y-3">
+                                @forelse($cd['risk_factors'] ?? [] as $risk)
+                                    <div class="flex gap-3 text-sm font-medium">
+                                        <div class="mt-1.5 w-1.5 h-1.5 rounded-full bg-error shrink-0"></div>
+                                        <p class="opacity-80">
+                                            @if(is_array($risk))
+                                                <span class="font-black text-base-content">{{ $risk['theme'] ?? '' }}:</span> {{ $risk['explanation'] ?? '' }}
+                                            @else
+                                                {{ $risk }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                @empty
+                                    <p class="text-sm italic opacity-40">No significant risks identified.</p>
+                                @endforelse
+                             </div>
+                        </div>
+
                         {{-- Top Signal --}}
                         @if(isset($cd['top_news_source']) && !empty($cd['top_news_source']['headline']))
                             <div class="pt-6 border-t border-base-200">
@@ -212,7 +217,7 @@
                         @endif
                     </div>
                 </div>
-@endif
+            @endif
         </div>
 
         {{-- Footer Warning --}}

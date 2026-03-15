@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Socialite;
+use Laravel\Socialite\Facades\Socialite;
 use Str;
 
 class LoginController extends Controller
@@ -48,9 +48,14 @@ class LoginController extends Controller
         return redirect('/');
     }
 
-    public function redirectToProvider(string $provider)
+    public function redirectToProvider(Request $request, string $provider)
     {
         abort_unless(in_array($provider, ['google', 'facebook']), 404);
+
+        if ($request->has('remember')) {
+            session(['social_remember' => true]);
+        }
+
         return Socialite::driver($provider)->redirect();
     }
 
@@ -60,28 +65,32 @@ class LoginController extends Controller
 
         $socialiteUser = Socialite::driver($provider)->user();
 
-        // $profilePictureUrl = match ($provider) {
-        //     'facebook' => $socialiteUser->getAvatar() . '?type=large&access_token=' . $socialiteUser->token,
-        //     'google' => $socialiteUser->getAvatar(),
-        //     default => 'https://via.placeholder.com/150'
-        // };
         // Use avatar URL without embedding access tokens
         $profilePictureUrl = $socialiteUser->getAvatar();
 
-        // Find user, if it is not existing create a new user
-        $user = User::firstOrCreate(
-            ['email' => $socialiteUser->getEmail()],
-            [
+        // Find user by email, then update or create
+        $user = User::where('email', $socialiteUser->getEmail())->first();
+
+        if ($user) {
+            $user->update([
+                'provider_id' => $socialiteUser->getId(),
+                'provider' => $provider,
+                'profile_picture' => $user->profile_picture ?: $profilePictureUrl,
+            ]);
+        } else {
+            $user = User::create([
                 'name' => $socialiteUser->getName() ?: $socialiteUser->getEmail(),
+                'email' => $socialiteUser->getEmail(),
                 'password' => bcrypt(Str::random(16)),
                 'email_verified_at' => now(),
                 'profile_picture' => $profilePictureUrl,
                 'provider_id' => $socialiteUser->getId(),
                 'provider' => $provider,
-            ]
-        );
+            ]);
+        }
 
-        Auth::login($user);
+        $remember = session()->pull('social_remember', false);
+        Auth::login($user, $remember);
         request()->session()->regenerate();
 
         return redirect('/dashboard');

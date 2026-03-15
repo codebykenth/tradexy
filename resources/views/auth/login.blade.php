@@ -29,7 +29,7 @@
 
                     <!-- Social Login -->
                     <div class="grid grid-cols-2 gap-4">
-                        <a href="/auth/google"
+                        <a href="/auth/google" id="google-login"
                             class="flex items-center justify-center gap-2 px-4 p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1a1a19] transition-all bg-white dark:bg-[#161615] text-sm font-medium dark:text-gray-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                                 <path
@@ -47,7 +47,7 @@
                             </svg>
                             Google
                         </a>
-                        <a href="/auth/facebook"
+                        <a href="/auth/facebook" id="facebook-login"
                             class="flex items-center justify-center gap-2 px-4 p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1a1a19] transition-all bg-white dark:bg-[#161615] text-sm font-medium dark:text-gray-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="#1877F2">
@@ -57,6 +57,24 @@
                             Facebook
                         </a>
                     </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const rememberCheckbox = document.getElementById('remember_me');
+                            const googleLink = document.getElementById('google-login');
+                            const facebookLink = document.getElementById('facebook-login');
+
+                            function updateLinks() {
+                                const isChecked = rememberCheckbox.checked;
+                                googleLink.href = isChecked ? '/auth/google?remember=1' : '/auth/google';
+                                facebookLink.href = isChecked ? '/auth/facebook?remember=1' : '/auth/facebook';
+                            }
+
+                            rememberCheckbox.addEventListener('change', updateLinks);
+                            // Set initial state
+                            updateLinks();
+                        });
+                    </script>
 
                     <div class="relative">
                         <div class="absolute inset-0 flex items-center">
