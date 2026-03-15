@@ -75,6 +75,69 @@
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                <!-- Color & Category -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                Strategy Color
+                            </legend>
+                            <input type="color" class="input p-1 h-12 w-full @error('color') input-error @enderror" name="color"
+                                value="{{ old('color', $strategy->color ?? '#6366f1') }}" />
+                            @error('color') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                        </fieldset>
+                    </div>
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                Type / Category
+                            </legend>
+                            <select class="select w-full" name="category[]">
+                                @php $selectedCat = collect(old('category', $strategy->category ?? [])); @endphp
+                                <option value="Day Trade" @selected($selectedCat->contains('Day Trade'))>Day Trade</option>
+                                <option value="Swing Trade" @selected($selectedCat->contains('Swing Trade'))>Swing Trade</option>
+                                <option value="Scalping" @selected($selectedCat->contains('Scalping'))>Scalping</option>
+                                <option value="Position" @selected($selectedCat->contains('Position'))>Position</option>
+                                <option value="Investment" @selected($selectedCat->contains('Investment'))>Investment</option>
+                            </select>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- Markets & Timeframes -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <legend class="fieldset-legend uppercase font-semibold text-[10px] tracking-wider text-gray-400 mb-2">
+                            Markets
+                        </legend>
+                        <div class="flex flex-wrap gap-2">
+                            @php $selectedMarkets = collect(old('markets', $strategy->markets ?? [])); @endphp
+                            @foreach(['crypto', 'pse', 'forex', 'stocks', 'indices', 'commodities'] as $m)
+                                <label class="label cursor-pointer gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+                                    <input type="checkbox" name="markets[]" value="{{ $m }}" @checked($selectedMarkets->contains($m)) class="checkbox checkbox-sm checkbox-primary" />
+                                    <span class="label-text uppercase text-[10px] font-black tracking-tighter">{{ $m }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div>
+                        <legend class="fieldset-legend uppercase font-semibold text-[10px] tracking-wider text-gray-400 mb-2">
+                            Timeframes
+                        </legend>
+                        <div class="flex flex-wrap gap-2">
+                            @php $selectedTFs = collect(old('timeframes', $strategy->timeframes ?? [])); @endphp
+                            @foreach(['1m', '5m', '15m', '1h', '4h', '1d', '1w'] as $tf)
+                                <label class="label cursor-pointer gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+                                    <input type="checkbox" name="timeframes[]" value="{{ $tf }}" @checked($selectedTFs->contains($tf)) class="checkbox checkbox-sm checkbox-primary" />
+                                    <span class="label-text uppercase text-[10px] font-black tracking-tighter">{{ $tf }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Description -->
             <div class="mb-6">
                 <fieldset class="fieldset w-full">

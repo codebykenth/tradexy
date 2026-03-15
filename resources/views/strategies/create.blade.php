@@ -68,6 +68,66 @@
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                <!-- Color & Category -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                Strategy Color
+                            </legend>
+                            <input type="color" class="input p-1 h-12 w-full @error('color') input-error @enderror" name="color"
+                                value="{{ old('color', '#6366f1') }}" />
+                            @error('color') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
+                        </fieldset>
+                    </div>
+                    <div>
+                        <fieldset class="fieldset w-full">
+                            <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                Type / Category
+                            </legend>
+                            <select class="select w-full" name="category[]">
+                                <option value="Day Trade" @selected(collect(old('category'))->contains('Day Trade'))>Day Trade</option>
+                                <option value="Swing Trade" @selected(collect(old('category'))->contains('Swing Trade'))>Swing Trade</option>
+                                <option value="Scalping" @selected(collect(old('category'))->contains('Scalping'))>Scalping</option>
+                                <option value="Position" @selected(collect(old('category'))->contains('Position'))>Position</option>
+                                <option value="Investment" @selected(collect(old('category'))->contains('Investment'))>Investment</option>
+                            </select>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- Markets & Timeframes -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <legend class="fieldset-legend uppercase font-semibold text-[10px] tracking-wider text-gray-400 mb-2">
+                            Markets
+                        </legend>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(['crypto', 'pse', 'forex', 'stocks', 'indices', 'commodities'] as $m)
+                                <label class="label cursor-pointer gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+                                    <input type="checkbox" name="markets[]" value="{{ $m }}" @checked(collect(old('markets'))->contains($m)) class="checkbox checkbox-sm checkbox-primary" />
+                                    <span class="label-text uppercase text-[10px] font-black tracking-tighter">{{ $m }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div>
+                        <legend class="fieldset-legend uppercase font-semibold text-[10px] tracking-wider text-gray-400 mb-2">
+                            Timeframes
+                        </legend>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(['1m', '5m', '15m', '1h', '4h', '1d', '1w'] as $tf)
+                                <label class="label cursor-pointer gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+                                    <input type="checkbox" name="timeframes[]" value="{{ $tf }}" @checked(collect(old('timeframes'))->contains($tf)) class="checkbox checkbox-sm checkbox-primary" />
+                                    <span class="label-text uppercase text-[10px] font-black tracking-tighter">{{ $tf }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Description -->
             <div class="mb-6">
                 <fieldset class="fieldset w-full">

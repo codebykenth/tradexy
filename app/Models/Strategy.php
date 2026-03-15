@@ -27,6 +27,16 @@ class Strategy extends Model
         'category' => 'array',
     ];
 
+    /**
+     * Default values for attributes.
+     */
+    protected $attributes = [
+        'category' => '[]',
+        'markets' => '[]',
+        'timeframes' => '[]',
+        'color' => '#6366f1',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
