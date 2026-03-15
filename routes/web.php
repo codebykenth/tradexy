@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AiAnalysisController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BalanceController;
+use App\Http\Controllers\DailyNewsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MigrateBalancesController;
 use App\Http\Controllers\MigrateStrategiesController;
@@ -13,11 +15,9 @@ use App\Http\Controllers\PnlCalendarController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SharedTradeController;
 use App\Http\Controllers\StrategyController;
+use App\Http\Controllers\TradeBulkController;
 use App\Http\Controllers\TradeController;
 use App\Http\Controllers\TradingModeController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\TradeBulkController;
-use App\Http\Controllers\DailyNewsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -52,7 +52,7 @@ Route::middleware(['throttle:auth'])->group(function () {
 Route::middleware(['throttle:read'])->group(function () {
     Route::get('sitemap.xml', function () {
         return response()->view('sitemap', [
-            'trades' => \App\Models\Trade::whereNotNull('share_token')->get()
+            'trades' => \App\Models\Trade::whereNotNull('share_token')->get(),
         ])->header('Content-Type', 'text/xml');
     });
 
@@ -96,6 +96,7 @@ Route::middleware(['throttle:write', 'auth'])->group(function () {
     Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
     Route::delete('profile/remove-picture', [ProfileController::class, 'removeProfilePicture'])->name('profile.remove-picture');
+    Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('trades/{id}/share', [SharedTradeController::class, 'generate'])->name('trades.share.generate');
     Route::delete('trades/{id}/share', [SharedTradeController::class, 'revoke'])->name('trades.share.revoke');
     Route::post('trading-mode', [TradingModeController::class, 'update'])->name('trading-mode.update');

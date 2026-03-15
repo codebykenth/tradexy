@@ -147,14 +147,18 @@
                     </div>
                     <div class="card-body p-8 space-y-8">
                         {{-- Stats Grid --}}
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             <div class="bg-base-200/50 p-4 rounded-2xl text-center">
                                 <p class="text-[9px] font-black uppercase opacity-40 mb-1">Confidence</p>
                                 <p class="text-lg font-black italic">{{ $crypto['confidence'] ?? 'N/A' }}</p>
                             </div>
                             <div class="bg-base-200/50 p-4 rounded-2xl text-center">
-                                <p class="text-[9px] font-black uppercase opacity-40 mb-1">Trend Direction</p>
-                                <p class="text-lg font-black italic">{{ $cd['summary']['trend_direction'] ?? 'N/A' }}</p>
+                                <p class="text-[9px] font-black uppercase opacity-40 mb-1">24H Flow</p>
+                                <p class="text-lg font-black italic">{{ $cd['summary']['price_direction_24h'] ?? 'N/A' }}</p>
+                            </div>
+                            <div class="bg-base-200/50 p-4 rounded-2xl text-center">
+                                <p class="text-[9px] font-black uppercase opacity-40 mb-1">7D Outlook</p>
+                                <p class="text-lg font-black italic">{{ $cd['summary']['price_direction_7d'] ?? 'N/A' }}</p>
                             </div>
                         </div>
 

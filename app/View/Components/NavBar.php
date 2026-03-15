@@ -10,17 +10,20 @@ use Illuminate\View\Component;
 class NavBar extends Component
 {
     public ?string $profilePicture;
+
     public ?string $initials = null;
 
     /**
      * Create a new component instance.
      */
-    public function __construct(?string $profilePicture)
+    public function __construct(?string $profilePicture = null)
     {
-        $this->profilePicture = $profilePicture;
-        if (Auth::user()) {
+        $this->profilePicture = $profilePicture ?? Auth::user()?->profile_picture;
 
-            $this->initials = collect(explode(' ', Auth::user()->name))->map(fn($word) => strtoupper($word[0]))->implode('');
+        if (Auth::user()) {
+            $this->initials = collect(explode(' ', Auth::user()->name))
+                ->map(fn ($word) => isset($word[0]) ? strtoupper($word[0]) : '')
+                ->implode('');
         }
     }
 

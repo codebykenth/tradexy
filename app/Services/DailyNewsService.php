@@ -10,54 +10,54 @@ use SimplePie\SimplePie;
 class DailyNewsService
 {
     private const GOLD_KEYWORDS = [
-        "fed" => 5,
-        "interest" => 4,
-        "inflation" => 5,
-        "cpi" => 5,
-        "ppi" => 4,
-        "recession" => 5,
-        "geopolitical" => 5,
-        "war" => 5,
-        "oil" => 3,
-        "usd" => 4,
-        "gold" => 5,
-        "interest rate" => 4,
-        "monetary policy" => 5,
-        "quantitative easing" => 4,
-        "quantitative tightening" => 4,
-        "central bank" => 5,
-        "economic slowdown" => 4,
-        "global supply chain" => 3,
-        "economic crisis" => 5
+        'fed' => 5,
+        'interest' => 4,
+        'inflation' => 5,
+        'cpi' => 5,
+        'ppi' => 4,
+        'recession' => 5,
+        'geopolitical' => 5,
+        'war' => 5,
+        'oil' => 3,
+        'usd' => 4,
+        'gold' => 5,
+        'interest rate' => 4,
+        'monetary policy' => 5,
+        'quantitative easing' => 4,
+        'quantitative tightening' => 4,
+        'central bank' => 5,
+        'economic slowdown' => 4,
+        'global supply chain' => 3,
+        'economic crisis' => 5,
     ];
 
     private const CRYPTO_KEYWORDS = [
-        "fed" => 5,
-        "interest rate" => 5,
-        "rate hike" => 5,
-        "rate cut" => 5,
-        "liquidity" => 4,
-        "inflation" => 5,
-        "cpi" => 5,
-        "recession" => 5,
-        "risk-on" => 4,
-        "risk-off" => 4,
-        "bitcoin" => 5,
-        "btc" => 5,
-        "etf" => 4,
-        "institutional demand" => 4,
-        "stablecoin" => 4,
-        "exchange inflows" => 4,
-        "exchange outflows" => 4,
-        "sec" => 5,
-        "crypto regulation" => 5,
-        "hack" => 5,
-        "bankruptcy" => 5
+        'fed' => 5,
+        'interest rate' => 5,
+        'rate hike' => 5,
+        'rate cut' => 5,
+        'liquidity' => 4,
+        'inflation' => 5,
+        'cpi' => 5,
+        'recession' => 5,
+        'risk-on' => 4,
+        'risk-off' => 4,
+        'bitcoin' => 5,
+        'btc' => 5,
+        'etf' => 4,
+        'institutional demand' => 4,
+        'stablecoin' => 4,
+        'exchange inflows' => 4,
+        'exchange outflows' => 4,
+        'sec' => 5,
+        'crypto regulation' => 5,
+        'hack' => 5,
+        'bankruptcy' => 5,
     ];
 
     public function generate()
     {
-        $now = new DateTime();
+        $now = new DateTime;
         $twoDaysAgo = clone $now;
         $twoDaysAgo->modify('-2 days');
 
@@ -72,7 +72,7 @@ class DailyNewsService
 
             for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
                 try {
-                    $feed = new SimplePie();
+                    $feed = new SimplePie;
                     $feed->enable_cache(false);
                     $feed->set_feed_url($source);
                     $feed->set_timeout(30);
@@ -100,6 +100,7 @@ class DailyNewsService
 
                     $feed->__destruct();
                     unset($feed);
+
                     break; // Success — exit retry loop
 
                 } catch (Exception $e) {
@@ -165,59 +166,58 @@ class DailyNewsService
             'gold' => [
                 'count' => count($goldArticles),
                 'currentPrice' => $goldPrice,
-                'articles' => $goldArticles
+                'articles' => $goldArticles,
             ],
             'crypto' => [
                 'count' => count($cryptoArticles),
                 'currentPrice' => $btcPrice,
-                'articles' => $cryptoArticles
-            ]
+                'articles' => $cryptoArticles,
+            ],
         ];
     }
 
     private function analyze(string $systemPrompt, string $userPrompt)
     {
         $output = Http::withHeaders([
-            "x-goog-api-key" => config('services.gemini.key'),
-            "Content-Type" => "application/json"
+            'x-goog-api-key' => config('services.gemini.key'),
+            'Content-Type' => 'application/json',
         ])->timeout(300)->retry(3, 10000)->post(
-                'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent',
-                [
-                    "system_instruction" => [
-                        "parts" => [
-                            [
-                                "text" => $systemPrompt
-                            ]
-                        ]
-                    ],
-                    "contents" => [
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent',
+            [
+                'system_instruction' => [
+                    'parts' => [
                         [
-                            "parts" => [
-                                [
-                                    "text" => $userPrompt
-                                ]
-                            ]
-                        ]
+                            'text' => $systemPrompt,
+                        ],
                     ],
-                    "generationConfig" => [
-                        "temperature" => 1.0,
-                        "topP" => 0.8,
-                        "topK" => 10,
-                        "thinkingConfig" => [
-                            "thinkingLevel" => "medium"
-                        ]
-                    ]
-                ]
-            );
+                ],
+                'contents' => [
+                    [
+                        'parts' => [
+                            [
+                                'text' => $userPrompt,
+                            ],
+                        ],
+                    ],
+                ],
+                'generationConfig' => [
+                    'temperature' => 1.0,
+                    'topP' => 0.8,
+                    'topK' => 10,
+                    'thinkingConfig' => [
+                        'thinkingLevel' => 'medium',
+                    ],
+                ],
+            ]
+        );
         $responseData = $output->json();
+
         return $responseData['candidates'][0]['content']['parts'][0]['text'] ?? 'No analysis generated.';
     }
 
-    private function normalizeAiOutput($rawOutput): array
+    private function normalizeAiOutput(string $rawOutput): array
     {
-        $raw = is_string($rawOutput)
-            ? json_decode(trim(str_replace(['```json', '```'], '', $rawOutput)), true)
-            : $rawOutput;
+        $raw = json_decode(trim(str_replace(['```json', '```'], '', $rawOutput)), true);
 
         $raw = is_array($raw) ? $raw : [];
 
@@ -247,7 +247,7 @@ class DailyNewsService
             'confidence' => $confidence,
             'key_driver' => $raw['key_driver']['theme'] ?? null,
             'source' => $raw['top_news_source']['source_name'] ?? null,
-            'data' => $raw
+            'data' => $raw,
         ];
     }
 
@@ -255,8 +255,9 @@ class DailyNewsService
     {
         try {
             $response = Http::get('https://giavang.now/api/prices', [
-                'type' => 'XAUUSD'
+                'type' => 'XAUUSD',
             ]);
+
             return $response->json('buy');
         } catch (Exception $e) {
             return null;
@@ -267,8 +268,9 @@ class DailyNewsService
     {
         try {
             $response = Http::get('https://api.binance.com/api/v3/ticker/price', [
-                'symbol' => 'BTCUSDT'
+                'symbol' => 'BTCUSDT',
             ]);
+
             return $response->json('price');
         } catch (Exception $e) {
             return null;
@@ -279,33 +281,33 @@ class DailyNewsService
     {
         return [
             // Gold & Commodities
-            "https://www.nasdaq.com/feed/rssoutbound?category=Commodities",
-            "https://news.google.com/rss/search?q=gold+price+OR+XAUUSD+OR+precious+metals&hl=en&gl=US&ceid=US:en",
-            "https://www.fxstreet.com/rss/news?f=gold",
-            "https://www.fxstreet.com/rss/news",
-            "https://feeds.bloomberg.com/markets/news.rss",
-            "https://www.investing.com/rss/news_1.rss",
-            "https://www.investing.com/rss/news_285.rss",
-            "https://finance.yahoo.com/rss/",
+            'https://www.nasdaq.com/feed/rssoutbound?category=Commodities',
+            'https://news.google.com/rss/search?q=gold+price+OR+XAUUSD+OR+precious+metals&hl=en&gl=US&ceid=US:en',
+            'https://www.fxstreet.com/rss/news?f=gold',
+            'https://www.fxstreet.com/rss/news',
+            'https://feeds.bloomberg.com/markets/news.rss',
+            'https://www.investing.com/rss/news_1.rss',
+            'https://www.investing.com/rss/news_285.rss',
+            'https://finance.yahoo.com/rss/',
 
             // Crypto
-            "https://www.coindesk.com/arc/outboundfeeds/rss/",
-            "https://cointelegraph.com/rss",
-            "https://decrypt.co/feed",
-            "https://cryptoslate.com/feed/",
-            "https://www.ethnews.com/rss",
-            "https://app.chaingpt.org/rssfeeds.xml",
+            'https://www.coindesk.com/arc/outboundfeeds/rss/',
+            'https://cointelegraph.com/rss',
+            'https://decrypt.co/feed',
+            'https://cryptoslate.com/feed/',
+            'https://www.ethnews.com/rss',
+            'https://app.chaingpt.org/rssfeeds.xml',
         ];
     }
 
     /**
      * Filters and scores news articles based on keywords and recency.
      *
-     * @param array $articles Let's assume structure: [['title' => '', 'contentSnippet' => '', 'link' => '', 'pubDate' => ''], ...]
-     * @param array $keywords Discovered keywords mapped to score weight
-     * @param string $scanMode 'title' or 'full' Let's know if we scan just the title or content as well
-     * @param DateTime $twoDaysAgo Start date of timeframe
-     * @param DateTime $now End date of timeframe
+     * @param  array  $articles  Let's assume structure: [['title' => '', 'contentSnippet' => '', 'link' => '', 'pubDate' => ''], ...]
+     * @param  array  $keywords  Discovered keywords mapped to score weight
+     * @param  string  $scanMode  'title' or 'full' Let's know if we scan just the title or content as well
+     * @param  DateTime  $twoDaysAgo  Start date of timeframe
+     * @param  DateTime  $now  End date of timeframe
      * @return array
      */
     private function filterHighImpactNews(array $articles, array $keywords, string $scanMode, DateTime $twoDaysAgo, DateTime $now)
@@ -339,7 +341,7 @@ class DailyNewsService
 
             $text = $scanMode === 'title'
                 ? strtolower($title)
-                : strtolower($title . " " . $content);
+                : strtolower($title.' '.$content);
 
             $score = 0;
             foreach ($keywords as $word => $weight) {
@@ -357,7 +359,7 @@ class DailyNewsService
                 'content' => $content,
                 'pubDate' => $pubDate->format(DateTime::ATOM),
                 'link' => $link,
-                'score' => $score
+                'score' => $score,
             ];
         }
 
@@ -370,13 +372,14 @@ class DailyNewsService
             if ($a['score'] !== $b['score']) {
                 return $b['score'] <=> $a['score'];
             }
+
             return strtotime($b['pubDate']) <=> strtotime($a['pubDate']);
         });
     }
 
     private function isValidAbsoluteUrl(?string $url): bool
     {
-        if (empty($url) || !is_string($url)) {
+        if (empty($url)) {
             return false;
         }
 
@@ -398,7 +401,7 @@ class DailyNewsService
 
     private const SYSTEM_MESSAGES = [
         'gold' => "You are a high-conviction gold macro analyst.\nFocus only on price-relevant macro & institutional signals.\nWeigh credibility heavily. Analysis only (DYOR).\nRespond exclusively in valid JSON.",
-        'crypto' => "You are a high-conviction Bitcoin macro analyst.\nFocus only on price-relevant macro & institutional signals.\nIgnore hype and opinion pieces.\nWeigh credibility heavily. Analysis only (DYOR).\nRespond exclusively in valid JSON."
+        'crypto' => "You are a high-conviction Bitcoin macro analyst.\nFocus only on price-relevant macro & institutional signals.\nIgnore hype and opinion pieces.\nWeigh credibility heavily. Analysis only (DYOR).\nRespond exclusively in valid JSON.",
     ];
 
     private function formatArticlesForPrompt(array $articles): string
@@ -410,6 +413,7 @@ class DailyNewsService
             $num = $index + 1;
             $formatted[] = "ARTICLE {$num}\nLink: {$link}\nContent:\n{$content}\n";
         }
+
         return implode("\n---\n\n", $formatted);
     }
 
@@ -445,7 +449,8 @@ class DailyNewsService
         "summary": {
             "bias": "Bullish | Bearish",
             "confidence_score": 0,
-            "trend_direction": "UP | DOWN"
+            "price_direction_24h": "Up | Down",
+            "price_direction_7d": "Up | Down"
         },
         "key_driver": {
             "theme": "",
@@ -483,7 +488,6 @@ class DailyNewsService
         • DO NOT add/remove/rename fields
         • confidence_score MUST be an integer from 0 to 10
         • price_direction_24h MUST be exactly "Up" or "Down" only (no "Neutral" or "Up/Neutral")
-        • trend_direction MUST be exactly "UP" or "DOWN" only (no "NEUTRAL")
         • DO NOT use markdown or code blocks
         • Never omit fields
         • If uncertain, use null or "Unknown"
@@ -506,9 +510,9 @@ class DailyNewsService
                     ['role' => 'system', 'content' => self::SYSTEM_MESSAGES['gold']],
                     [
                         'role' => 'user',
-                        'content' => $this->buildUserPrompt('gold', $goldArticles, $goldPrice)
-                    ]
-                ]
+                        'content' => $this->buildUserPrompt('gold', $goldArticles, $goldPrice),
+                    ],
+                ],
             ];
         }
 
@@ -519,9 +523,9 @@ class DailyNewsService
                     ['role' => 'system', 'content' => self::SYSTEM_MESSAGES['crypto']],
                     [
                         'role' => 'user',
-                        'content' => $this->buildUserPrompt('crypto', $cryptoArticles, $btcPrice)
-                    ]
-                ]
+                        'content' => $this->buildUserPrompt('crypto', $cryptoArticles, $btcPrice),
+                    ],
+                ],
             ];
         }
 

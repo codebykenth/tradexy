@@ -8,8 +8,8 @@ use App\Http\Requests\BalanceRequest;
 use App\Models\Balance;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Request;
 
 final class BalanceController extends Controller
 {

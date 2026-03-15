@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -60,6 +60,7 @@ class ProfileController extends Controller
             return $response->json('image.display_url');
         } catch (\Exception $e) {
             report($e);
+
             return null;
         }
     }
@@ -87,5 +88,26 @@ class ProfileController extends Controller
         $user->save();
 
         return redirect()->route('profile.show')->with('success', 'Profile picture removed successfully.');
+    }
+
+    /**
+     * Delete the user's account.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = Auth::user();
+
+        $user->delete();
+
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success', 'Your account has been deleted.');
     }
 }

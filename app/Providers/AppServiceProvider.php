@@ -6,6 +6,7 @@ use App\Listeners\ActivityLogSubscriber;
 use App\Models\Balance;
 use App\Models\Strategy;
 use App\Models\Trade;
+use App\Models\User;
 use App\Observers\ModelActivityObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -30,13 +31,14 @@ class AppServiceProvider extends ServiceProvider
     {
         // Activity Logging
         \Illuminate\Support\Facades\Event::subscribe(ActivityLogSubscriber::class);
-        
+
         Trade::observe(ModelActivityObserver::class);
         Balance::observe(ModelActivityObserver::class);
         Strategy::observe(ModelActivityObserver::class);
+        User::observe(ModelActivityObserver::class);
 
         // Only users with id === 1 can access developer routes
-        Gate::define('developer', fn($user) => $user->developer());
+        Gate::define('developer', fn ($user) => $user->developer());
 
         RateLimiter::for('ai-analysis', function (Request $request) {
             return $request->user()?->developer() ? Limit::none() : Limit::perDay(1)->by($request->user()?->id ?: $request->ip())->response(function (Request $request, array $headers) {
