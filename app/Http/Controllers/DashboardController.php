@@ -3,14 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Balance;
-use App\Models\Trade;
 use App\Models\MarketNews;
+use App\Models\Trade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
+    {
+        $data = $this->getDashboardData();
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json($data);
+        }
+
+        return view('dashboard.index', $data);
+    }
+
+    private function getDashboardData(): array
     {
         $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
@@ -28,8 +39,8 @@ class DashboardController extends Controller
         }
         $balances = $balanceQuery->orderBy('date', 'asc')->get();
 
-        $equityCategories = $balances->pluck('date')->map(fn($date) => $date->format('M d, y'))->toArray();
-        $equitySeries = $balances->pluck('total_equity')->toArray();
+        $equityCategories = $balances->pluck('date')->map(fn ($date) => $date->format('M d, y'))->toArray();
+        $equitySeries = $balances->pluck('total_equity')->map(fn ($val) => (float) $val)->toArray();
 
         // 2. Fetch Trades for PnL Curve and Overall Stats
         $tradeQuery = Trade::where('user_id', $userId)->whereNotNull('close_datetime');
@@ -92,7 +103,7 @@ class DashboardController extends Controller
         // 3. Stats metrics
         $tradeCount = $trades->count();
         $winRate = $tradeCount > 0 ? round(($winCount / $tradeCount) * 100, 1) : 0;
-        $currentBalance = $balances->last() ? $balances->last()->total_equity : 0;
+        $currentBalance = $balances->last() ? (float) $balances->last()->total_equity : 0;
 
         // Profit Factor
         $profitFactor = $totalLossAmount > 0 ? round($totalWinAmount / $totalLossAmount, 2) : ($totalWinAmount > 0 ? 99.99 : 0);
@@ -152,6 +163,8 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($symbol) {
                 $symbol->win_rate = $symbol->trades_count > 0 ? round(($symbol->win_count / $symbol->trades_count) * 100) : 0;
+                $symbol->net_pnl = (float) $symbol->net_pnl;
+
                 return $symbol;
             });
 
@@ -169,9 +182,15 @@ class DashboardController extends Controller
 
         $recentActivity = $recentActivityQuery->orderByDesc('close_datetime')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function ($trade) {
+                $trade->human_time = \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->diffForHumans();
+                $trade->formatted_pnl = ($trade->total_pnl >= 0 ? '+' : '-').'$'.number_format(abs($trade->total_pnl), 2);
 
-        return view('dashboard.index', compact(
+                return $trade;
+            });
+
+        return compact(
             'equityCategories',
             'equitySeries',
             'pnlCategories',
@@ -193,6 +212,6 @@ class DashboardController extends Controller
             'topSymbols',
             'recentActivity',
             'latestNews'
-        ));
+        );
     }
 }

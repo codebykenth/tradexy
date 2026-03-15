@@ -6,28 +6,34 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\BalanceRequest;
 use App\Models\Balance;
-use App\Services\BybitService;
-use Illuminate\Http\Request;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Request;
 
 final class BalanceController extends Controller
 {
-    public function __construct(private readonly BybitService $bybitService)
-    {
-    }
-
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(Request $request)
+    {
+        $data = $this->getBalancesData();
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json($data);
+        }
+
+        return view('balances.index', $data);
+    }
+
+    private function getBalancesData(): array
     {
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
 
         $query = Balance::where('user_id', Auth::id());
-        
+
         if ($accountMode !== 'all') {
             $query->where('is_demo', $accountMode === 'demo');
         }
@@ -38,9 +44,16 @@ final class BalanceController extends Controller
 
         $balances = $query->latest('date')->paginate(10);
 
-        return view('balances.index', [
+        // Transform the collection to include formatted attributes for JS
+        $balances->getCollection()->transform(function ($balance) {
+            $balance->local_date = \Carbon\Carbon::parse($balance->date)->format('M d, Y');
+
+            return $balance;
+        });
+
+        return [
             'balances' => $balances,
-        ]);
+        ];
     }
 
     /**

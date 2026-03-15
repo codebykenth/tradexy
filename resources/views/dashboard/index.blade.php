@@ -13,7 +13,7 @@
                     class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col justify-center">
                     <span
                         class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Today</span>
-                    <span class="text-xl font-bold {{ $todayPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                    <span id="stat-today" class="text-xl font-bold {{ $todayPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
                         {{ $todayPnl >= 0 ? '+' : '-' }}${{ number_format(abs($todayPnl), 2) }}
                     </span>
                 </div>
@@ -22,7 +22,7 @@
                     class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col justify-center">
                     <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">This
                         Week</span>
-                    <span class="text-xl font-bold {{ $weekPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                    <span id="stat-week" class="text-xl font-bold {{ $weekPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
                         {{ $weekPnl >= 0 ? '+' : '-' }}${{ number_format(abs($weekPnl), 2) }}
                     </span>
                 </div>
@@ -31,7 +31,7 @@
                     class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col justify-center">
                     <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">This
                         Month</span>
-                    <span class="text-xl font-bold {{ $monthPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                    <span id="stat-month" class="text-xl font-bold {{ $monthPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
                         {{ $monthPnl >= 0 ? '+' : '-' }}${{ number_format(abs($monthPnl), 2) }}
                     </span>
                 </div>
@@ -40,10 +40,10 @@
                     class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col justify-center">
                     <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">All
                         Time</span>
-                    <span class="text-xl font-bold {{ $totalPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                    <span id="stat-total" class="text-xl font-bold {{ $totalPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
                         {{ $totalPnl >= 0 ? '+' : '-' }}${{ number_format(abs($totalPnl), 2) }}
                     </span>
-                    <span class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ $tradeCount }} trades</span>
+                    <span id="stat-count" class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ $tradeCount }} trades</span>
                 </div>
 
                 <!-- Win Rate -->
@@ -51,7 +51,7 @@
                     class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col justify-center">
                     <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Win
                         Rate</span>
-                    <span class="text-xl font-bold {{ $winRate >= 50 ? 'text-blue-500' : 'text-red-500' }}">
+                    <span id="stat-winrate" class="text-xl font-bold {{ $winRate >= 50 ? 'text-blue-500' : 'text-red-500' }}">
                         {{ number_format($winRate, 1) }}%
                     </span>
                 </div>
@@ -61,7 +61,7 @@
                     class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col justify-center">
                     <span
                         class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">P/F</span>
-                    <span
+                    <span id="stat-profitfactor"
                         class="text-xl font-bold {{ $profitFactor >= 1.5 ? 'text-green-500' : ($profitFactor >= 1 ? 'text-blue-500' : 'text-red-500') }}">
                         {{ number_format($profitFactor, 2) }}
                     </span>
@@ -245,7 +245,7 @@
                 <div
                     class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex flex-col h-full">
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
-                    <div class="space-y-3">
+                    <div id="recent-activity-list" class="space-y-3">
                         @forelse($recentActivity as $trade)
                             <div
                                 class="flex items-center gap-3 pb-2 border-b border-gray-100 dark:border-gray-800  last:border-0 last:pb-0">
@@ -269,7 +269,7 @@
                                             {{ $trade->total_pnl >= 0 ? '+' : '-' }}${{ number_format(abs($trade->total_pnl), 2) }}
                                         </span>
                                         &bull;
-                                        {{ \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->diffForHumans() }}
+                                        {{ $trade->human_time }}
                                     </div>
                                 </div>
                             </div>
@@ -279,6 +279,93 @@
                     </div>
                 </div>
             </div>
+
+            <script>
+                if (window.Echo) {
+                    window.Echo.private(`App.Models.User.{{ auth()->id() }}`)
+                        .listen('.NewTradesFetched', (e) => {
+                            console.log('Real-time dashboard update:', e);
+                            if (window.showToast) {
+                                window.showToast(e.message || 'Data updated!', 'success');
+                            }
+                            refreshDashboard();
+                        });
+                }
+
+                async function refreshDashboard() {
+                    try {
+                        const response = await fetch("{{ url('dashboard') }}", {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+
+                        // 1. Update Stats
+                        updateStat('stat-today', data.todayPnl);
+                        updateStat('stat-week', data.weekPnl);
+                        updateStat('stat-month', data.monthPnl);
+                        updateStat('stat-total', data.totalPnl);
+                        document.getElementById('stat-count').textContent = `${data.tradeCount} trades`;
+                        
+                        document.getElementById('stat-winrate').textContent = `${data.winRate}%`;
+                        document.getElementById('stat-winrate').className = `text-xl font-bold ${data.winRate >= 50 ? 'text-blue-500' : 'text-red-500'}`;
+                        
+                        document.getElementById('stat-profitfactor').textContent = data.profitFactor.toFixed(2);
+                        document.getElementById('stat-profitfactor').className = `text-xl font-bold ${data.profitFactor >= 1.5 ? 'text-green-500' : (data.profitFactor >= 1 ? 'text-blue-500' : 'text-red-500')}`;
+
+                        // 2. Update Charts
+                        if (window.ApexCharts) {
+                            ApexCharts.exec('equityChart', 'updateOptions', {
+                                series: [{ data: data.equitySeries }],
+                                xaxis: { categories: data.equityCategories }
+                            });
+                            ApexCharts.exec('pnlChart', 'updateOptions', {
+                                series: [{ data: data.pnlSeries }],
+                                xaxis: { categories: data.pnlCategories },
+                                colors: [data.totalPnl >= 0 ? '#10B981' : '#EF4444']
+                            });
+                        }
+
+                        // 3. Update Recent Activity
+                        const list = document.getElementById('recent-activity-list');
+                        if (list && data.recentActivity) {
+                            list.innerHTML = data.recentActivity.map(trade => `
+                                <div class="flex items-center gap-3 pb-2 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold font-mono shrink-0 ${trade.total_pnl >= 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-500'}">
+                                        ${trade.total_pnl >= 0 ? 'W' : 'L'}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-gray-900 dark:text-white truncate">${trade.symbol}</span>
+                                            <span class="text-[10px] px-1.5 py-0.5 rounded ${trade.entry_side.toLowerCase() === 'long' ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400'}">
+                                                ${trade.entry_side.toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-0.5">
+                                            <span class="${trade.total_pnl >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}">
+                                                ${trade.formatted_pnl}
+                                            </span>
+                                            &bull; ${trade.human_time}
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('');
+                        }
+                    } catch (error) {
+                        console.error('Error refreshing dashboard:', error);
+                    }
+                }
+
+                function updateStat(id, value) {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const formatted = (value >= 0 ? '+' : '-') + '$' + Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    el.textContent = formatted;
+                    el.className = `text-xl font-bold ${value >= 0 ? 'text-green-500' : 'text-red-500'}`;
+                }
+            </script>
         @else
             <div class="mt-8">
                 <div

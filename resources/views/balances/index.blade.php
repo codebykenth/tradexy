@@ -19,65 +19,127 @@
                     <th class="py-4 uppercase">Realised Pnl (Cum)</th>
                     <th class="py-4 uppercase">Actions</th>
                 </x-slot:header>
-                @foreach ($balances as $balance)
-                    <x-table.row onclick="document.getElementById('modal_{{ $balance->id }}').showModal()" class="cursor-pointer">
-                        <td class="font-medium text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                {{ \Carbon\Carbon::parse($balance->local_date)->format('M d, Y') ?? $balance->local_date }}
-                                @if($balance->is_demo)
-                                    <span class="badge badge-warning badge-xs font-bold uppercase py-2">Demo</span>
-                                @endif
-                                <span @class([
-                                    'badge badge-xs font-bold uppercase py-2',
-                                    'badge-secondary' => $balance->market === 'crypto',
-                                    'badge-accent' => $balance->market === 'pse',
-                                ])>{{ $balance->market }}</span>
-                            </div>
-                        </td>                                
-                        <td>
-                            ${{ number_format($balance->wallet_balance, 2) }}
-                        </td>
-                         <td>
-                            ${{ number_format($balance->total_equity, 2) }}
-                        </td>
-                        <td>
-                            <span @class([
-                                'font-bold',
-                                'text-green-500' => $balance->cum_realised_pnl > 0,
-                                'text-red-500' => $balance->cum_realised_pnl < 0
-                            ])>${{ number_format($balance->cum_realised_pnl, 2) }}</span>
-                        </td>
-                        <td class="text-right">
-                             <div class="flex gap-4 items-center justify-center">
-                                <!-- Edit Icon -->
-                                <button type="button"
-                                    onclick="event.stopPropagation(); document.getElementById('edit_modal_{{ $balance->id }}').showModal()"
-                                    class="text-blue-500 hover:text-blue-700 transition cursor-pointer">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                    </svg>
-                                </button>
-                                <!-- Trash Icon -->
-                                <button type="button"
-                                    onclick="event.stopPropagation(); document.getElementById('delete_confirmation_modal_{{ $balance->id }}').showModal()"
-                                    class="text-red-500 hover:text-red-700 transition cursor-pointer">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </x-table.row>
-                @endforeach
+                    <tbody id="balances-table-body">
+                        @foreach ($balances as $balance)
+                            <x-table.row onclick="document.getElementById('modal_{{ $balance->id }}').showModal()" class="cursor-pointer">
+                                <td class="font-medium text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        {{ \Carbon\Carbon::parse($balance->local_date)->format('M d, Y') ?? $balance->local_date }}
+                                        @if($balance->is_demo)
+                                            <span class="badge badge-warning badge-xs font-bold uppercase py-2">Demo</span>
+                                        @endif
+                                        <span @class([
+                                            'badge badge-xs font-bold uppercase py-2',
+                                            'badge-secondary' => $balance->market === 'crypto',
+                                            'badge-accent' => $balance->market === 'pse',
+                                        ])>{{ $balance->market }}</span>
+                                    </div>
+                                </td>                                
+                                <td>
+                                    ${{ number_format($balance->wallet_balance, 2) }}
+                                </td>
+                                <td>
+                                    ${{ number_format($balance->total_equity, 2) }}
+                                </td>
+                                <td>
+                                    <span @class([
+                                        'font-bold',
+                                        'text-green-500' => $balance->cum_realised_pnl > 0,
+                                        'text-red-500' => $balance->cum_realised_pnl < 0
+                                    ])>${{ number_format($balance->cum_realised_pnl, 2) }}</span>
+                                </td>
+                                <td class="text-right">
+                                    <div class="flex gap-4 items-center justify-center">
+                                        <!-- Edit Icon -->
+                                        <button type="button"
+                                            onclick="event.stopPropagation(); document.getElementById('edit_modal_{{ $balance->id }}').showModal()"
+                                            class="text-blue-500 hover:text-blue-700 transition cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                            </svg>
+                                        </button>
+                                        <!-- Trash Icon -->
+                                        <button type="button"
+                                            onclick="event.stopPropagation(); document.getElementById('delete_confirmation_modal_{{ $balance->id }}').showModal()"
+                                            class="text-red-500 hover:text-red-700 transition cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </x-table.row>
+                        @endforeach
+                    </tbody>
             </x-table>
 
             <div class="mt-4">
                 {{ $balances->links() }}
             </div>
+
+            <script>
+                if (window.Echo) {
+                    window.Echo.private(`App.Models.User.{{ auth()->id() }}`)
+                        .listen('.NewTradesFetched', (e) => {
+                            console.log('Real-time balance update:', e);
+                            if (window.showToast) {
+                                window.showToast(e.message || 'Balances updated!', 'success');
+                            }
+                            refreshBalances();
+                        });
+                }
+
+                async function refreshBalances() {
+                    try {
+                        const response = await fetch("{{ route('balances.index') }}", {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        
+                        const tbody = document.getElementById('balances-table-body');
+                        if (tbody && data.balances && data.balances.data) {
+                            tbody.innerHTML = data.balances.data.map(balance => {
+                                const pnlClass = balance.cum_realised_pnl > 0 ? 'text-green-500' : (balance.cum_realised_pnl < 0 ? 'text-red-500' : '');
+                                const marketBadgeClass = balance.market === 'crypto' ? 'badge-secondary' : 'badge-accent';
+                                
+                                return `
+                                    <tr class="hover cursor-pointer" onclick="document.getElementById('modal_${balance.id}').showModal()">
+                                        <td class="font-medium text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                ${balance.local_date}
+                                                ${balance.is_demo ? '<span class="badge badge-warning badge-xs font-bold uppercase py-2">Demo</span>' : ''}
+                                                <span class="badge badge-xs font-bold uppercase py-2 ${marketBadgeClass}">${balance.market}</span>
+                                            </div>
+                                        </td>
+                                        <td>$${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2}).format(balance.wallet_balance)}</td>
+                                        <td>$${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2}).format(balance.total_equity)}</td>
+                                        <td><span class="font-bold ${pnlClass}">$${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2}).format(balance.cum_realised_pnl)}</span></td>
+                                        <td class="text-right">
+                                            <div class="flex gap-4 items-center justify-center">
+                                                <button type="button" onclick="event.stopPropagation(); document.getElementById('edit_modal_${balance.id}').showModal()" class="text-blue-500 hover:text-blue-700 transition cursor-pointer">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                                                </button>
+                                                <button type="button" onclick="event.stopPropagation(); document.getElementById('delete_confirmation_modal_${balance.id}').showModal()" class="text-red-500 hover:text-red-700 transition cursor-pointer">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('');
+                        }
+                    } catch (error) {
+                        console.error('Error refreshing balances:', error);
+                    }
+                }
+            </script>
         @else
             <div class="mt-8">
                 <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">

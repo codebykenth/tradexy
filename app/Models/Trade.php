@@ -7,6 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $trades_count
+ * @property int $win_count
+ * @property float $win_rate
+ * @property float $net_pnl
+ * @property string $human_time
+ * @property string $formatted_pnl
+ * @property string $direct_chart_url
+ * @property string $session
+ * @property string $duration
+ * @property string $risk_reward
+ */
 class Trade extends Model
 {
     protected $fillable = [
@@ -31,10 +43,10 @@ class Trade extends Model
         'chart_picture',
         'open_fees',
         'close_fees',
-        'broker_commission', // 0.25% of gross value	
-        'pse_trans_fee', // 0.005% of gross value	
-        'sccp_fee', // 0.01% of gross value	
-        'pse_vat', // 12% of the commission	
+        'broker_commission', // 0.25% of gross value
+        'pse_trans_fee', // 0.005% of gross value
+        'sccp_fee', // 0.01% of gross value
+        'pse_vat', // 12% of the commission
         'sales_tax', // 0.1% of gross value
         'closed_pnl',
         'total_pnl',
@@ -88,8 +100,9 @@ class Trade extends Model
 
     public function getSessionAttribute()
     {
-        if (!$this->open_datetime)
+        if (!$this->open_datetime) {
             return 'N/A';
+        }
 
         // PSE trades always run during the PSE session (9:30 AM – 3:30 PM PHT)
         if ($this->market === 'pse') {
@@ -97,7 +110,7 @@ class Trade extends Model
         }
 
         // DB stores UTC — parse as UTC to determine session
-        $hour = \Carbon\Carbon::parse($this->open_datetime, 'UTC')->hour;
+        $hour = Carbon::parse($this->open_datetime, 'UTC')->hour;
 
         if ($hour >= 13 && $hour < 17) {
             return 'Overlap (London & NY)';
@@ -122,7 +135,7 @@ class Trade extends Model
         $close = Carbon::parse($this->close_datetime, 'UTC');
 
         // Return the human-readable difference without the "ago" / "after" suffix
-        return $open->diffForHumans($close, true);
+        return $open->diffForHumans($close, \Carbon\CarbonInterface::DIFF_ABSOLUTE);
     }
 
     public function getRiskRewardAttribute()
@@ -153,6 +166,7 @@ class Trade extends Model
         }
 
         $rr = $reward / $risk;
-        return number_format($rr, 2) . 'R';
+
+        return number_format($rr, 2).'R';
     }
 }

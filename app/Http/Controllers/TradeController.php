@@ -7,9 +7,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TradeRequest;
 use App\Models\Strategy;
 use App\Models\Trade;
-use App\Services\BybitService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -17,15 +16,22 @@ use Illuminate\Support\Str;
 
 final class TradeController extends Controller
 {
-    public function __construct(private readonly BybitService $bybitService)
+    public function index(Request $request)
     {
+        $data = $this->getTradesData();
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json($data);
+        }
+
+        return view('trades.index', $data);
     }
 
-    public function index()
+    private function getTradesData(): array
     {
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
-        
+
         $query = Trade::with(['strategy', 'reasons'])->where('user_id', Auth::id());
 
         if ($accountMode !== 'all') {
@@ -39,7 +45,7 @@ final class TradeController extends Controller
         $ownedTrades = $query->latest('close_datetime')->paginate(10);
         $strategies = Strategy::where('user_id', Auth::id())->get();
 
-        return view('trades.index', compact('ownedTrades', 'strategies'));
+        return compact('ownedTrades', 'strategies');
     }
 
     public function gallery()
@@ -64,6 +70,7 @@ final class TradeController extends Controller
     public function create()
     {
         $strategies = Strategy::all();
+
         return view('trades.create', compact('strategies'));
     }
 
@@ -109,7 +116,7 @@ final class TradeController extends Controller
     {
         $this->findOwnedTrade($id)->delete();
 
-        Cache::forget('strategies_user_' . Auth::id());
+        Cache::forget('strategies_user_'.Auth::id());
 
         return redirect()->route('trades.index')
             ->with('success', 'Trade deleted successfully.');
@@ -140,7 +147,7 @@ final class TradeController extends Controller
         $this->syncReasons($trade, $entryReasons, $exitReasons);
         $this->syncLessons($trade, $lessons);
 
-        Cache::forget('strategies_user_' . Auth::id());
+        Cache::forget('strategies_user_'.Auth::id());
 
         $action = $trade->wasRecentlyCreated ? 'created' : 'updated';
 
@@ -214,6 +221,7 @@ final class TradeController extends Controller
             return $response->json('image.url');
         } catch (\Exception $e) {
             report($e);
+
             return null;
         }
     }
