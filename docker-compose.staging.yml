@@ -10,6 +10,7 @@ services:
     volumes:
       - app_storage_staging:/var/www/storage
       - app_public_staging:/var/www/public-shared
+      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json:ro
     networks:
       - tradexy_staging
 
@@ -37,6 +38,7 @@ services:
       - TZ=Asia/Manila
     volumes:
       - app_storage_staging:/var/www/storage
+      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json:ro
     depends_on:
       - app
     networks:

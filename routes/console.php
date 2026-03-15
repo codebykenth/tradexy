@@ -9,9 +9,10 @@ if (app()->environment(['production'])) {
     Schedule::command('account:fetch-balance')->daily()->timezone('Asia/Manila')->withoutOverlapping();
     Schedule::command('account:fetch-balance --demo')->daily()->timezone('Asia/Manila')->withoutOverlapping();
 
-    Schedule::command('logs:cleanup')->daily()->withoutOverlapping();
+    Schedule::command('generate:daily-news')->daily()->timezone('Asia/Manila')->withoutOverlapping();
 }
 
-if (app()->environment('production')) {
-    Schedule::command('generate:daily-news')->dailyAt('2:00')->timezone('Asia/Manila');
-}
+Schedule::command('logs:cleanup')->daily()->withoutOverlapping();
+
+// Daily DB Backup to Firebase Storage
+Schedule::command('db:backup')->daily()->timezone('Asia/Manila')->withoutOverlapping();

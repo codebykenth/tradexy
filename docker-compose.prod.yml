@@ -10,6 +10,7 @@ services:
     volumes:
       - app_storage_prod:/var/www/storage
       - app_public_prod:/var/www/public-shared
+      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json:ro
     networks:
       - tradexy_prod
 
@@ -41,6 +42,7 @@ services:
       - REVERB_SCHEME=http
     volumes:
       - app_storage_prod:/var/www/storage
+      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json:ro
     depends_on:
       - app
       - reverb
@@ -63,6 +65,7 @@ services:
       - REVERB_SCHEME=http
     volumes:
       - app_storage_prod:/var/www/storage
+      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json:ro
     depends_on:
       - app
       - reverb

@@ -55,7 +55,7 @@
                         <th class="text-center">Symbol</th>
                         <th>Duration</th>
                         <th>Qty</th>
-                        <th>Pnl</th>
+                        <th>Net Pnl</th>
                         <th>Chart</th>
                         <th>AI</th>
                     </x-slot:header>
@@ -86,7 +86,7 @@
                                 <td>
                                     {{ strpos((string) $ownedTrade->quantity, '.') !== false ? rtrim(rtrim((string) $ownedTrade->quantity, '0'), '.') : $ownedTrade->quantity }}
                                 </td>
-                                <td>
+                                <td class="text-right pr-8">
                                     <span @class([
                                         'font-bold',
                                         'text-green-400' => $ownedTrade->total_pnl > 0,
@@ -375,7 +375,7 @@
                             </td>
                             <td>${trade.duration || 'N/A'}</td>
                             <td>${parseFloat(trade.quantity)}</td>
-                            <td><span class="font-bold ${pnlClass}">${formattedPnl}</span></td>
+                            <td class="text-right pr-8"><span class="font-bold ${pnlClass}">${formattedPnl}</span></td>
                             <td onclick="event.stopPropagation()">
                                 ${trade.chart_picture ? '<span class="text-xs opacity-50 italic">Has Chart</span>' : '-'}
                             </td>

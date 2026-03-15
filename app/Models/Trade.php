@@ -169,4 +169,22 @@ class Trade extends Model
 
         return number_format($rr, 2).'R';
     }
+
+    public function getFormattedPnlAttribute(): string
+    {
+        return number_format($this->total_pnl, 2);
+    }
+
+    public function getTotalFeesAttribute(): float
+    {
+        if ($this->market === 'pse') {
+            return (float) ($this->broker_commission ?? 0) +
+                (float) ($this->pse_trans_fee ?? 0) +
+                (float) ($this->sccp_fee ?? 0) +
+                (float) ($this->pse_vat ?? 0) +
+                (float) ($this->sales_tax ?? 0);
+        }
+
+        return (float) ($this->open_fees ?? 0) + (float) ($this->close_fees ?? 0);
+    }
 }

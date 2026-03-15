@@ -183,14 +183,8 @@
                             'text-green-500' => $trade->total_pnl > 0,
                         ])>${{ number_format($trade->total_pnl, 2) ?? 'N/A'  }}</p>
                         <p @class([
-                            'text-sm',
-                            'text-red-400' => $trade->closed_pnl < 0,
-                            'text-green-400' => $trade->closed_pnl > 0,
-                        ])>Gross: ${{ number_format($trade->closed_pnl, 2) ?? 'N/A'  }}</p>
-                        <p @class([
-                            'text-sm',
-                            'text-red-400'
-                        ])>Fees:    ${{ number_format($trade->open_fees + $trade->close_fees, 2) ?? 'N/A'  }}</p>
+                            'text-sm font-medium opacity-60',
+                        ])>Gross: ${{ number_format($trade->closed_pnl, 2) ?? 'N/A'  }} | Fees: ${{ number_format($trade->total_fees, 2) ?? 'N/A'  }}</p>
 
                         @if(($trade->market ?? 'crypto') === 'pse')
                             <div class="text-xs text-gray-400 mt-1 text-right space-y-0.5">

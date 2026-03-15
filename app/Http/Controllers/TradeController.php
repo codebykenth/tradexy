@@ -190,11 +190,39 @@ final class TradeController extends Controller
         }
 
         if (isset($validated['avg_entry_price'], $validated['quantity'])) {
-            $validated['cum_entry_value'] ??= $validated['avg_entry_price'] * $validated['quantity'];
+            $validated['cum_entry_value'] = (float) $validated['avg_entry_price'] * (float) $validated['quantity'];
         }
 
         if (!empty($validated['avg_exit_price']) && isset($validated['quantity'])) {
-            $validated['cum_exit_value'] ??= $validated['avg_exit_price'] * $validated['quantity'];
+            $validated['cum_exit_value'] = (float) $validated['avg_exit_price'] * (float) $validated['quantity'];
+        }
+
+        // --- Recalculate PnL Server-side for Data Integrity ---
+        if (isset($validated['cum_entry_value'], $validated['cum_exit_value'])) {
+            $entryValue = (float) $validated['cum_entry_value'];
+            $exitValue = (float) $validated['cum_exit_value'];
+            $side = strtolower($validated['entry_side'] ?? 'long');
+
+            $grossPnl = ($side === 'long') ? ($exitValue - $entryValue) : ($entryValue - $exitValue);
+
+            // Sum all possible fees
+            $fees = (float) ($validated['open_fees'] ?? 0) + (float) ($validated['close_fees'] ?? 0);
+
+            // For PSE, if individual fees are present, prioritize them
+            if ($market === 'pse') {
+                $pseFees = (float) ($validated['broker_commission'] ?? 0) +
+                           (float) ($validated['pse_trans_fee'] ?? 0) +
+                           (float) ($validated['sccp_fee'] ?? 0) +
+                           (float) ($validated['pse_vat'] ?? 0) +
+                           (float) ($validated['sales_tax'] ?? 0);
+
+                if ($pseFees > 0) {
+                    $fees = $pseFees;
+                }
+            }
+
+            $validated['closed_pnl'] = round($grossPnl, 8);
+            $validated['total_pnl'] = round($grossPnl - $fees, 8);
         }
 
         return $validated;
