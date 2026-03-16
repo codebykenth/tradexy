@@ -4,15 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\FileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    public function __construct(
+        private readonly FileService $fileService
+    ) {}
+
     /**
      * Display the user's profile page.
      */
@@ -28,11 +32,16 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+        $validated = $request->validated();
+        $hasNewFile = $request->hasFile('profile_picture');
 
-        $user->fill($request->validated());
+        // Unset to prevent fill() from putting UploadedFile into the property
+        unset($validated['profile_picture']);
+        $user->fill($validated);
 
-        if ($request->has('profile_picture')) {
+        if ($hasNewFile) {
             $user->profile_picture = $this->uploadProfilePicture($request);
         }
 
@@ -42,27 +51,19 @@ class ProfileController extends Controller
     }
 
     /**
-     * Upload profile picture to FreeImage.host.
+     * Upload profile picture to Firebase Storage.
      */
     private function uploadProfilePicture(ProfileUpdateRequest $request): ?string
     {
-        try {
-            $base64 = base64_encode(
-                file_get_contents($request->file('profile_picture')->path())
-            );
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-            $response = Http::asForm()->post('https://freeimage.host/api/1/upload', [
-                'key' => config('services.freeimg.key'),
-                'source' => $base64,
-                'format' => 'json',
-            ]);
-
-            return $response->json('image.display_url');
-        } catch (\Exception $e) {
-            report($e);
-
-            return null;
-        }
+        return $this->fileService->updateFile(
+            $user->profile_picture,
+            $request->file('profile_picture'),
+            "users/{$user->id}",
+            'profile'
+        );
     }
 
     /**
@@ -83,7 +84,13 @@ class ProfileController extends Controller
      */
     public function removeProfilePicture(Request $request): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if ($user->profile_picture) {
+            $this->fileService->deleteFile($user->profile_picture, "users/{$user->id}", 'profile');
+        }
+
         $user->profile_picture = null;
         $user->save();
 

@@ -45,9 +45,10 @@ final class DatabaseBackup extends Command
 
         // 2. Upload to Firebase
         try {
-            $this->info("Uploading to Firebase Storage ({$env} folder)...");
-            $remotePath = "{$env}/{$filename}";
-            Storage::disk('firebase')->put($remotePath, fopen($tempPath, 'r+'));
+            $prefix = ($env === 'production' || $env === 'prod') ? '' : 'test/';
+            $this->info("Uploading to Google Cloud Storage ({$prefix}backups folder)...");
+            $remotePath = "{$prefix}backups/{$filename}";
+            Storage::disk('gcs')->put($remotePath, fopen($tempPath, 'r+'));
             $this->info("Backup successfully uploaded: {$remotePath}");
         } catch (\Exception $e) {
             $this->error('Firebase Upload failed: '.$e->getMessage());
@@ -67,10 +68,11 @@ final class DatabaseBackup extends Command
 
     private function cleanupFirebaseBackups(string $env): void
     {
-        $this->info("Checking for old {$env} backups in Firebase...");
+        $prefix = ($env === 'production' || $env === 'prod') ? '' : 'test/';
+        $this->info("Checking for old {$env} backups in GCS...");
 
-        $disk = Storage::disk('firebase');
-        $files = $disk->files($env); // Only fetch files in the environment folder
+        $disk = Storage::disk('gcs');
+        $files = $disk->files("{$prefix}backups"); // Only fetch files in the environment folder
         $threshold = now()->subDays(7)->getTimestamp();
 
         foreach ($files as $file) {

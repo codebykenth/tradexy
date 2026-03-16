@@ -60,14 +60,18 @@ return [
             'report' => false,
         ],
 
-        'firebase' => [
+        'gcs' => [
             'driver' => 'gcs',
-            'key_file' => env('GOOGLE_CLOUD_KEY_FILE'), // Path to your service account JSON
-            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
-            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
-            'path_prefix' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', 'backups'),
-            'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI'),
+            'key_file_path' => base_path(env('GOOGLE_CLOUD_KEY_FILE', env('FIREBASE_CREDENTIALS'))),
+            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID', 'your-project-id'),
+            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET', env('FIREBASE_STORAGE_BUCKET')),
+            'path_prefix' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', ''),
+            'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null),
+            'apiEndpoint' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', null),
             'visibility' => 'private',
+            'visibility_handler' => null,
+            'metadata' => ['cacheControl' => 'public,max-age=86400'],
+            'throw' => true,
         ],
 
     ],

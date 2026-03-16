@@ -7,15 +7,19 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TradeRequest;
 use App\Models\Strategy;
 use App\Models\Trade;
+use App\Services\FileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 final class TradeController extends Controller
 {
+    public function __construct(
+        private readonly FileService $fileService,
+    ) {}
+
     public function index(Request $request)
     {
         $data = $this->getTradesData();
@@ -114,7 +118,13 @@ final class TradeController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
-        $this->findOwnedTrade($id)->delete();
+        $trade = $this->findOwnedTrade($id);
+
+        if ($trade->chart_picture) {
+            $this->fileService->deleteFile($trade->chart_picture, "users/{$trade->user_id}/trades", (string) $trade->id);
+        }
+
+        $trade->delete();
 
         Cache::forget('strategies_user_'.Auth::id());
 
@@ -130,20 +140,27 @@ final class TradeController extends Controller
             ->findOrFail($id);
     }
 
-    // Shared persistence logic for store() and update() with atomic transaction
+    // Shared persistence logic for store() and update()
     private function persistTrade(Trade $trade, array $validated, TradeRequest $request): RedirectResponse
     {
         $validated = $this->computeDerivedFields($validated, $trade->market ?? 'crypto');
 
-        // Upload chart before transaction — external API call is not transactional
-        $validated['chart_picture'] = $this->uploadChartImage($request, $trade->chart_picture ?? null);
+        $entryReasons = array_filter($request->input('entry_reason', []));
+        $exitReasons = array_filter($request->input('exit_reason', []));
+        $lessons = array_filter($request->input('lesson', []));
 
-        $entryReasons = array_filter($validated['entry_reason'] ?? []);
-        $exitReasons = array_filter($validated['exit_reason'] ?? []);
-        $lessons = array_filter($validated['lesson'] ?? []);
-        unset($validated['entry_reason'], $validated['exit_reason'], $validated['lesson']);
+        $chartPicture = $validated['chart_picture'] ?? null;
+        unset($validated['chart_picture'], $validated['entry_reason'], $validated['exit_reason'], $validated['lesson']);
 
+        // Fill and save first to get an ID for the Firebase folder structure
         $trade->fill($validated)->save();
+
+        // Upload chart - pass the original chart_picture from DB
+        if ($chartPicture || $request->boolean('remove_chart_picture')) {
+            $trade->chart_picture = $this->uploadChartImage($request, $trade);
+            $trade->save();
+        }
+
         $this->syncReasons($trade, $entryReasons, $exitReasons);
         $this->syncLessons($trade, $lessons);
 
@@ -228,30 +245,34 @@ final class TradeController extends Controller
         return $validated;
     }
 
-    // Uploads chart image to FreeImage.host, returns URL or null on failure
-    private function uploadChartImage(TradeRequest $request, mixed $existingValue): ?string
+    // Uploads chart image to Firebase Storage, returns URL or null on failure
+    private function uploadChartImage(TradeRequest $request, Trade $trade): ?string
     {
-        if (!$request->hasFile('chart_picture')) {
-            return is_string($existingValue) ? $existingValue : null;
-        }
+        $hasNewFile = $request->hasFile('chart_picture');
+        $shouldRemove = $request->boolean('remove_chart_picture');
 
-        try {
-            $base64 = base64_encode(
-                file_get_contents($request->file('chart_picture')->path())
-            );
+        // Use getOriginal to ensure we have the string URL from the DB, even if 'fill' was called (though we unset it now to be safe)
+        $existingValue = $trade->getOriginal('chart_picture');
 
-            $response = Http::asForm()->post('https://freeimage.host/api/1/upload', [
-                'key' => config('services.freeimg.key'),
-                'source' => $base64,
-                'format' => 'json',
-            ]);
-
-            return $response->json('image.url');
-        } catch (\Exception $e) {
-            report($e);
+        // Handle removal request only if no new file is being uploaded
+        if ($shouldRemove && !$hasNewFile) {
+            if ($existingValue) {
+                $this->fileService->deleteFile($existingValue, "users/{$trade->user_id}/trades", (string) $trade->id);
+            }
 
             return null;
         }
+
+        if (!$hasNewFile) {
+            return $existingValue;
+        }
+
+        return $this->fileService->updateFile(
+            $existingValue,
+            $request->file('chart_picture'),
+            "users/{$trade->user_id}/trades",
+            (string) $trade->id
+        );
     }
 
     // Deletes then recreates entry/exit reasons (idempotent sync)

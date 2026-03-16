@@ -420,7 +420,7 @@
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Commission (0.25%)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input"
-                                name="broker_commission" value="{{ old('broker_commission') }}" />
+                                name="broker_commission" id="pse-broker-commission" value="{{ old('broker_commission') }}" />
                             @error('broker_commission') <span class="text-error text-xs mt-1">{{ $message }}</span>
                             @enderror
                         </fieldset>
@@ -431,7 +431,7 @@
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 PSE Trans (0.005%)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input"
-                                name="pse_trans_fee" value="{{ old('pse_trans_fee') }}" />
+                                name="pse_trans_fee" id="pse-trans-fee" value="{{ old('pse_trans_fee') }}" />
                             @error('pse_trans_fee') <span class="text-error text-xs mt-1">{{ $message }}</span>
                             @enderror
                         </fieldset>
@@ -442,7 +442,7 @@
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 SCCP (0.01%)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input" name="sccp_fee"
-                                value="{{ old('sccp_fee') }}" />
+                                id="pse-sccp-fee" value="{{ old('sccp_fee') }}" />
                             @error('sccp_fee') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
@@ -452,7 +452,7 @@
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 VAT (12% of Comm)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input" name="pse_vat"
-                                value="{{ old('pse_vat') }}" />
+                                id="pse-vat" value="{{ old('pse_vat') }}" />
                             @error('pse_vat') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
@@ -462,7 +462,7 @@
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Sales Tax (0.1% Sell)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input" name="sales_tax"
-                                value="{{ old('sales_tax') }}" />
+                                id="pse-sales-tax" value="{{ old('sales_tax') }}" />
                             @error('sales_tax') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
