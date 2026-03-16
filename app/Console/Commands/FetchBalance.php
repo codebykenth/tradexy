@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
-use App\Mail\Errors\FetchBalanceMail;
 use App\Models\ActivityLog;
 use App\Models\Balance;
 use App\Models\User;
@@ -13,7 +14,8 @@ use Illuminate\Support\Facades\Mail;
 
 class FetchBalance extends Command
 {
-    private $user;
+    private ?User $user = null;
+
     /**
      * The name and signature of the console command.
      *
@@ -35,6 +37,7 @@ class FetchBalance extends Command
     {
         $this->user = User::where('email', config('services.bybit.user_email'))->first();
         $this->info('Fetching account balance from Bybit...');
+
         try {
             $isDemo = $this->option('demo');
             $bybitService = new BybitService($isDemo);
@@ -42,13 +45,14 @@ class FetchBalance extends Command
 
             if (!$user) {
                 $this->error('User not found.');
+
                 return 1;
             }
 
-            $this->info("Fetching for: {$user->name}" . ($isDemo ? ' [DEMO]' : ' [MAIN]'));
+            $this->info("Fetching for: {$user->name}".($isDemo ? ' [DEMO]' : ' [MAIN]'));
 
             $balanceResponse = $bybitService->getAccountBalance();
-            
+
             if (isset($balanceResponse['error'])) {
                 throw new \Exception($balanceResponse['error']->getMessage());
             }
@@ -72,28 +76,31 @@ class FetchBalance extends Command
             ActivityLog::create([
                 'user_id' => $user->id,
                 'action' => 'bybit_balance_sync',
-                'description' => "Synced balance from Bybit (" . ($isDemo ? 'Demo' : 'Main') . "): {$usdtData['equity']} USDT",
+                'description' => 'Synced balance from Bybit ('.($isDemo ? 'Demo' : 'Main')."): {$usdtData['equity']} USDT",
                 'ip_address' => gethostbyname(gethostname()),
-                'user_agent' => 'Artisan: account:fetch-balance (' . php_uname('n') . ')',
+                'user_agent' => 'Artisan: account:fetch-balance ('.php_uname('n').')',
             ]);
 
             $this->info('Done!');
         } catch (\Exception $e) {
             $this->error("Failed: {$e->getMessage()}");
-            
+
             // Log failure
-            if ($this->user) {
+            if ($this->user instanceof User) {
                 ActivityLog::create([
                     'user_id' => $this->user->id,
                     'action' => 'bybit_balance_failed',
-                    'description' => "Bybit balance sync failed: " . substr($e->getMessage(), 0, 255),
+                    'description' => 'Bybit balance sync failed: '.substr($e->getMessage(), 0, 255),
                     'ip_address' => gethostbyname(gethostname()),
-                    'user_agent' => 'Artisan: account:fetch-balance (' . php_uname('n') . ')',
+                    'user_agent' => 'Artisan: account:fetch-balance ('.php_uname('n').')',
                 ]);
             }
 
-            Mail::to($this->user->email ?? config('mail.from.address'))->send(new FetchBalanceMail($e->getMessage()));
+            Mail::to($this->user->email ?? config('mail.from.address'))->send(
+                new \App\Mail\Errors\GenericJobFailedMail('Bybit Balance Sync', $e->getMessage())
+            );
             DB::rollBack();
+
             return 1;
         }
     }

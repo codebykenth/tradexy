@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
-use App\Mail\Errors\FetchClosedPnlMail;
 use App\Models\ActivityLog;
 use App\Models\Trade;
 use App\Models\User;
@@ -11,11 +12,11 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Request;
 
 class FetchClosedPnl extends Command
 {
-    private $user;
+    private ?User $user = null;
+
     /**
      * The name and signature of the console command.
      *
@@ -46,10 +47,11 @@ class FetchClosedPnl extends Command
 
             if (!$user) {
                 $this->error('Bybit user not found. Set BYBIT_USER_EMAIL in .env');
+
                 return 1;
             }
 
-            $this->info("Fetching for: {$user->name}" . ($isDemo ? ' [DEMO]' : ' [MAIN]'));
+            $this->info("Fetching for: {$user->name}".($isDemo ? ' [DEMO]' : ' [MAIN]'));
 
             $response = $bybit->getClosedPnl(days: 2);
 
@@ -68,6 +70,7 @@ class FetchClosedPnl extends Command
             usort($trades, function ($a, $b) {
                 $timeA = (int) ($a['updatedTime'] ?? $a['createdTime'] ?? 0);
                 $timeB = (int) ($a['updatedTime'] ?? $a['createdTime'] ?? 0);
+
                 return $timeA - $timeB;
             });
 
@@ -119,9 +122,9 @@ class FetchClosedPnl extends Command
             ActivityLog::create([
                 'user_id' => $user->id,
                 'action' => 'bybit_sync',
-                'description' => "Synced trades from Bybit (" . ($isDemo ? 'Demo' : 'Main') . "). Created: {$created}, Skipped: {$skipped}",
+                'description' => 'Synced trades from Bybit ('.($isDemo ? 'Demo' : 'Main')."). Created: {$created}, Skipped: {$skipped}",
                 'ip_address' => gethostbyname(gethostname()),
-                'user_agent' => 'Artisan: trades:fetch-pnl (' . php_uname('n') . ')',
+                'user_agent' => 'Artisan: trades:fetch-pnl ('.php_uname('n').')',
             ]);
 
             if (count($errors) > 0) {
@@ -130,7 +133,7 @@ class FetchClosedPnl extends Command
                 }
             }
 
-            $this->info("API returned: " . count($trades) . " trades");
+            $this->info('API returned: '.count($trades).' trades');
             $this->info("Created: {$created} | Skipped (duplicates): {$skipped}");
             $this->info('Done!');
 
@@ -139,28 +142,29 @@ class FetchClosedPnl extends Command
                 \App\Events\NewTradesFetched::dispatch($this->user, "Added {$created} new trades from {$accountType}!");
             }
 
-
         } catch (\Exception $e) {
             $this->error("Failed: {$e->getMessage()}");
 
             // Log failed sync
-            if ($this->user) {
+            // Log failed sync
+            if ($this->user instanceof User) {
                 ActivityLog::create([
                     'user_id' => $this->user->id,
                     'action' => 'bybit_sync_failed',
-                    'description' => "Bybit sync failed: " . substr($e->getMessage(), 0, 255),
+                    'description' => 'Bybit sync failed: '.substr($e->getMessage(), 0, 255),
                     'ip_address' => gethostbyname(gethostname()),
-                    'user_agent' => 'Artisan: trades:fetch-pnl (' . php_uname('n') . ')',
+                    'user_agent' => 'Artisan: trades:fetch-pnl ('.php_uname('n').')',
                 ]);
             }
 
-            Mail::to($this->user->email ?? config('mail.from.address'))->send(new FetchClosedPnlMail($e->getMessage()));
+            Mail::to($this->user->email ?? config('mail.from.address'))->send(
+                new \App\Mail\Errors\GenericJobFailedMail('Bybit Trade Sync', $e->getMessage())
+            );
             DB::rollBack();
+
             return 1;
         }
 
         return 0;
     }
 }
-
-

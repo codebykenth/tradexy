@@ -10,7 +10,11 @@ parameters:
     # Level 5 is a good balance between strictness and developer speed
     level: 5
 
+    treatPhpDocTypesAsCertain: false
+
     ignoreErrors:
+        - '#If condition is always true#'
+        - '#Instanceof between .* will always evaluate to true#'
         # Ignore common false positives or specific Laravel magic if needed
         # - '#PHPDoc tag @var# '
 

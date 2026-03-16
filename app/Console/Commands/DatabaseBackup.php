@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\ActivityLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -51,7 +52,19 @@ final class DatabaseBackup extends Command
             Storage::disk('gcs')->put($remotePath, fopen($tempPath, 'r+'));
             $this->info("Backup successfully uploaded: {$remotePath}");
         } catch (\Exception $e) {
+            ActivityLog::create([
+                'action' => 'db_backup_failed',
+                'description' => 'Database backup failed: '.substr($e->getMessage(), 0, 200),
+            ]);
             $this->error('Firebase Upload failed: '.$e->getMessage());
+
+            $email = config('services.bybit.user_email');
+            if ($email) {
+                \Illuminate\Support\Facades\Mail::to($email)->send(
+                    new \App\Mail\Errors\GenericJobFailedMail('Database Backup Task', $e->getMessage())
+                );
+            }
+
             File::delete($tempPath);
 
             return 1;
@@ -62,6 +75,11 @@ final class DatabaseBackup extends Command
 
         // 4. Cleanup Firebase backups older than 7 days
         $this->cleanupFirebaseBackups($env);
+
+        ActivityLog::create([
+            'action' => 'db_backup_success',
+            'description' => "Database backup successfully uploaded to GCS: {$filename}",
+        ]);
 
         return 0;
     }

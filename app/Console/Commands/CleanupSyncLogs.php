@@ -28,14 +28,50 @@ final class CleanupSyncLogs extends Command
      */
     public function handle(): int
     {
-        $this->info('Cleaning up old sync logs...');
+        try {
+            $this->info('Cleaning up old sync logs (24h threshold)...');
 
-        $deleted = ActivityLog::whereIn('action', ['bybit_sync', 'bybit_sync_failed'])
-            ->where('created_at', '<', now()->subDay())
-            ->delete();
+            // Purge high-frequency sync logs older than 24 hours
+            $syncActions = [
+                'bybit_sync',
+                'bybit_sync_failed',
+                'bybit_balance_sync',
+                'bybit_balance_failed',
+                'system_cleanup',
+                'daily_news_generated',
+            ];
 
-        $this->info("Deleted {$deleted} log entries.");
+            $syncDeleted = ActivityLog::whereIn('action', $syncActions)
+                ->where('created_at', '<', now()->subDay())
+                ->delete();
 
-        return 0;
+            $this->info("Purged {$syncDeleted} sync logs.");
+
+            // Purge general audit logs (created/updated/deleted) older than 30 days
+            $this->info('Cleaning up old audit logs (30d threshold)...');
+            $auditDeleted = ActivityLog::where('created_at', '<', now()->subDays(30))
+                ->delete();
+
+            $this->info("Purged {$auditDeleted} old audit logs.");
+
+            // Log the cleanup action itself for audit visibility
+            ActivityLog::create([
+                'action' => 'system_cleanup',
+                'description' => "System maintenance completed. Sync logs purged: {$syncDeleted}. Audit logs purged: {$auditDeleted}.",
+            ]);
+
+            return 0;
+        } catch (\Exception $e) {
+            $this->error("Logs cleanup failed: {$e->getMessage()}");
+
+            $email = config('services.bybit.user_email');
+            if ($email) {
+                \Illuminate\Support\Facades\Mail::to($email)->send(
+                    new \App\Mail\Errors\GenericJobFailedMail('Logs Cleanup Task', $e->getMessage())
+                );
+            }
+
+            return 1;
+        }
     }
 }
