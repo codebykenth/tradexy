@@ -329,7 +329,7 @@
 
     // Real-time Event Listener
     if (window.Echo) {
-        window.Echo.private(`App.Models.User.{{ auth()->id() }}`)
+        window.Echo.private("App.Models.User." + @js(auth()->id()))
             .listen('.NewTradesFetched', (e) => {
                 console.log('Real-time event received:', e);
                 if (window.showToast) {

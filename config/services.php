@@ -80,4 +80,9 @@ return [
         'url' => env('OLD_JOURNAL_API_URL'),
         'token' => env('OLD_JOURNAL_API_TOKEN'),
     ],
+
+    'posthog' => [
+        'key' => env('POSTHOG_API_KEY'),
+        'host' => env('POSTHOG_HOST', 'https://us.i.posthog.com'),
+    ],
 ];

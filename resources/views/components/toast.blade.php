@@ -59,13 +59,17 @@ Include once in the app layout — no props needed. --}}
             : (type === 'error' ? 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z' : 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z');
 
         alertDiv.className = `alert ${alertClass} shadow-lg transition-all duration-300 transform translate-y-2 opacity-0`;
+        
+        // Use innerHTML for the structure and icon, but textContent for the message to prevent XSS
         alertDiv.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 shrink-0">
                 <path stroke-linecap="round" stroke-linejoin="round" d="${iconPath}" />
             </svg>
-            <span>${message}</span>
+            <span class="toast-message"></span>
             <button type="button" class="btn btn-ghost btn-xs" onclick="this.closest('.alert').remove()">✕</button>
         `;
+
+        alertDiv.querySelector('.toast-message').textContent = message;
 
         container.appendChild(alertDiv);
 

@@ -51,6 +51,7 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
     <!-- Styles / Scripts -->
+    <x-posthog />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 </head>
@@ -75,7 +76,7 @@
     @auth
         <script type="module">
             if (window.Echo) {
-                window.Echo.private(`App.Models.User.{{ auth()->id() }}`)
+                window.Echo.private("App.Models.User." + @js(auth()->id()))
                     .listen('.NewTradesFetched', (e) => {
                         // 1. Show the notification
                         if (window.showToast) {

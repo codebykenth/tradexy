@@ -20,19 +20,19 @@
 
         const options = {
             series: [{
-                name: '{{ $title }}',
+                name: @js($title),
                 data: @json($series)
             }],
             chart: {
                 type: 'area',
-                id: '{{ $id }}',
+                id: @js($id),
                 height: 300,
                 fontFamily: 'inherit',
                 toolbar: { show: false },
                 zoom: { enabled: false },
                 background: 'transparent'
             },
-            colors: ['{{ $color }}'],
+            colors: [@js($color)],
             fill: {
                 type: 'gradient',
                 gradient: {

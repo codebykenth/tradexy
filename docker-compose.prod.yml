@@ -10,7 +10,7 @@ services:
     volumes:
       - app_storage_prod:/var/www/storage
       - app_public_prod:/var/www/public-shared
-      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json
+      - ./tradexy-47021-firebase-adminsdk-fbsvc-f8bf8180f3.json:/var/www/storage/app/private/tradexy-47021-firebase-adminsdk-fbsvc-f8bf8180f3.json
     networks:
       - tradexy_prod
 
@@ -42,7 +42,7 @@ services:
       - REVERB_SCHEME=http
     volumes:
       - app_storage_prod:/var/www/storage
-      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json
+      - ./tradexy-47021-firebase-adminsdk-fbsvc-f8bf8180f3.json:/var/www/storage/app/private/tradexy-47021-firebase-adminsdk-fbsvc-f8bf8180f3.json
     depends_on:
       - app
       - reverb
@@ -65,7 +65,7 @@ services:
       - REVERB_SCHEME=http
     volumes:
       - app_storage_prod:/var/www/storage
-      - ./firebase-auth.json:/var/www/storage/app/private/firebase-auth.json
+      - ./tradexy-47021-firebase-adminsdk-fbsvc-f8bf8180f3.json:/var/www/storage/app/private/tradexy-47021-firebase-adminsdk-fbsvc-f8bf8180f3.json
     depends_on:
       - app
       - reverb
