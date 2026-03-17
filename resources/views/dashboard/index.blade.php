@@ -99,7 +99,11 @@
                             @if(isset($latestNews->ai_analysis['gold']))
                                 @php $gold = $latestNews->ai_analysis['gold']; @endphp
                                 <div class="flex items-center gap-3 bg-white dark:bg-base-200 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                                    <div class="w-8 h-8 rounded-lg bg-[#d4af37] flex items-center justify-center text-white shadow-lg shadow-[#d4af37]/20 text-[10px] font-black">AU</div>
+                                    <div class="w-8 h-8 rounded-lg bg-[#d4af37] flex items-center justify-center text-white shadow-lg shadow-[#d4af37]/20">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M21.5,13.5L19,6H5L2.5,13.5L3.5,18H20.5L21.5,13.5M16.5,14H7.5V12H16.5V14Z"/>
+                                        </svg>
+                                    </div>
                                     <div>
                                         <p class="text-[8px] font-black uppercase opacity-40 leading-none mb-1">Gold Bias</p>
                                         <p @class([
@@ -114,7 +118,11 @@
                             @if(isset($latestNews->ai_analysis['crypto']))
                                 @php $crypto = $latestNews->ai_analysis['crypto']; @endphp
                                 <div class="flex items-center gap-3 bg-white dark:bg-base-200 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                                    <div class="w-8 h-8 rounded-lg bg-[#f7931a] flex items-center justify-center text-white shadow-lg shadow-[#f7931a]/20 text-[10px] font-black">BTC</div>
+                                    <div class="w-8 h-8 rounded-lg bg-[#f7931a] flex items-center justify-center text-white shadow-lg shadow-[#f7931a]/20">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512">
+                                            <path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zm-141.651-35.33c4.935-32.928-20.154-50.596-54.397-62.396l11.119-44.544-27.108-6.758-10.825 43.412c-7.12-1.778-14.453-3.443-21.722-5.105l10.893-43.682-27.114-6.764-11.119 44.57c-5.896-1.342-11.666-2.673-17.301-4.066l.014-.064-37.4 9.333 7.211 28.914s20.122-4.612 19.704-4.25c10.987 2.743 14.633 10.016 14.262 15.79l-14.28 57.262c.858.214 1.973.524 3.193.847l-3.213-.803-20.015 80.24c-1.347 3.328-4.743 8.322-12.433 6.406.273.392-19.71-4.918-19.71-4.918l-13.456 31.027 35.29 8.805c6.563 1.64 13.012 3.341 19.346 4.965l-11.238 45.066 27.108 6.761 11.119-44.574c7.391 2.01 14.567 3.899 21.572 5.698l-11.096 44.507 27.114 6.764 11.241-45.093c46.221 8.749 80.958 5.222 95.59-36.567 11.79-33.662-1.126-53.059-25.46-65.719 17.722-4.09 31.065-15.751 34.621-39.757zm-62.152 86.842c-8.386 33.651-65.138 15.46-83.501 10.891l14.898-59.72c18.359 4.567 77.108 13.628 68.603 48.829zm10.354-87.31c-7.644 30.663-54.908 15.111-70.211 11.291l13.528-54.218c15.303 3.821 64.429 10.954 56.683 42.927z"/>
+                                        </svg>
+                                    </div>
                                     <div>
                                         <p class="text-[8px] font-black uppercase opacity-40 leading-none mb-1">BTC Bias</p>
                                         <p @class([
