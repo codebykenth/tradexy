@@ -1,4 +1,4 @@
-<x-layouts.app :title="$trade->symbol . ' Trade Details | ' . config('app.name')">
+ <x-layouts.app :title="$trade->symbol . ' Trade Details | ' . config('app.name')">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex justify-between items-center">
             <div>
@@ -362,10 +362,24 @@
                     <p class="text-2xl font-bold">AI Analysis</p>
                 </div>
                 @if($trade->ai_analysis === 'PENDING')
-                    <div id="ai-analysis-container" class="flex flex-col items-center justify-center py-12 text-center bg-white/50 rounded-xl border-2 border-dashed border-indigo-200">
-                        <span class="loading loading-spinner loading-lg text-indigo-600 mb-4"></span>
-                        <p class="text-indigo-900 font-bold text-lg animate-pulse">AI is currently analyzing your chart...</p>
-                        <p class="text-gray-500 text-sm mt-1">This usually takes about 10-20 seconds.</p>
+                    <div id="ai-analysis-container" class="flex flex-col items-center justify-center py-12 text-center bg-white border-2 border-dashed border-indigo-200 rounded-2xl shadow-inner group">
+                        <div class="relative mb-6">
+                            <div class="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-indigo-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-black text-indigo-900 tracking-tight italic">AI mentors are auditing <span class="text-indigo-600">your edge...</span></h3>
+                        <p class="text-gray-500 text-sm mt-2 max-w-xs mx-auto">This process involves deep chart analysis and forensic data cross-referencing. Est: <span class="font-bold">15-25s</span>.</p>
+                        
+                        {{-- Fallback refresh button if WebSocket fails --}}
+                        <div id="ai-fallback-refresh" class="hidden mt-6">
+                            <button onclick="window.location.reload()" class="btn btn-ghost btn-xs text-indigo-400 font-bold uppercase tracking-widest hover:bg-transparent hover:text-indigo-600 transition-all">
+                                Taking too long? Refresh manually
+                            </button>
+                        </div>
                     </div>
                 @elseif($trade->ai_analysis)
                     <div id="ai-analysis-container"
@@ -411,8 +425,8 @@
         </div>
     </div>
 
-    <!-- Full Screen Loading Overlay (Shown when PENDING or submittting) -->
-    <div id="ai-loading-overlay" class="{{ $trade->ai_analysis === 'PENDING' ? '' : 'hidden' }} fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white">
+    <!-- Full Screen Loading Overlay (Shown ONLY during initial submission) -->
+    <div id="ai-loading-overlay" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white">
         <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
         <h3 class="text-xl font-bold animate-pulse">Generating AI Analysis...</h3>
         <p class="text-gray-300 mt-2 text-sm">Please wait, this may take up to 30 seconds.</p>
@@ -460,10 +474,18 @@
 
         // Real-time AI Analysis listener
         document.addEventListener('DOMContentLoaded', function() {
+            // Show fallback after 15 seconds if status is PENDING
+            @if($trade->ai_analysis === 'PENDING')
+                setTimeout(() => {
+                    const fallback = document.getElementById('ai-fallback-refresh');
+                    if (fallback) fallback.classList.remove('hidden');
+                }, 15000);
+            @endif
+
             if (typeof Echo !== 'undefined') {
                 Echo.private('App.Models.User.{{ auth()->id() }}')
                     .listen('.TradeAnalysisGenerated', (e) => {
-                        // Use loose equality or cast to ensure match
+                        console.log('AI Analysis Finished Event:', e);
                         if (e.trade.id == {{ $trade->id }}) {
                             window.location.reload();
                         }

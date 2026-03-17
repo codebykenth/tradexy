@@ -16,8 +16,7 @@ final class TradeAnalysisGenerated implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public readonly Trade $trade,
-        public readonly string $analysis
+        public readonly Trade $trade
     ) {}
 
     public function broadcastOn(): array
@@ -30,5 +29,19 @@ final class TradeAnalysisGenerated implements ShouldBroadcastNow
     public function broadcastAs(): string
     {
         return 'TradeAnalysisGenerated';
+    }
+
+    /**
+     * Get the data to broadcast.
+     *
+     * @return array<string, mixed>
+     */
+    public function broadcastWith(): array
+    {
+        return [
+            'trade' => [
+                'id' => $this->trade->id,
+            ],
+        ];
     }
 }

@@ -120,6 +120,6 @@ final class AnalyzeTradeJob implements ShouldQueue
         $trade->update(['ai_analysis' => $analysis]);
 
         // Broadcast the result
-        broadcast(new TradeAnalysisGenerated($trade, $analysis));
+        broadcast(new TradeAnalysisGenerated($trade));
     }
 }
