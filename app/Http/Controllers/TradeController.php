@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final class TradeController extends Controller
@@ -37,7 +38,15 @@ final class TradeController extends Controller
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
 
-        $query = Trade::with(['strategy', 'reasons'])->where('user_id', Auth::id());
+        $query = Trade::with(['strategy'])
+            ->where('user_id', Auth::id())
+            ->select([
+                'id', 'user_id', 'strategy_id', 'symbol', 'market', 'is_demo',
+                'quantity', 'total_pnl', 'close_datetime', 'open_datetime',
+                'avg_entry_price', 'avg_exit_price', 'stop_loss_price', 'take_profit_price',
+                'entry_side', 'exit_side', 'chart_picture',
+                DB::raw('CASE WHEN ai_analysis IS NOT NULL THEN 1 ELSE 0 END as has_ai_analysis'),
+            ]);
 
         if ($accountMode !== 'all') {
             $query->where('is_demo', $accountMode === 'demo');
@@ -47,7 +56,7 @@ final class TradeController extends Controller
             $query->where('market', $marketMode);
         }
 
-        $ownedTrades = $query->latest('close_datetime')->paginate(10);
+        $ownedTrades = $query->latest('close_datetime')->simplePaginate(10);
         $strategies = Strategy::where('user_id', Auth::id())->get();
 
         return compact('ownedTrades', 'strategies');

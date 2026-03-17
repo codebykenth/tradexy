@@ -8,16 +8,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @property int $trade_count
  * @property int $trades_count
  * @property int $win_count
+ * @property int $has_ai_analysis
  * @property float $win_rate
  * @property float $net_pnl
+ * @property float $total_win_amount
+ * @property float $total_loss_amount
  * @property string $human_time
  * @property string $formatted_pnl
  * @property string $direct_chart_url
  * @property string $session
  * @property string $duration
  * @property string $risk_reward
+ * @property \Carbon\Carbon $close_datetime
+ * @property \Carbon\Carbon $open_datetime
  */
 class Trade extends Model
 {
@@ -59,6 +65,8 @@ class Trade extends Model
 
     protected $casts = [
         'is_demo' => 'boolean',
+        'open_datetime' => 'datetime',
+        'close_datetime' => 'datetime',
     ];
 
     public function user(): BelongsTo

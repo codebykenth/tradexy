@@ -76,8 +76,9 @@ docker-compose -f $COMPOSE_FILE exec -T app php artisan storage:link || true
 if [ "$ENV" != "dev" ]; then
     echo "⚡ Step 9: Caching for $ENV..."
     # Clear first to avoid serving stale config after .env changes
-    docker-compose -f $COMPOSE_FILE exec -T app php artisan optimize:clear
     docker-compose -f $COMPOSE_FILE exec -T app php artisan optimize
+    docker-compose -f $COMPOSE_FILE exec -T app php artisan view:cache
+    docker-compose -f $COMPOSE_FILE exec -T app php artisan event:cache  # Added for even better performance
 else
     echo "⚡ Step 9: Clearing cache for dev..."
     docker-compose -f $COMPOSE_FILE exec -T app php artisan optimize:clear

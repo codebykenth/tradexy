@@ -29,7 +29,7 @@ class DashboardController extends Controller
 
         $latestNews = MarketNews::latest()->first();
 
-        // 1. Fetch Balances for Equity Curve
+        // Fetch Balances for Equity Curve (Pluck only what we need)
         $balanceQuery = Balance::where('user_id', $userId);
         if ($accountMode !== 'all') {
             $balanceQuery->where('is_demo', $accountMode === 'demo');
@@ -37,12 +37,12 @@ class DashboardController extends Controller
         if ($marketMode !== 'all') {
             $balanceQuery->where('market', $marketMode);
         }
-        $balances = $balanceQuery->orderBy('date', 'asc')->get();
 
-        $equityCategories = $balances->pluck('date')->map(fn ($date) => $date->format('M d, y'))->toArray();
-        $equitySeries = $balances->pluck('total_equity')->map(fn ($val) => (float) $val)->toArray();
+        $balances = $balanceQuery->oldest('date')->select(['date', 'total_equity'])->get();
+        $equityCategories = $balances->map(fn ($b) => $b->date->format('M d, y'))->toArray();
+        $equitySeries = $balances->map(fn ($b) => (float) $b->total_equity)->toArray();
 
-        // 2. Fetch Trades for PnL Curve and Overall Stats
+        // Aggregate Trade Stats in SQL (Avoid loading all models)
         $tradeQuery = Trade::where('user_id', $userId)->whereNotNull('close_datetime');
         if ($accountMode !== 'all') {
             $tradeQuery->where('is_demo', $accountMode === 'demo');
@@ -50,100 +50,78 @@ class DashboardController extends Controller
         if ($marketMode !== 'all') {
             $tradeQuery->where('market', $marketMode);
         }
-        $trades = $tradeQuery->orderBy('close_datetime', 'asc')->get();
 
-        $pnlCategories = [];
-        $pnlSeries = [];
-        $cumulativePnl = 0;
+        // Main Stats Aggregation
+        $stats = (clone $tradeQuery)->selectRaw('
+            COUNT(*) as trade_count,
+            SUM(total_pnl) as total_pnl,
+            COUNT(CASE WHEN total_pnl > 0 THEN 1 END) as win_count,
+            SUM(CASE WHEN total_pnl > 0 THEN total_pnl ELSE 0 END) as total_win_amount,
+            SUM(CASE WHEN total_pnl < 0 THEN ABS(total_pnl) ELSE 0 END) as total_loss_amount,
+            MAX(total_pnl) as best_trade_pnl,
+            MIN(total_pnl) as worst_trade_pnl
+        ')->first();
 
-        $winCount = 0;
-        $totalPnl = 0;
-        $totalWinAmount = 0;
-        $totalLossAmount = 0;
+        /** @var \App\Models\Trade $stats */
+        $tradeCount = (int) ($stats->trade_count ?? 0);
+        $winCount = (int) ($stats->win_count ?? 0);
+        $totalPnl = (float) ($stats->total_pnl ?? 0);
+        $totalWinAmount = (float) ($stats->total_win_amount ?? 0);
+        $totalLossAmount = (float) ($stats->total_loss_amount ?? 0);
 
-        // Time-based PnL Tracking
-        $todayPnl = 0;
-        $weekPnl = 0;
-        $monthPnl = 0;
-
-        $now = now();
-        $startOfDay = $now->copy()->startOfDay();
-        $startOfWeek = $now->copy()->startOfWeek();
-        $startOfMonth = $now->copy()->startOfMonth();
-
-        foreach ($trades as $trade) {
-            $pnl = (float) $trade->total_pnl;
-            $cumulativePnl += $pnl;
-            $totalPnl += $pnl;
-
-            // X-Axis formatting — convert UTC to Manila for display
-            $pnlCategories[] = \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, y');
-            $pnlSeries[] = round($cumulativePnl, 2);
-
-            if ($pnl > 0) {
-                $winCount++;
-                $totalWinAmount += $pnl;
-            } else {
-                $totalLossAmount += abs($pnl);
-            }
-
-            // Time aggregations — parse as UTC, convert to Manila for comparison
-            $closeTime = \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila');
-            if ($closeTime->greaterThanOrEqualTo($startOfDay)) {
-                $todayPnl += $pnl;
-            }
-            if ($closeTime->greaterThanOrEqualTo($startOfWeek)) {
-                $weekPnl += $pnl;
-            }
-            if ($closeTime->greaterThanOrEqualTo($startOfMonth)) {
-                $monthPnl += $pnl;
-            }
-        }
-
-        // 3. Stats metrics
-        $tradeCount = $trades->count();
         $winRate = $tradeCount > 0 ? round(($winCount / $tradeCount) * 100, 1) : 0;
+        $profitFactor = $totalLossAmount > 0 ? round($totalWinAmount / $totalLossAmount, 2) : ($totalWinAmount > 0 ? 99.99 : 0);
         $currentBalance = $balances->last() ? (float) $balances->last()->total_equity : 0;
 
-        // Profit Factor
-        $profitFactor = $totalLossAmount > 0 ? round($totalWinAmount / $totalLossAmount, 2) : ($totalWinAmount > 0 ? 99.99 : 0);
+        // Time-based PnL (Native SQL is faster)
+        $now = now()->setTimezone('Asia/Manila');
+        $todayPnl = (clone $tradeQuery)->where('close_datetime', '>=', $now->copy()->startOfDay()->setTimezone('UTC'))->sum('total_pnl');
+        $weekPnl = (clone $tradeQuery)->where('close_datetime', '>=', $now->copy()->startOfWeek()->setTimezone('UTC'))->sum('total_pnl');
+        $monthPnl = (clone $tradeQuery)->where('close_datetime', '>=', $now->copy()->startOfMonth()->setTimezone('UTC'))->sum('total_pnl');
 
-        // Streaks & Averages
-        $currentWinStreak = 0;
-        $maxWinStreak = 0;
-        $currentLossStreak = 0;
-        $maxLossStreak = 0;
+        // Best/Worst Trade (Record)
+        $bestTrade = (clone $tradeQuery)->orderByDesc('total_pnl')->first();
+        $worstTrade = (clone $tradeQuery)->orderBy('total_pnl')->first();
 
-        foreach ($trades as $trade) {
-            $pnl = (float) $trade->total_pnl;
+        // Streaks (Still needs a loop, but we only pluck PnL values to keep it light)
+        $pnlValues = (clone $tradeQuery)->orderBy('close_datetime', 'asc')->pluck('total_pnl')->toArray();
+        $currentWinStreak = $maxWinStreak = $currentLossStreak = $maxLossStreak = 0;
+
+        foreach ($pnlValues as $pnlValue) {
+            $pnl = (float) $pnlValue;
             if ($pnl > 0) {
                 $currentWinStreak++;
                 $currentLossStreak = 0;
-                if ($currentWinStreak > $maxWinStreak) {
-                    $maxWinStreak = $currentWinStreak;
-                }
+                $maxWinStreak = max($maxWinStreak, $currentWinStreak);
             } elseif ($pnl < 0) {
                 $currentLossStreak++;
                 $currentWinStreak = 0;
-                if ($currentLossStreak > $maxLossStreak) {
-                    $maxLossStreak = $currentLossStreak;
-                }
+                $maxLossStreak = max($maxLossStreak, $currentLossStreak);
             } else {
-                // Break both streaks on a break-even trade
-                $currentWinStreak = 0;
-                $currentLossStreak = 0;
+                $currentWinStreak = $currentLossStreak = 0;
             }
         }
 
-        $avgWin = $winCount > 0 ? $totalWinAmount / $winCount : 0;
-        $lossCount = $tradeCount - $winCount; // Approximation (excluding breakeven)
-        // Recalculate strict loss count for accurate average
-        $strictLossCount = $trades->where('total_pnl', '<', 0)->count();
-        $avgLoss = $strictLossCount > 0 ? $totalLossAmount / $strictLossCount : 0;
+        // PnL Curve Data (Pluck date and PnL)
+        $pnlChartData = (clone $tradeQuery)->orderBy('close_datetime', 'asc')
+            ->select(['close_datetime', 'total_pnl'])
+            ->get();
 
-        // Best and Worst Trade
-        $bestTrade = $trades->sortByDesc('total_pnl')->first();
-        $worstTrade = $trades->sortBy('total_pnl')->first();
+        $pnlCategories = [];
+        $pnlSeries = [];
+        $runningPnl = 0;
+
+        /** @var \App\Models\Trade $t */
+        foreach ($pnlChartData as $t) {
+            $runningPnl += (float) $t->total_pnl;
+            $closeTime = $t->close_datetime;
+            $pnlCategories[] = $closeTime->setTimezone('Asia/Manila')->format('M d, y');
+            $pnlSeries[] = round($runningPnl, 2);
+        }
+
+        $avgWin = $winCount > 0 ? $totalWinAmount / $winCount : 0;
+        $strictLossCount = (int) (clone $tradeQuery)->where('total_pnl', '<', 0)->count();
+        $avgLoss = $strictLossCount > 0 ? $totalLossAmount / $strictLossCount : 0;
 
         // Top Symbols
         $topSymbolsQuery = Trade::selectRaw('symbol, COUNT(*) as trades_count, SUM(total_pnl) as net_pnl, SUM(CASE WHEN total_pnl > 0 THEN 1 ELSE 0 END) as win_count')
