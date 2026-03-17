@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Jobs\FileUpload;
+use App\Models\User;
 use App\Services\FileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,30 +43,37 @@ class ProfileController extends Controller
 
         // Unset to prevent fill() from putting UploadedFile into the property
         unset($validated['profile_picture']);
-        $user->fill($validated);
+        $user->fill($validated)->save();
 
         if ($hasNewFile) {
-            $user->profile_picture = $this->uploadProfilePicture($request);
+            $this->queueProfilePictureUpload($request, $user);
         }
-
-        $user->save();
 
         return redirect()->route('profile.show')->with('success', 'Profile updated successfully.');
     }
 
     /**
-     * Upload profile picture to Firebase Storage.
+     * Save the file to local storage and dispatch the background upload job.
      */
-    private function uploadProfilePicture(ProfileUpdateRequest $request): ?string
+    private function queueProfilePictureUpload(ProfileUpdateRequest $request, User $user): void
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+        $file = $request->file('profile_picture');
+        if (!$file) {
+            return;
+        }
 
-        return $this->fileService->updateFile(
-            $user->profile_picture,
-            $request->file('profile_picture'),
-            "users/{$user->id}",
-            'profile'
+        // 1. Move the uploaded file to private local storage temporarily
+        $tempPath = $file->store('temp', 'local');
+
+        // 2. Dispatch the job to handle the Firebase upload and old file deletion
+        FileUpload::dispatch(
+            tempPath: $tempPath,
+            directory: "users/{$user->id}",
+            userId: $user->id,
+            modelClass: User::class,
+            modelId: (string) $user->id,
+            field: 'profile_picture',
+            oldFileUrl: $user->getOriginal('profile_picture')
         );
     }
 

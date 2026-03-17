@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TradeRequest;
+use App\Jobs\FileUpload;
 use App\Models\Strategy;
 use App\Models\Trade;
 use App\Services\FileService;
@@ -155,10 +156,11 @@ final class TradeController extends Controller
         // Fill and save first to get an ID for the Firebase folder structure
         $trade->fill($validated)->save();
 
-        // Upload chart - pass the original chart_picture from DB
-        if ($chartPicture || $request->boolean('remove_chart_picture')) {
-            $trade->chart_picture = $this->uploadChartImage($request, $trade);
-            $trade->save();
+        // Handle chart image logic
+        if ($request->boolean('remove_chart_picture')) {
+            $this->removeChart($trade);
+        } elseif ($request->hasFile('chart_picture')) {
+            $this->queueChartUpload($request, $trade);
         }
 
         $this->syncReasons($trade, $entryReasons, $exitReasons);
@@ -245,33 +247,44 @@ final class TradeController extends Controller
         return $validated;
     }
 
-    // Uploads chart image to Firebase Storage, returns URL or null on failure
-    private function uploadChartImage(TradeRequest $request, Trade $trade): ?string
+    /**
+     * Delete the chart picture immediately (no queue needed for simple deletion).
+     */
+    private function removeChart(Trade $trade): void
     {
-        $hasNewFile = $request->hasFile('chart_picture');
-        $shouldRemove = $request->boolean('remove_chart_picture');
+        if ($trade->chart_picture) {
+            $this->fileService->deleteFile(
+                $trade->chart_picture,
+                "users/{$trade->user_id}/trades",
+                (string) $trade->id
+            );
 
-        // Use getOriginal to ensure we have the string URL from the DB, even if 'fill' was called (though we unset it now to be safe)
-        $existingValue = $trade->getOriginal('chart_picture');
+            $trade->update(['chart_picture' => null]);
+        }
+    }
 
-        // Handle removal request only if no new file is being uploaded
-        if ($shouldRemove && !$hasNewFile) {
-            if ($existingValue) {
-                $this->fileService->deleteFile($existingValue, "users/{$trade->user_id}/trades", (string) $trade->id);
-            }
-
-            return null;
+    /**
+     * Save the file to local storage and dispatch the background upload job.
+     */
+    private function queueChartUpload(TradeRequest $request, Trade $trade): void
+    {
+        $file = $request->file('chart_picture');
+        if (!$file) {
+            return;
         }
 
-        if (!$hasNewFile) {
-            return $existingValue;
-        }
+        // 1. Move the uploaded file to private local storage temporarily
+        $tempPath = $file->store('temp', 'local');
 
-        return $this->fileService->updateFile(
-            $existingValue,
-            $request->file('chart_picture'),
-            "users/{$trade->user_id}/trades",
-            (string) $trade->id
+        // 2. Dispatch the job to handle the Firebase upload and old file deletion
+        FileUpload::dispatch(
+            tempPath: $tempPath,
+            directory: "users/{$trade->user_id}/trades",
+            userId: $trade->user_id,
+            modelClass: Trade::class,
+            modelId: (string) $trade->id,
+            field: 'chart_picture',
+            oldFileUrl: $trade->getOriginal('chart_picture')
         );
     }
 
