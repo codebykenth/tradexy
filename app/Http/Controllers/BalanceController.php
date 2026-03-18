@@ -37,7 +37,7 @@ final class BalanceController extends Controller
 
         $cacheKey = "balances_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_page_{$page}";
 
-        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode) {
+        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $page) {
             $query = Balance::where('user_id', $userId);
 
             if ($accountMode !== 'all') {
@@ -48,7 +48,25 @@ final class BalanceController extends Controller
                 $query->where('market', $marketMode);
             }
 
-            $balances = $query->latest('date')->paginate(10)->onEachSide(1);
+            // Get total count for pagination
+            $total = $query->count();
+
+            // Get items for current page
+            $perPage = 10;
+            $items = (clone $query)
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->latest('date')
+                ->get();
+
+            // Manually create paginator from cached data
+            $balances = new \Illuminate\Pagination\LengthAwarePaginator(
+                $items,
+                $total,
+                $perPage,
+                $page,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
 
             // Transform the collection to include formatted attributes for JS
             $balances->getCollection()->transform(function ($balance) {

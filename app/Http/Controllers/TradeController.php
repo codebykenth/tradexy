@@ -39,10 +39,10 @@ final class TradeController extends Controller
         $marketMode = session('market_type', 'crypto');
         $page = request()->get('page', 1);
 
-        $version = Cache::get("trades_version_user_{$userId}", '1');
+        $version = Cache::get("trades_version_user_{$userId}", now()->timestamp);
         $cacheKey = "trades_data_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_page_{$page}_v{$version}";
 
-        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode) {
+        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $page) {
             $query = Trade::with(['strategy'])
                 ->where('user_id', $userId)
                 ->select([
@@ -60,7 +60,26 @@ final class TradeController extends Controller
                 $query->where('market', $marketMode);
             }
 
-            $ownedTrades = $query->latest('close_datetime')->paginate(10)->onEachSide(1);
+            // Get total count for pagination
+            $total = $query->count();
+
+            // Get items for current page
+            $perPage = 10;
+            $items = (clone $query)
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->latest('close_datetime')
+                ->get();
+
+            // Manually create paginator from cached data
+            $ownedTrades = new \Illuminate\Pagination\LengthAwarePaginator(
+                $items,
+                $total,
+                $perPage,
+                $page,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
+
             $strategies = Strategy::where('user_id', $userId)->get();
 
             return compact('ownedTrades', 'strategies');
@@ -75,10 +94,10 @@ final class TradeController extends Controller
         $winPage = request()->get('win_page', 1);
         $lossPage = request()->get('loss_page', 1);
 
-        $version = Cache::get("trades_version_user_{$userId}", '1');
+        $version = Cache::get("trades_version_user_{$userId}", now()->timestamp);
         $cacheKey = "trades_gallery_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_win_{$winPage}_loss_{$lossPage}_v{$version}";
 
-        $data = Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode) {
+        $data = Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $winPage, $lossPage) {
             $winningQuery = Trade::with(['strategy', 'reasons'])
                 ->where('user_id', $userId)
                 ->whereNotNull('chart_picture')
@@ -91,9 +110,24 @@ final class TradeController extends Controller
                 $winningQuery->where('market', $marketMode);
             }
 
-            $winningTrades = $winningQuery->latest('close_datetime')
-                ->paginate(10, ['*'], 'win_page')->onEachSide(1);
+            // Winning trades pagination
+            $winTotal = (clone $winningQuery)->count();
+            $winPerPage = 10;
+            $winItems = (clone $winningQuery)
+                ->skip(($winPage - 1) * $winPerPage)
+                ->take($winPerPage)
+                ->latest('close_datetime')
+                ->get();
 
+            $winningTrades = new \Illuminate\Pagination\LengthAwarePaginator(
+                $winItems,
+                $winTotal,
+                $winPerPage,
+                $winPage,
+                ['path' => request()->url(), 'query' => ['win_page' => $winPage, 'loss_page' => $lossPage]]
+            );
+
+            // Losing trades pagination
             $losingQuery = Trade::with(['strategy', 'reasons'])
                 ->where('user_id', $userId)
                 ->whereNotNull('chart_picture')
@@ -106,8 +140,21 @@ final class TradeController extends Controller
                 $losingQuery->where('market', $marketMode);
             }
 
-            $losingTrades = $losingQuery->latest('close_datetime')
-                ->paginate(10, ['*'], 'loss_page')->onEachSide(1);
+            $lossTotal = (clone $losingQuery)->count();
+            $lossPerPage = 10;
+            $lossItems = (clone $losingQuery)
+                ->skip(($lossPage - 1) * $lossPerPage)
+                ->take($lossPerPage)
+                ->latest('close_datetime')
+                ->get();
+
+            $losingTrades = new \Illuminate\Pagination\LengthAwarePaginator(
+                $lossItems,
+                $lossTotal,
+                $lossPerPage,
+                $lossPage,
+                ['path' => request()->url(), 'query' => ['win_page' => $winPage, 'loss_page' => $lossPage]]
+            );
 
             return compact('winningTrades', 'losingTrades');
         });

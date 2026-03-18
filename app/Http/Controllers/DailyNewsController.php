@@ -18,8 +18,27 @@ final class DailyNewsController extends Controller
         $page = request()->get('page', 1);
         $cacheKey = "daily_news_index_page_{$page}";
 
-        $allNews = Cache::remember($cacheKey, now()->addHours(1), function () {
-            return MarketNews::latest()->paginate(10)->onEachSide(1);
+        $allNews = Cache::remember($cacheKey, now()->addHours(1), function () use ($page) {
+            $query = MarketNews::latest();
+
+            // Get total count for pagination
+            $total = $query->count();
+
+            // Get items for current page
+            $perPage = 10;
+            $items = (clone $query)
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            // Manually create paginator from cached data
+            return new \Illuminate\Pagination\LengthAwarePaginator(
+                $items,
+                $total,
+                $perPage,
+                $page,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
         });
 
         return view('daily-news.index', compact('allNews'));
