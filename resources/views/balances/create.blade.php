@@ -5,9 +5,6 @@
                 <x-page-title title="Log Manual Balance Entry"
                     subtitle="Record a snapshot of your account balance and equity." />
             </div>
-            <div>
-                <a href="{{ route('balances.index') }}"><- Back to balances</a>
-            </div>
         </div>
         <form action="{{ route('balances.store') }}" method="post" class="bg-gray-100 rounded-lg p-8 my-8" id="form">
             @csrf
@@ -87,9 +84,6 @@
             </div>
 
             <div class="flex items-center gap-8 justify-end">
-                <div>
-                    <a href="{{ route('balances.index') }}">Cancel</a>
-                </div>
                 <button class="btn btn-primary" type="submit">Save Entry</button>
             </div>
         </form>

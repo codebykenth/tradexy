@@ -4,9 +4,6 @@
             <div>
                 <x-page-title title="Edit Trade" subtitle="Update trade details and strategy." />
             </div>
-            <div>
-                <a href="{{ route('trades.index') }}"><- Back to trades</a>
-            </div>
         </div>
 
         <!-- Market Type (locked — cannot change after creation) -->
@@ -614,9 +611,6 @@
                 </div>
             </div>
             <div class="flex items-center gap-8 justify-end">
-                <div>
-                    <a href="{{ route('trades.index') }}">Cancel</a>
-                </div>
                 <button class="btn btn-primary" type="submit">Save Trade</button>
             </div>
         </form>

@@ -5,9 +5,6 @@
                 <x-page-title title="Edit Strategy: {{ $strategy->name }}"
                     subtitle="Update your strategy details and defined rules." />
             </div>
-            <div>
-                <a href="{{ route('strategies.index') }}"><- Back to strategies</a>
-            </div>
         </div>
         <form action="{{ route('strategies.update', $strategy->id) }}" method="post"
             class="bg-gray-100 rounded-lg p-8 my-8" id="form">
@@ -321,9 +318,6 @@
             </div>
 
             <div class="flex items-center gap-8 justify-end mt-8">
-                <div>
-                    <a href="{{ route('strategies.index') }}">Cancel</a>
-                </div>
                 <button class="btn btn-primary" type="submit">Save Strategy</button>
             </div>
         </form>

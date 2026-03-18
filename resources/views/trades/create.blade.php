@@ -6,9 +6,6 @@
                 <x-page-title title="Add Trade"
                     subtitle="Manually record a closed position or backfill trade history." />
             </div>
-            <div>
-                <a href="{{ route('trades.index') }}"><- Back to trades</a>
-            </div>
         </div>
 
         <!-- Market Toggle -->
@@ -543,9 +540,6 @@
                 </div>
             </div>
             <div class="flex items-center gap-8 justify-end">
-                <div>
-                    <a href="{{ route('trades.index') }}">Cancel</a>
-                </div>
                 <button class="btn btn-primary" type="submit">Save Trade</button>
             </div>
         </form>

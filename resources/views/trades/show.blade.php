@@ -1,9 +1,6 @@
  <x-layouts.app :title="$trade->symbol . ' Trade Details | ' . config('app.name')">
     <div class="max-w-7xl mx-auto px-6">
-        <div class="flex justify-between items-center">
-            <div>
-                <a href="{{ route('trades.index') }}"><- Back to Trades</a>
-            </div>
+        <div class="flex justify-end items-center">
             <div class="flex items-center gap-2">
                 <a href="{{ route('trades.edit', $trade->id ?? 1) }}"
                     class="flex items-center gap-2 p-3 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer font-semibold btn btn-outline">
