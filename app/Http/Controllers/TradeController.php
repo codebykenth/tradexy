@@ -69,21 +69,50 @@ final class TradeController extends Controller
 
     public function gallery()
     {
-        $winningTrades = Trade::with(['strategy', 'reasons'])
-            ->where('user_id', Auth::id())
-            ->whereNotNull('chart_picture')
-            ->where('total_pnl', '>', 0)
-            ->latest('close_datetime')
-            ->paginate(10, ['*'], 'win_page');
+        $userId = Auth::id();
+        $accountMode = session('account_mode', 'real');
+        $marketMode = session('market_type', 'crypto');
+        $winPage = request()->get('win_page', 1);
+        $lossPage = request()->get('loss_page', 1);
 
-        $losingTrades = Trade::with(['strategy', 'reasons'])
-            ->where('user_id', Auth::id())
-            ->whereNotNull('chart_picture')
-            ->where('total_pnl', '<', 0)
-            ->latest('close_datetime')
-            ->paginate(10, ['*'], 'loss_page');
+        $version = Cache::get("trades_version_user_{$userId}", '1');
+        $cacheKey = "trades_gallery_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_win_{$winPage}_loss_{$lossPage}_v{$version}";
 
-        return view('trades.gallery', compact('winningTrades', 'losingTrades'));
+        $data = Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode) {
+            $winningQuery = Trade::with(['strategy', 'reasons'])
+                ->where('user_id', $userId)
+                ->whereNotNull('chart_picture')
+                ->where('total_pnl', '>', 0);
+
+            if ($accountMode !== 'all') {
+                $winningQuery->where('is_demo', $accountMode === 'demo');
+            }
+            if ($marketMode !== 'all') {
+                $winningQuery->where('market', $marketMode);
+            }
+
+            $winningTrades = $winningQuery->latest('close_datetime')
+                ->paginate(10, ['*'], 'win_page');
+
+            $losingQuery = Trade::with(['strategy', 'reasons'])
+                ->where('user_id', $userId)
+                ->whereNotNull('chart_picture')
+                ->where('total_pnl', '<', 0);
+
+            if ($accountMode !== 'all') {
+                $losingQuery->where('is_demo', $accountMode === 'demo');
+            }
+            if ($marketMode !== 'all') {
+                $losingQuery->where('market', $marketMode);
+            }
+
+            $losingTrades = $losingQuery->latest('close_datetime')
+                ->paginate(10, ['*'], 'loss_page');
+
+            return compact('winningTrades', 'losingTrades');
+        });
+
+        return view('trades.gallery', $data);
     }
 
     public function create()
@@ -147,7 +176,7 @@ final class TradeController extends Controller
 
         $trade->delete();
 
-        Cache::forget('strategies_user_'.Auth::id());
+        $this->clearTradeCache();
 
         return redirect()->route('trades.index')
             ->with('success', 'Trade deleted successfully.');
@@ -186,7 +215,7 @@ final class TradeController extends Controller
         $this->syncReasons($trade, $entryReasons, $exitReasons);
         $this->syncLessons($trade, $lessons);
 
-        Cache::forget('strategies_user_'.Auth::id());
+        $this->clearTradeCache();
 
         $action = $trade->wasRecentlyCreated ? 'created' : 'updated';
 
@@ -334,6 +363,44 @@ final class TradeController extends Controller
 
         foreach ($lessons as $lesson) {
             $trade->lessons()->create(['lesson' => $lesson, 'category' => 'N/A']);
+        }
+    }
+
+    /**
+     * Clear all possible trade cache permutations for the current user.
+     */
+    private function clearTradeCache(): void
+    {
+        $userId = Auth::id();
+        $accountModes = ['real', 'demo', 'all'];
+        $marketTypes = ['crypto', 'pse', 'forex', 'stocks', 'indices', 'commodities', 'all'];
+
+        // Increment the trades version to invalidate all trade-related caches
+        Cache::put("trades_version_user_{$userId}", (string) (now()->timestamp), now()->addDays(30));
+
+        // Clear dashboard cache
+        foreach ($accountModes as $mode) {
+            foreach ($marketTypes as $market) {
+                Cache::forget("dashboard_data_user_{$userId}_mode_{$mode}_market_{$market}");
+            }
+        }
+
+        // Clear strategies cache (since trade counts affect strategy stats)
+        foreach ($accountModes as $mode) {
+            foreach ($marketTypes as $market) {
+                Cache::forget("strategies_user_{$userId}_mode_{$mode}_market_{$market}");
+            }
+        }
+
+        // Clear PnL calendar cache for current and adjacent months
+        $now = now();
+        foreach ([-1, 0, 1] as $monthOffset) {
+            $date = $now->copy()->addMonths($monthOffset);
+            foreach ($accountModes as $mode) {
+                foreach ($marketTypes as $market) {
+                    Cache::forget("pnl_calendar_user_{$userId}_mode_{$mode}_market_{$market}_{$date->year}_{$date->month}");
+                }
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Balance extends Model
 {
@@ -21,6 +22,19 @@ class Balance extends Model
         'date' => 'datetime',
         'is_demo' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        $bustCache = function (self $balance) {
+            if ($balance->user_id) {
+                Cache::put("trades_version_user_{$balance->user_id}", microtime(true));
+            }
+        };
+
+        static::created($bustCache);
+        static::updated($bustCache);
+        static::deleted($bustCache);
+    }
 
     public function getLocalDateAttribute(): string
     {

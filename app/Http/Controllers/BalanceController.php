@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 final class BalanceController extends Controller
 {
@@ -29,31 +30,37 @@ final class BalanceController extends Controller
 
     private function getBalancesData(): array
     {
+        $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
+        $page = request()->get('page', 1);
 
-        $query = Balance::where('user_id', Auth::id());
+        $cacheKey = "balances_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_page_{$page}";
 
-        if ($accountMode !== 'all') {
-            $query->where('is_demo', $accountMode === 'demo');
-        }
+        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode) {
+            $query = Balance::where('user_id', $userId);
 
-        if ($marketMode !== 'all') {
-            $query->where('market', $marketMode);
-        }
+            if ($accountMode !== 'all') {
+                $query->where('is_demo', $accountMode === 'demo');
+            }
 
-        $balances = $query->latest('date')->paginate(10);
+            if ($marketMode !== 'all') {
+                $query->where('market', $marketMode);
+            }
 
-        // Transform the collection to include formatted attributes for JS
-        $balances->getCollection()->transform(function ($balance) {
-            $balance->local_date = \Carbon\Carbon::parse($balance->date)->format('M d, Y');
+            $balances = $query->latest('date')->paginate(10);
 
-            return $balance;
+            // Transform the collection to include formatted attributes for JS
+            $balances->getCollection()->transform(function ($balance) {
+                $balance->local_date = \Carbon\Carbon::parse($balance->date)->format('M d, Y');
+
+                return $balance;
+            });
+
+            return [
+                'balances' => $balances,
+            ];
         });
-
-        return [
-            'balances' => $balances,
-        ];
     }
 
     /**
@@ -76,6 +83,8 @@ final class BalanceController extends Controller
             ...$validated,
         ]);
 
+        $this->clearBalanceCache();
+
         return redirect()->route('balances.index')->with('success', 'Balance successfully added.');
     }
 
@@ -88,6 +97,8 @@ final class BalanceController extends Controller
 
         $this->findOwnedBalance($id)->update($validated);
 
+        $this->clearBalanceCache();
+
         return redirect()->route('balances.index')->with('success', 'Balance updated successfully.');
     }
 
@@ -98,11 +109,35 @@ final class BalanceController extends Controller
     {
         $this->findOwnedBalance($id)->delete();
 
+        $this->clearBalanceCache();
+
         return redirect()->route('balances.index')->with('success', 'Balance deleted successfully.');
     }
 
     private function findOwnedBalance(string $id): Balance
     {
         return Balance::where('user_id', Auth::id())->findOrFail($id);
+    }
+
+    /**
+     * Clear all possible balance cache permutations for the current user.
+     */
+    private function clearBalanceCache(): void
+    {
+        $userId = Auth::id();
+        $accountModes = ['real', 'demo', 'all'];
+        $marketTypes = ['crypto', 'pse', 'forex', 'stocks', 'indices', 'commodities', 'all'];
+
+        foreach ($accountModes as $mode) {
+            foreach ($marketTypes as $market) {
+                // Clear all pages by using cache tags or pattern matching
+                for ($page = 1; $page <= 100; $page++) {
+                    Cache::forget("balances_user_{$userId}_mode_{$mode}_market_{$market}_page_{$page}");
+                }
+
+                // Clear dashboard cache (since balances affect equity curve)
+                Cache::forget("dashboard_data_user_{$userId}_mode_{$mode}_market_{$market}");
+            }
+        }
     }
 }

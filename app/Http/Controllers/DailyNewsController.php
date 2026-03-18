@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\MarketNews;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 final class DailyNewsController extends Controller
@@ -15,8 +15,13 @@ final class DailyNewsController extends Controller
      */
     public function index(): View
     {
-        $allNews = MarketNews::latest()->paginate(10);
-        
+        $page = request()->get('page', 1);
+        $cacheKey = "daily_news_index_page_{$page}";
+
+        $allNews = Cache::remember($cacheKey, now()->addHours(1), function () {
+            return MarketNews::latest()->paginate(10);
+        });
+
         return view('daily-news.index', compact('allNews'));
     }
 
@@ -25,8 +30,12 @@ final class DailyNewsController extends Controller
      */
     public function show(int $id): View
     {
-        $news = MarketNews::findOrFail($id);
-        
+        $cacheKey = "daily_news_show_{$id}";
+
+        $news = Cache::remember($cacheKey, now()->addHours(6), function () use ($id) {
+            return MarketNews::findOrFail($id);
+        });
+
         return view('daily-news.show', compact('news'));
     }
 
@@ -35,8 +44,12 @@ final class DailyNewsController extends Controller
      */
     public function latest(): View
     {
-        $news = MarketNews::latest()->firstOrFail();
-        
+        $cacheKey = 'daily_news_latest';
+
+        $news = Cache::remember($cacheKey, now()->addHours(1), function () {
+            return MarketNews::latest()->firstOrFail();
+        });
+
         return view('daily-news.show', compact('news'));
     }
 }

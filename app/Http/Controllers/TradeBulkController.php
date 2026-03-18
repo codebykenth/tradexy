@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Trade;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -34,9 +34,9 @@ final class TradeBulkController extends Controller
         if ($validated['action'] === 'delete') {
             $count = $ownedTrades->count();
             $ownedTrades->delete();
-            
-            Cache::forget('strategies_user_' . Auth::id());
-            
+
+            $this->clearTradeCache();
+
             return redirect()->back()->with('success', "Successfully deleted {$count} trades.");
         }
 
@@ -52,12 +52,23 @@ final class TradeBulkController extends Controller
 
             $count = $ownedTrades->count();
             $ownedTrades->update($updateData);
-            
-            Cache::forget('strategies_user_' . Auth::id());
+
+            $this->clearTradeCache();
 
             return redirect()->back()->with('success', "Successfully updated {$count} trades.");
         }
 
         return redirect()->back()->with('error', 'Invalid bulk action.');
+    }
+
+    /**
+     * Clear all trade-related caches for the current user.
+     */
+    private function clearTradeCache(): void
+    {
+        $userId = Auth::id();
+
+        // Increment the trades version to invalidate all trade-related caches
+        Cache::put("trades_version_user_{$userId}", (string) (now()->timestamp), now()->addDays(30));
     }
 }
