@@ -31,10 +31,10 @@
                                 <div class="flex items-center gap-3">
                                     <div class="avatar placeholder">
                                         <div class="bg-neutral text-neutral-content rounded-lg w-8 h-8 font-bold text-xs uppercase">
-                                            <span>{{ substr($log->user->name, 0, 1) }}</span>
+                                            <span>{{ substr($log->user->name ?? 'System', 0, 1) }}</span>
                                         </div>
                                     </div>
-                                    <div class="font-black text-sm uppercase italic">{{ $log->user->name }}</div>
+                                    <div class="font-black text-sm uppercase italic">{{ $log->user->name ?? 'System' }}</div>
                                 </div>
                             </td>
                             <td class="py-5">

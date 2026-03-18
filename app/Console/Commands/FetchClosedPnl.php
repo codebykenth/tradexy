@@ -53,7 +53,7 @@ class FetchClosedPnl extends Command
 
             $this->info("Fetching for: {$user->name}".($isDemo ? ' [DEMO]' : ' [MAIN]'));
 
-            $response = $bybit->getClosedPnl(days: 2);
+            $response = $bybit->getClosedPnl(days: 20);
 
             $trades = [];
             $errors = [];

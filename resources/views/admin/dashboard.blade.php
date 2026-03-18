@@ -143,11 +143,11 @@
                                         <div class="flex items-center gap-3">
                                             <div class="avatar placeholder">
                                                 <div class="bg-neutral text-neutral-content rounded-xl w-10 h-10 font-bold">
-                                                    <span>{{ substr($log->user->name, 0, 1) }}</span>
+                                                    <span>{{ substr($log->user->name ?? 'System', 0, 1) }}</span>
                                                 </div>
                                             </div>
                                             <div>
-                                                <div class="font-black text-sm">{{ $log->user->name }}</div>
+                                                <div class="font-black text-sm">{{ $log->user->name ?? 'System' }}</div>
                                                 <div class="text-[10px] font-mono opacity-50">{{ $log->ip_address }}</div>
                                             </div>
                                         </div>
