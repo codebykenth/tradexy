@@ -46,31 +46,31 @@
                 </div>
                 <x-table>
                     <x-slot:header>
-                        <th>
+                        <th class="w-10">
                             <label>
                                 <input type="checkbox" class="all-trade-checkbox size-4" />
                             </label>
                         </th>
                         <th>Date</th>
                         <th class="text-center">Symbol</th>
-                        <th>Duration</th>
-                        <th>Qty</th>
-                        <th>Net Pnl</th>
-                        <th>Chart</th>
-                        <th>AI</th>
+                        <th class="whitespace-nowrap">Duration</th>
+                        <th class="whitespace-nowrap">Qty</th>
+                        <th class="text-right pr-8 whitespace-nowrap">Net Pnl</th>
+                        <th class="w-16 text-center">Chart</th>
+                        <th class="w-16 text-center">AI</th>
                     </x-slot:header>
                     <tbody id="trades-table-body">
                         @foreach ($ownedTrades as $ownedTrade)
                             <x-table.row onclick="window.location='/trades/{{ $ownedTrade->id }}'">
-                                <th onclick="event.stopPropagation()">
+                                <th onclick="event.stopPropagation()" class="w-10">
                                     <label>
                                         <input type="checkbox" class="trade-checkbox size-4" value="{{ $ownedTrade->id }}" />
                                     </label>
                                 </th>
-                                <td class="font-medium">
+                                <td class="font-medium whitespace-nowrap">
                                     {{ \Carbon\Carbon::parse($ownedTrade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') }}
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         {{ $ownedTrade->symbol }}
                                         <span
@@ -80,22 +80,22 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>
+                                <td class="whitespace-nowrap">
                                     {{ $ownedTrade->duration }}
                                 </td>
-                                <td>
+                                <td class="whitespace-nowrap">
                                     {{ strpos((string) $ownedTrade->quantity, '.') !== false ? rtrim(rtrim((string) $ownedTrade->quantity, '0'), '.') : $ownedTrade->quantity }}
                                 </td>
-                                <td class="text-right pr-8">
+                                <td class="text-right pr-8 whitespace-nowrap">
                                     <span @class([
                                         'font-bold',
                                         'text-green-400' => $ownedTrade->total_pnl > 0,
                                         'text-red-400' => $ownedTrade->total_pnl < 0
                                     ])>{{ number_format($ownedTrade->total_pnl, 2) }}</span>
                                 </td>
-                                <td onclick="event.stopPropagation()">
+                                <td class="w-16 text-center" onclick="event.stopPropagation()">
                                     @if($ownedTrade->chart_picture)
-                                        <button class="btn btn-ghost btn-sm" onclick="modal_chart_{{ $ownedTrade->id }}.showModal()">
+                                        <button class="btn btn-ghost btn-sm tooltip tooltip-left" data-tip="View Chart" onclick="modal_chart_{{ $ownedTrade->id }}.showModal()">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                                 stroke="currentColor" class="size-5">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -113,9 +113,9 @@
                                         </dialog>
                                     @endif
                                 </td>
-                                <td onclick="event.stopPropagation()">
+                                <td class="w-16 text-center" onclick="event.stopPropagation()">
                                     @if($ownedTrade->ai_analysis)
-                                        <button class="btn btn-ghost btn-sm tooltip" data-tip="Quick View AI Analysis" onclick="modal_ai_{{ $ownedTrade->id }}.showModal()">
+                                        <button class="btn btn-ghost btn-sm tooltip tooltip-left" data-tip="Quick View AI Analysis" onclick="modal_ai_{{ $ownedTrade->id }}.showModal()">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                                 stroke="currentColor" class="size-5 text-indigo-500">
                                                 <path stroke-linecap="round" stroke-linejoin="round"

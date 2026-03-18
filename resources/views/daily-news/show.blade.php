@@ -2,10 +2,6 @@
     <div class="max-w-7xl mx-auto px-6 py-8">
         <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-10">
             <div>
-                <a href="{{ route('daily-news.index') }}" class="btn btn-xs btn-ghost gap-2 font-black uppercase tracking-widest opacity-60 hover:opacity-100 mb-4 pl-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                    Back to Insights
-                </a>
                 <h1 class="text-4xl font-black tracking-tight text-base-content uppercase leading-none italic">
                     Market <span class="text-primary">Intelligence</span> Brief
                 </h1>

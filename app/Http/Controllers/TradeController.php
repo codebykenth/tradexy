@@ -60,7 +60,7 @@ final class TradeController extends Controller
                 $query->where('market', $marketMode);
             }
 
-            $ownedTrades = $query->latest('close_datetime')->simplePaginate(10);
+            $ownedTrades = $query->latest('close_datetime')->paginate(10);
             $strategies = Strategy::where('user_id', $userId)->get();
 
             return compact('ownedTrades', 'strategies');
