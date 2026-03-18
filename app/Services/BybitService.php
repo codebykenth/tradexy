@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Trade;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log; // Added for logging
@@ -10,8 +9,11 @@ use Illuminate\Support\Facades\Log; // Added for logging
 class BybitService
 {
     private string $apiKey;
+
     private string $apiSecret;
+
     private string $baseUrl;
+
     private string $recvWindow = '20000'; // 20s is safer than 50s for some gateway checks
 
     public function __construct(bool $isDemo = false)
@@ -34,7 +36,7 @@ class BybitService
     /**
      * Generate authentication headers for Bybit API V5
      *
-     * @param string $payload - The exact stringified query/body being sent
+     * @param  string  $payload  - The exact stringified query/body being sent
      * @return array - Headers array for the request
      */
     private function generateAuthHeaders(string $payload): array
@@ -43,7 +45,7 @@ class BybitService
         $timestamp = (string) now()->getTimestampMs();
 
         // Signature for V5: timestamp + api_key + recv_window + payload
-        $signatureString = $timestamp . $this->apiKey . $this->recvWindow . $payload;
+        $signatureString = $timestamp.$this->apiKey.$this->recvWindow.$payload;
         $signature = hash_hmac('sha256', $signatureString, $this->apiSecret);
 
         return [
@@ -59,8 +61,8 @@ class BybitService
     /**
      * Make an authenticated GET request
      *
-     * @param string $endpoint - API endpoint (e.g. '/v5/position/closed-pnl')
-     * @param array $params - Query parameters
+     * @param  string  $endpoint  - API endpoint (e.g. '/v5/position/closed-pnl')
+     * @param  array  $params  - Query parameters
      * @return array - API response
      */
     public function get(string $endpoint, array $params = []): array
@@ -70,7 +72,7 @@ class BybitService
 
         $headers = $this->generateAuthHeaders($queryString);
 
-        $url = $this->baseUrl . $endpoint . ($queryString ? '?' . $queryString : '');
+        $url = $this->baseUrl.$endpoint.($queryString ? '?'.$queryString : '');
 
         $response = Http::withHeaders($headers)
             ->timeout(30)
@@ -79,8 +81,9 @@ class BybitService
         if ($response->failed()) {
             $body = $response->body();
             if ($response->status() === 401) {
-                Log::error("Bybit 401 Error. URL: {$url}. Timestamp mismatch or invalid key. Headers (redacted): " . json_encode(array_merge($headers, ['X-BAPI-SIGN' => 'HIDDEN'])));
+                Log::error("Bybit 401 Error. URL: {$url}. Timestamp mismatch or invalid key. Headers (redacted): ".json_encode(array_merge($headers, ['X-BAPI-SIGN' => 'HIDDEN'])));
             }
+
             throw new Exception("Bybit API Error (GET {$endpoint}): Status {$response->status()} - Body: {$body}");
         }
 
@@ -90,23 +93,23 @@ class BybitService
     /**
      * Make an authenticated POST request
      *
-     * @param string $endpoint - API endpoint
-     * @param array $body - Request body
+     * @param  string  $endpoint  - API endpoint
+     * @param  array  $body  - Request body
      * @return array - API response
      */
     public function post(string $endpoint, array $body = []): array
     {
         $jsonBody = empty($body) ? '' : json_encode($body, JSON_UNESCAPED_SLASHES);
-        
+
         $headers = $this->generateAuthHeaders($jsonBody);
 
         $response = Http::withHeaders($headers)
             ->withBody($jsonBody, 'application/json')
             ->timeout(30)
-            ->post($this->baseUrl . $endpoint);
+            ->post($this->baseUrl.$endpoint);
 
         if ($response->failed()) {
-            throw new Exception("Bybit API Error (POST {$endpoint}): Status {$response->status()} - Body: " . $response->body());
+            throw new Exception("Bybit API Error (POST {$endpoint}): Status {$response->status()} - Body: ".$response->body());
         }
 
         return $response->json();
@@ -115,19 +118,68 @@ class BybitService
     /**
      * Fetch closed PnL
      *
-     * @param int $days - Number of days to look back (default: 2)
+     * @param  int  $days  - Number of days to look back (default: 2)
      * @return array - ['trades' => [...], 'errors' => [...], 'summary' => [...]]
      */
     public function getClosedPnl(int $days = 2): array
     {
-        $params = [
-            'category' => 'linear',
-            'startTime' => (string) now()->subDays($days)->getTimestampMs(),
-            'endTime' => (string) now()->getTimestampMs(),
-            'limit' => '100',
-        ];
+        $allTrades = [];
+        $targetStartTime = now()->subDays($days)->getTimestamp();
+        $currentEndTime = now()->getTimestamp();
 
-        return $this->get('/v5/position/closed-pnl', $params);
+        // Maximum 7 days per API request (in seconds)
+        // We use 6 days to be completely safe with Bybit's calculation margins
+        $maxWindow = 6 * 24 * 60 * 60;
+
+        while ($currentEndTime > $targetStartTime) {
+            $chunkStartTime = $currentEndTime - $maxWindow;
+            if ($chunkStartTime < $targetStartTime) {
+                $chunkStartTime = $targetStartTime;
+            }
+
+            $cursor = '';
+
+            do {
+                $params = [
+                    'category' => 'linear',
+                    'startTime' => (string) ($chunkStartTime * 1000), // convert to ms
+                    'endTime' => (string) ($currentEndTime * 1000),   // convert to ms
+                    'limit' => '100',
+                ];
+
+                if ($cursor !== '') {
+                    $params['cursor'] = $cursor;
+                }
+
+                $response = $this->get('/v5/position/closed-pnl', $params);
+
+                if (($response['retCode'] ?? -1) !== 0) {
+                    // API hit an error -> immediately return what we have (or the error if empty)
+                    if (empty($allTrades)) {
+                        return $response;
+                    }
+
+                    break 2; // Break out of both loops and return partial results
+                }
+
+                $list = $response['result']['list'] ?? [];
+                $allTrades = array_merge($allTrades, $list);
+                $cursor = $response['result']['nextPageCursor'] ?? '';
+
+            } while ($cursor !== '');
+
+            // Move the window backwards
+            // Subtract 1 second to prevent overlapping exact edge-case timestamps
+            $currentEndTime = $chunkStartTime - 1;
+        }
+
+        return [
+            'retCode' => 0,
+            'retMsg' => 'OK',
+            'result' => [
+                'list' => $allTrades,
+            ],
+        ];
     }
 
     /**

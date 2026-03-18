@@ -115,38 +115,28 @@
                                 </td>
                                 <td onclick="event.stopPropagation()">
                                     @if($ownedTrade->ai_analysis)
-                                                    <button class="btn btn-ghost btn-sm" onclick="modal_ai_{{ $ownedTrade->id }}.showModal()">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                            stroke="currentColor" class="size-5 text-indigo-500">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                                                        </svg>
-                                                    </button>
-                                                    <dialog id="modal_ai_{{ $ownedTrade->id }}" class="modal">
-                                                        <div class="modal-box w-11/12 max-w-4xl cursor-auto">
-                                                            <h3 class="text-2xl font-bold mb-6 text-indigo-700">Trade Analysis</h3>
-    
-                                                            <!-- AI Content Container with dynamic styling for markdown elements -->
-                                                            <div
-                                                                class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_h3]:flex [&_h3]:items-center [&_h3]:gap-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900 max-h-[65vh] overflow-y-auto pr-4 scrollbar-thin">
-    
-                                                                {!! \Illuminate\Support\Str::markdown($ownedTrade->ai_analysis, [
-                                            'html_input' => 'strip',
-                                            'allow_unsafe_links' => false
-                                        ]) !!}
-    
-                                                            </div>
-    
-                                                            <div class="modal-action">
-                                                                <form method="dialog">
-                                                                    <button class="btn">Close</button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                        <form method="dialog" class="modal-backdrop">
-                                                            <button>close</button>
-                                                        </form>
-                                                    </dialog>
+                                        <button class="btn btn-ghost btn-sm tooltip" data-tip="Quick View AI Analysis" onclick="modal_ai_{{ $ownedTrade->id }}.showModal()">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                stroke="currentColor" class="size-5 text-indigo-500">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                                            </svg>
+                                        </button>
+                                        <dialog id="modal_ai_{{ $ownedTrade->id }}" class="modal">
+                                            <div class="modal-box w-11/12 max-w-4xl cursor-auto">
+                                                <h3 class="text-2xl font-bold mb-6 text-indigo-700">Trade Analysis</h3>
+                                                <div class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_h3]:flex [&_h3]:items-center [&_h3]:gap-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900 max-h-[65vh] overflow-y-auto pr-4 scrollbar-thin">
+                                                    {!! \Illuminate\Support\Str::markdown($ownedTrade->ai_analysis, [
+                                                        'html_input' => 'strip',
+                                                        'allow_unsafe_links' => false
+                                                    ]) !!}
+                                                </div>
+                                                <div class="modal-action">
+                                                    <form method="dialog"><button class="btn">Close</button></form>
+                                                </div>
+                                            </div>
+                                            <form method="dialog" class="modal-backdrop"><button>close</button></form>
+                                        </dialog>
                                     @endif
                                 </td>
                             </x-table.row>
@@ -380,7 +370,13 @@
                                 ${trade.chart_picture ? '<span class="text-xs opacity-50 italic">Has Chart</span>' : '-'}
                             </td>
                             <td onclick="event.stopPropagation()">
-                                ${trade.ai_analysis ? '<span class="text-xs text-indigo-500 italic">AI Ready</span>' : '-'}
+                                ${trade.ai_analysis ? `
+                                    <button class="btn btn-ghost btn-sm tooltip" data-tip="AI Analysis Available (Refresh Page to View)" onclick="alert('Please refresh the page to view this newly generated AI analysis modal.')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-indigo-500">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                                        </svg>
+                                    </button>
+                                ` : '-'}
                             </td>
                         </tr>
                     `;

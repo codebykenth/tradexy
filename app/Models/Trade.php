@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $trade_count
@@ -68,6 +69,19 @@ class Trade extends Model
         'open_datetime' => 'datetime',
         'close_datetime' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        $bustCache = function (self $trade) {
+            if ($trade->user_id) {
+                Cache::put("trades_version_user_{$trade->user_id}", microtime(true));
+            }
+        };
+
+        static::created($bustCache);
+        static::updated($bustCache);
+        static::deleted($bustCache);
+    }
 
     public function user(): BelongsTo
     {

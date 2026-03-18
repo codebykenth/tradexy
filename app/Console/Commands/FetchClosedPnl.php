@@ -69,9 +69,9 @@ class FetchClosedPnl extends Command
             // Sort by updatedTime ascending (oldest first)
             usort($trades, function ($a, $b) {
                 $timeA = (int) ($a['updatedTime'] ?? $a['createdTime'] ?? 0);
-                $timeB = (int) ($a['updatedTime'] ?? $a['createdTime'] ?? 0);
+                $timeB = (int) ($b['updatedTime'] ?? $b['createdTime'] ?? 0);
 
-                return $timeA - $timeB;
+                return $timeA <=> $timeB;
             });
 
             // Save trades to database

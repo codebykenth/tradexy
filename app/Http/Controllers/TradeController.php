@@ -13,7 +13,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final class TradeController extends Controller
@@ -35,31 +34,37 @@ final class TradeController extends Controller
 
     private function getTradesData(): array
     {
+        $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
+        $page = request()->get('page', 1);
 
-        $query = Trade::with(['strategy'])
-            ->where('user_id', Auth::id())
-            ->select([
-                'id', 'user_id', 'strategy_id', 'symbol', 'market', 'is_demo',
-                'quantity', 'total_pnl', 'close_datetime', 'open_datetime',
-                'avg_entry_price', 'avg_exit_price', 'stop_loss_price', 'take_profit_price',
-                'entry_side', 'exit_side', 'chart_picture',
-                DB::raw('CASE WHEN ai_analysis IS NOT NULL THEN 1 ELSE 0 END as has_ai_analysis'),
-            ]);
+        $version = Cache::get("trades_version_user_{$userId}", '1');
+        $cacheKey = "trades_data_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_page_{$page}_v{$version}";
 
-        if ($accountMode !== 'all') {
-            $query->where('is_demo', $accountMode === 'demo');
-        }
+        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode) {
+            $query = Trade::with(['strategy'])
+                ->where('user_id', $userId)
+                ->select([
+                    'id', 'user_id', 'strategy_id', 'symbol', 'market', 'is_demo',
+                    'quantity', 'total_pnl', 'close_datetime', 'open_datetime',
+                    'avg_entry_price', 'avg_exit_price', 'stop_loss_price', 'take_profit_price',
+                    'entry_side', 'exit_side', 'chart_picture', 'ai_analysis',
+                ]);
 
-        if ($marketMode !== 'all') {
-            $query->where('market', $marketMode);
-        }
+            if ($accountMode !== 'all') {
+                $query->where('is_demo', $accountMode === 'demo');
+            }
 
-        $ownedTrades = $query->latest('close_datetime')->simplePaginate(10);
-        $strategies = Strategy::where('user_id', Auth::id())->get();
+            if ($marketMode !== 'all') {
+                $query->where('market', $marketMode);
+            }
 
-        return compact('ownedTrades', 'strategies');
+            $ownedTrades = $query->latest('close_datetime')->simplePaginate(10);
+            $strategies = Strategy::where('user_id', $userId)->get();
+
+            return compact('ownedTrades', 'strategies');
+        });
     }
 
     public function gallery()
@@ -90,7 +95,13 @@ final class TradeController extends Controller
 
     public function show(int $id)
     {
-        $trade = $this->findOwnedTrade($id, ['strategy', 'lessons', 'reasons']);
+        $userId = Auth::id();
+        $version = Cache::get("trades_version_user_{$userId}", '1');
+        $cacheKey = "trade_show_{$id}_user_{$userId}_v{$version}";
+
+        $trade = Cache::remember($cacheKey, now()->addHours(2), function () use ($id) {
+            return $this->findOwnedTrade($id, ['strategy', 'lessons', 'reasons']);
+        });
 
         return view('trades.show', compact('trade'));
     }
@@ -153,7 +164,7 @@ final class TradeController extends Controller
     // Shared persistence logic for store() and update()
     private function persistTrade(Trade $trade, array $validated, TradeRequest $request): RedirectResponse
     {
-        $validated = $this->computeDerivedFields($validated, $trade->market ?? 'crypto');
+        $validated = $this->computeDerivedFields($validated, $trade);
 
         $entryReasons = array_filter($request->input('entry_reason', []));
         $exitReasons = array_filter($request->input('exit_reason', []));
@@ -184,13 +195,13 @@ final class TradeController extends Controller
     }
 
     // Recalculates server-side derived fields (symbol, entry/exit totals, PSE defaults)
-    private function computeDerivedFields(array $validated, string $fallbackMarket = 'crypto'): array
+    private function computeDerivedFields(array $validated, Trade $trade): array
     {
         if (isset($validated['symbol'])) {
             $validated['symbol'] = strtoupper($validated['symbol']);
         }
 
-        $market = $validated['market'] ?? $fallbackMarket;
+        $market = $validated['market'] ?? $trade->market ?? 'crypto';
         // PSE trades: force long-only, no leverage, aggregate fees
         if ($market === 'pse') {
             $validated['entry_side'] = 'long';
@@ -198,11 +209,11 @@ final class TradeController extends Controller
             $validated['leverage'] = 1;
 
             // Sum all PSE fee fields into open_fees + close_fees for unified PnL calc
-            $brokerComm = (float) ($validated['broker_commission'] ?? 0);
-            $pseTrans = (float) ($validated['pse_trans_fee'] ?? 0);
-            $sccp = (float) ($validated['sccp_fee'] ?? 0);
-            $vat = (float) ($validated['pse_vat'] ?? 0);
-            $salesTax = (float) ($validated['sales_tax'] ?? 0);
+            $brokerComm = (float) ($validated['broker_commission'] ?? $trade->broker_commission ?? 0);
+            $pseTrans = (float) ($validated['pse_trans_fee'] ?? $trade->pse_trans_fee ?? 0);
+            $sccp = (float) ($validated['sccp_fee'] ?? $trade->sccp_fee ?? 0);
+            $vat = (float) ($validated['pse_vat'] ?? $trade->pse_vat ?? 0);
+            $salesTax = (float) ($validated['sales_tax'] ?? $trade->sales_tax ?? 0);
             $totalPseFees = $brokerComm + $pseTrans + $sccp + $vat + $salesTax;
 
             // Split evenly into open/close fees for the standard PnL calculation
@@ -217,32 +228,37 @@ final class TradeController extends Controller
             $validated['sales_tax'] = null;
         }
 
-        if (isset($validated['avg_entry_price'], $validated['quantity'])) {
-            $validated['cum_entry_value'] = (float) $validated['avg_entry_price'] * (float) $validated['quantity'];
+        $entryPrice = (float) ($validated['avg_entry_price'] ?? $trade->avg_entry_price ?? 0);
+        $exitPrice = (float) ($validated['avg_exit_price'] ?? $trade->avg_exit_price ?? 0);
+        $qty = (float) ($validated['quantity'] ?? $trade->quantity ?? 0);
+
+        if ($entryPrice > 0 && $qty > 0) {
+            $validated['cum_entry_value'] = $entryPrice * $qty;
         }
 
-        if (!empty($validated['avg_exit_price']) && isset($validated['quantity'])) {
-            $validated['cum_exit_value'] = (float) $validated['avg_exit_price'] * (float) $validated['quantity'];
+        if ($exitPrice > 0 && $qty > 0) {
+            $validated['cum_exit_value'] = $exitPrice * $qty;
         }
 
         // --- Recalculate PnL Server-side for Data Integrity ---
-        if (isset($validated['cum_entry_value'], $validated['cum_exit_value'])) {
-            $entryValue = (float) $validated['cum_entry_value'];
-            $exitValue = (float) $validated['cum_exit_value'];
-            $side = strtolower($validated['entry_side'] ?? 'long');
+        $entryValue = (float) ($validated['cum_entry_value'] ?? $trade->cum_entry_value ?? 0);
+        $exitValue = (float) ($validated['cum_exit_value'] ?? $trade->cum_exit_value ?? 0);
+
+        if ($entryValue > 0 && $exitValue > 0) {
+            $side = strtolower($validated['entry_side'] ?? $trade->entry_side ?? 'long');
 
             $grossPnl = ($side === 'long') ? ($exitValue - $entryValue) : ($entryValue - $exitValue);
 
             // Sum all possible fees
-            $fees = (float) ($validated['open_fees'] ?? 0) + (float) ($validated['close_fees'] ?? 0);
+            $fees = (float) ($validated['open_fees'] ?? $trade->open_fees ?? 0) + (float) ($validated['close_fees'] ?? $trade->close_fees ?? 0);
 
             // For PSE, if individual fees are present, prioritize them
             if ($market === 'pse') {
-                $pseFees = (float) ($validated['broker_commission'] ?? 0) +
-                           (float) ($validated['pse_trans_fee'] ?? 0) +
-                           (float) ($validated['sccp_fee'] ?? 0) +
-                           (float) ($validated['pse_vat'] ?? 0) +
-                           (float) ($validated['sales_tax'] ?? 0);
+                $pseFees = (float) ($validated['broker_commission'] ?? $trade->broker_commission ?? 0) +
+                           (float) ($validated['pse_trans_fee'] ?? $trade->pse_trans_fee ?? 0) +
+                           (float) ($validated['sccp_fee'] ?? $trade->sccp_fee ?? 0) +
+                           (float) ($validated['pse_vat'] ?? $trade->pse_vat ?? 0) +
+                           (float) ($validated['sales_tax'] ?? $trade->sales_tax ?? 0);
 
                 if ($pseFees > 0) {
                     $fees = $pseFees;
