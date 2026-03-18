@@ -19,7 +19,7 @@ final class DailyNewsController extends Controller
         $cacheKey = "daily_news_index_page_{$page}";
 
         $allNews = Cache::remember($cacheKey, now()->addHours(1), function () {
-            return MarketNews::latest()->paginate(10);
+            return MarketNews::latest()->paginate(10)->onEachSide(1);
         });
 
         return view('daily-news.index', compact('allNews'));

@@ -60,7 +60,7 @@ final class TradeController extends Controller
                 $query->where('market', $marketMode);
             }
 
-            $ownedTrades = $query->latest('close_datetime')->paginate(10);
+            $ownedTrades = $query->latest('close_datetime')->paginate(10)->onEachSide(1);
             $strategies = Strategy::where('user_id', $userId)->get();
 
             return compact('ownedTrades', 'strategies');
@@ -92,7 +92,7 @@ final class TradeController extends Controller
             }
 
             $winningTrades = $winningQuery->latest('close_datetime')
-                ->paginate(10, ['*'], 'win_page');
+                ->paginate(10, ['*'], 'win_page')->onEachSide(1);
 
             $losingQuery = Trade::with(['strategy', 'reasons'])
                 ->where('user_id', $userId)
@@ -107,7 +107,7 @@ final class TradeController extends Controller
             }
 
             $losingTrades = $losingQuery->latest('close_datetime')
-                ->paginate(10, ['*'], 'loss_page');
+                ->paginate(10, ['*'], 'loss_page')->onEachSide(1);
 
             return compact('winningTrades', 'losingTrades');
         });

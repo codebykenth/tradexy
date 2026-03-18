@@ -48,7 +48,7 @@ final class BalanceController extends Controller
                 $query->where('market', $marketMode);
             }
 
-            $balances = $query->latest('date')->paginate(10);
+            $balances = $query->latest('date')->paginate(10)->onEachSide(1);
 
             // Transform the collection to include formatted attributes for JS
             $balances->getCollection()->transform(function ($balance) {
