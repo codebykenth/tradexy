@@ -42,10 +42,15 @@ class FileService
         $basePath = ltrim("$envPrefix$folderPath", '/');
         $path = $referenceId ? "$basePath/$referenceId" : $basePath;
 
-        // Store the file in Google Cloud Storage
+        // Store the file in Google Cloud Storage with aggressive cache headers
         $this->compressImage($file);
 
-        $storeFile = $file->storeAs($path, $fileName, 'gcs');
+        $storeFile = $file->storeAs($path, $fileName, [
+            'disk' => 'gcs',
+            'metadata' => [
+                'cacheControl' => 'public, max-age=31536000', // Cache for 1 year
+            ],
+        ]);
 
         // Make the file publicly accessible
         try {

@@ -68,9 +68,10 @@ return [
             'path_prefix' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', ''),
             'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null),
             'apiEndpoint' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', null),
-            'visibility' => 'private',
+            'visibility' => 'public',
             'visibility_handler' => null,
-            'metadata' => ['cacheControl' => 'public,max-age=86400'],
+            'metadata' => ['cacheControl' => 'public,max-age=31536000'],
+            'url' => env('GCS_URL'),
             'throw' => true,
         ],
 
