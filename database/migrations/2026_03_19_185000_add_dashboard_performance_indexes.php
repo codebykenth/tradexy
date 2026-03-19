@@ -14,19 +14,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('trades', function (Blueprint $table) {
-            // Speeds up dashboard stats filtering by user and close time
-            $table->index(['user_id', 'close_datetime']);
-
-            // Speeds up ranking (best/worst trades)
-            $table->index('total_pnl');
-
-            // Speeds up top symbols grouping
-            $table->index('symbol');
-        });
-
-        Schema::table('balances', function (Blueprint $table) {
-            // Speeds up equity curve data retrieval
-            $table->index(['user_id', 'date']);
+            $table->index('total_pnl', 'idx_perf_trades_pnl');
+            $table->index('symbol', 'idx_perf_trades_symbol');
         });
     }
 
@@ -36,13 +25,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('trades', function (Blueprint $table) {
-            $table->dropIndex(['user_id', 'close_datetime']);
-            $table->dropIndex(['total_pnl']);
-            $table->dropIndex(['symbol']);
-        });
-
-        Schema::table('balances', function (Blueprint $table) {
-            $table->dropIndex(['user_id', 'date']);
+            $table->dropIndex('idx_perf_trades_pnl');
+            $table->dropIndex('idx_perf_trades_symbol');
         });
     }
 };
