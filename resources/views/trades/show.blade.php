@@ -300,7 +300,7 @@
                             <img src="{{ $trade->direct_chart_url ?? "" }}" alt="Chart Snapshot"
                                 class="w-full rounded-lg shadow-sm">
                             <div class="flex justify-end w-full mt-4">
-                                <a href="{{ $trade->chart_picture }}" target="_blank" class="btn btn-primary">
+                                <a href="{{ $trade->direct_chart_url }}" target="_blank" class="btn btn-primary">
                                     View Image
                                 </a>
                             </div>
