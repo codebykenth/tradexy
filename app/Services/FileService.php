@@ -43,6 +43,8 @@ class FileService
         $path = $referenceId ? "$basePath/$referenceId" : $basePath;
 
         // Store the file in Google Cloud Storage
+        $this->compressImage($file);
+
         $storeFile = $file->storeAs($path, $fileName, 'gcs');
 
         // Make the file publicly accessible
@@ -106,6 +108,36 @@ class FileService
         }
 
         return false;
+    }
+
+    /**
+     * Compress an image file using GD before uploading
+     */
+    private function compressImage($file): void
+    {
+        $path = $file->getRealPath();
+        $mime = $file->getMimeType();
+
+        // Skip non-image or potentially huge files
+        if ($file->getSize() < 200 * 1024) {
+            return;
+        } // Ignore if < 200KB
+
+        if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+            $image = @imagecreatefromjpeg($path);
+            if ($image) {
+                imagejpeg($image, $path, 75); // 75% quality
+                imagedestroy($image);
+            }
+        } elseif ($mime === 'image/png') {
+            $image = @imagecreatefrompng($path);
+            if ($image) {
+                imagealphablending($image, false);
+                imagesavealpha($image, true);
+                imagepng($image, $path, 6); // Level 6 compression
+                imagedestroy($image);
+            }
+        }
     }
 
     /**

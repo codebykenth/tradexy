@@ -15,7 +15,7 @@
                         @foreach($winningTrades as $trade)
                             <div class="card bg-base-100 shadow-md overflow-hidden cursor-pointer hover:shadow-lg hover:border-green-300 transition-all duration-300 border border-green-100" onclick="window.location='{{ route('trades.show', $trade->id) }}'">
                                 <figure class="h-64 bg-gray-900">
-                                    <img src="{{ $trade->direct_chart_url ?? $trade->chart_picture }}" alt="Chart" class="w-full h-full object-contain" />
+                                    <img src="{{ $trade->direct_chart_url ?? $trade->chart_picture }}" alt="Chart" class="w-full h-full object-contain" loading="lazy" />
                                 </figure>
                                 <div class="card-body p-4 bg-green-50/30">
                                     <div class="flex justify-between items-start">
@@ -59,7 +59,7 @@
                         @foreach($losingTrades as $trade)
                             <div class="card bg-base-100 shadow-md overflow-hidden cursor-pointer hover:shadow-lg hover:border-red-300 transition-all duration-300 border border-red-100" onclick="window.location='{{ route('trades.show', $trade->id) }}'">
                                 <figure class="h-64 bg-gray-900">
-                                    <img src="{{ $trade->direct_chart_url ?? $trade->chart_picture }}" alt="Chart" class="w-full h-full object-contain" />
+                                    <img src="{{ $trade->direct_chart_url ?? $trade->chart_picture }}" alt="Chart" class="w-full h-full object-contain" loading="lazy" />
                                 </figure>
                                 <div class="card-body p-4 bg-red-50/30">
                                     <div class="flex justify-between items-start">

@@ -293,7 +293,8 @@
                 @if($trade->chart_picture)
                     <img src="{{ $trade->direct_chart_url ?? "" }}" alt=""
                         class="cursor-pointer mt-4 rounded-lg shadow-sm hover:scale-[1.02] transition-transform duration-300 ease-in-out"
-                        onclick="chartModal.showModal()">
+                        onclick="chartModal.showModal()"
+                        fetchpriority="high">
                     <dialog id="chartModal" class="modal">
                         <div class="modal-box w-11/12 max-w-[75vw]">
                             <img src="{{ $trade->direct_chart_url ?? "" }}" alt="Chart Snapshot"

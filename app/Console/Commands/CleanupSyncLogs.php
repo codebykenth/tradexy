@@ -29,9 +29,9 @@ final class CleanupSyncLogs extends Command
     public function handle(): int
     {
         try {
-            $this->info('Cleaning up old sync logs (24h threshold)...');
+            $this->info('Cleaning up old sync logs (before today)...');
 
-            // Purge high-frequency sync logs older than 24 hours
+            // Purge high-frequency sync logs before today
             $syncActions = [
                 'bybit_sync',
                 'bybit_sync_failed',
@@ -42,7 +42,7 @@ final class CleanupSyncLogs extends Command
             ];
 
             $syncDeleted = ActivityLog::whereIn('action', $syncActions)
-                ->where('created_at', '<', now()->subDay())
+                ->where('created_at', '<', now()->startOfDay())
                 ->delete();
 
             $this->info("Purged {$syncDeleted} sync logs.");
