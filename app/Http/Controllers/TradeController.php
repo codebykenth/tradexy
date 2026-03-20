@@ -219,7 +219,7 @@ final class TradeController extends Controller
         $trade = $this->findOwnedTrade($id);
 
         if ($trade->chart_picture) {
-            $this->fileService->deleteFile($trade->chart_picture, "users/{$trade->user_id}/trades", (string) $trade->id);
+            $this->fileService->deleteFile($trade->chart_picture, "users/{$trade->user_id}/trades", null);
         }
 
         $trade->delete();
@@ -358,7 +358,7 @@ final class TradeController extends Controller
             $this->fileService->deleteFile(
                 $trade->chart_picture,
                 "users/{$trade->user_id}/trades",
-                (string) $trade->id
+                null
             );
 
             $trade->update(['chart_picture' => null]);
@@ -382,7 +382,6 @@ final class TradeController extends Controller
         FileUpload::dispatch(
             tempPath: $tempPath,
             directory: "users/{$trade->user_id}/trades",
-            userId: $trade->user_id,
             modelClass: Trade::class,
             modelId: (string) $trade->id,
             field: 'chart_picture',

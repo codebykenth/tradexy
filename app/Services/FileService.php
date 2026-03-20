@@ -34,8 +34,10 @@ class FileService
             return null;
         }
 
-        // Create unique filename using timestamp
-        $fileName = time().'_'.preg_replace('/[^A-Za-z0-9\._-]/', '_', $file->getClientOriginalName());
+        // Create unique filename and force .webp extension
+        $baseName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $cleanName = preg_replace('/[^A-Za-z0-9_-]/', '_', $baseName);
+        $fileName = time().'_'.$cleanName.'.webp';
 
         // Build path correctly with environment prefix
         $envPrefix = $this->getEnvPrefix();
@@ -89,15 +91,8 @@ class FileService
         }
 
         try {
-            // Extract the filename from the URL
-            $fileName = $this->getFileNameFromUrl($url);
-
-            // Construct the full storage path with environment prefix
-            $envPrefix = $this->getEnvPrefix();
-            $basePath = ltrim("$envPrefix$folderPath", '/');
-            $path = $referenceId
-                ? "$basePath/$referenceId/$fileName"
-                : "$basePath/$fileName";
+            // Robust Path Extraction: Extract the relative path from the URL
+            $path = $this->getRelativePathFromUrl($url);
 
             // Check if the file exists before attempting deletion
             if (Storage::disk('gcs')->exists($path)) {
@@ -111,33 +106,71 @@ class FileService
     }
 
     /**
-     * Compress an image file using GD before uploading
+     * Compress, resize, and convert an image to WebP before uploading
      */
     private function compressImage($file): void
     {
         $path = $file->getRealPath();
         $mime = $file->getMimeType();
 
-        // Skip non-image or potentially huge files
-        if ($file->getSize() < 200 * 1024) {
-            return;
-        } // Ignore if < 200KB
+        // Load the image based on its type
+        $image = match ($mime) {
+            'image/jpeg', 'image/jpg' => @imagecreatefromjpeg($path),
+            'image/png' => @imagecreatefrompng($path),
+            'image/webp' => @imagecreatefromwebp($path),
+            default => null,
+        };
 
-        if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
-            $image = @imagecreatefromjpeg($path);
-            if ($image) {
-                imagejpeg($image, $path, 75); // 75% quality
-                imagedestroy($image);
-            }
-        } elseif ($mime === 'image/png') {
-            $image = @imagecreatefrompng($path);
-            if ($image) {
-                imagealphablending($image, false);
-                imagesavealpha($image, true);
-                imagepng($image, $path, 6); // Level 6 compression
-                imagedestroy($image);
-            }
+        if (!$image) {
+            return;
         }
+
+        $width = imagesx($image);
+        $height = imagesy($image);
+
+        // 1. Resize if wider than 1400px (Desktop resolution limit for charts)
+        if ($width > 1400) {
+            $newWidth = 1400;
+            $newHeight = (int) ($height * (1400 / $width));
+            $tmp = imagecreatetruecolor($newWidth, $newHeight);
+
+            // Handle transparency for PNG/WebP
+            if ($mime === 'image/png' || $mime === 'image/webp') {
+                imagealphablending($tmp, false);
+                imagesavealpha($tmp, true);
+                $transparent = imagecolorallocatealpha($tmp, 255, 255, 255, 127);
+                imagefilledrectangle($tmp, 0, 0, $newWidth, $newHeight, $transparent);
+            }
+
+            imagecopyresampled($tmp, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            imagedestroy($image);
+            $image = $tmp;
+        }
+
+        // 2. Convert to WebP (Always) with 80% quality
+        imagewebp($image, $path, 80);
+        imagedestroy($image);
+    }
+
+    /**
+     * Correctly extract the relative GCS path from a full URL.
+     * Collapses duplicated segments and strips bucket/domain.
+     */
+    private function getRelativePathFromUrl(string $url): string
+    {
+        // 1. First, collapse any duplicated path segments (e.g. /bucket/bucket/)
+        $url = preg_replace('/\/([^\/]+)\/\1\//', '/$1/', $url);
+
+        $bucket = config('filesystems.disks.gcs.bucket');
+        $path = parse_url($url, PHP_URL_PATH);
+
+        // 2. Strip the leading /bucket-name/ from the path if it exists
+        if ($bucket && str_starts_with((string) $path, "/{$bucket}/")) {
+            return substr((string) $path, strlen("/{$bucket}/"));
+        }
+
+        // 3. Fallback: just strip leading slashes
+        return ltrim((string) $path, '/');
     }
 
     /**

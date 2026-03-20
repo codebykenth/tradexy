@@ -20,7 +20,6 @@ final class FileUpload implements ShouldQueue
     /**
      * @param  string  $tempPath  Local path to the temporary file
      * @param  string  $directory  Remote directory in Firebase
-     * @param  int  $userId  Owner ID
      * @param  string  $modelClass  The model to update (e.g. Trade::class)
      * @param  string  $modelId  The ID of the record
      * @param  string  $field  The DB field to fill (e.g. 'chart_picture')
@@ -29,7 +28,6 @@ final class FileUpload implements ShouldQueue
     public function __construct(
         private readonly string $tempPath,
         private readonly string $directory,
-        private readonly int $userId,
         private readonly string $modelClass,
         private readonly string $modelId,
         private readonly string $field,
@@ -57,7 +55,7 @@ final class FileUpload implements ShouldQueue
             $this->oldFileUrl,
             $uploadedFile,
             $this->directory,
-            (string) $this->userId
+            null
         );
 
         // 3. Update the Model
@@ -82,7 +80,7 @@ final class FileUpload implements ShouldQueue
             $fileService->deleteFile(
                 $this->fileUrl,
                 $this->directory,
-                (string) $this->userId
+                null
             );
         }
 
