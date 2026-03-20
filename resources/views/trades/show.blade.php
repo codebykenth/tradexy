@@ -1,6 +1,6 @@
  <x-layouts.app :title="$trade->symbol . ' Trade Details | ' . config('app.name')">
     <div class="max-w-7xl mx-auto px-6">
-        <div class="flex justify-end items-center">
+        <div class="flex justify-end items-center mt-8">
             <div class="flex items-center gap-2">
                 <a href="{{ route('trades.edit', $trade->id ?? 1) }}"
                     class="flex items-center gap-2 p-3 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer font-semibold btn btn-outline">
@@ -101,11 +101,12 @@
                 <button>close</button>
             </form>
         </dialog>
-        <div class="flex gap-4">
-            <!-- Left -->
-            <div class="bg-gray-100 rounded-lg p-8 mt-8 w-2/3 space-y-4">
-                <!-- General Information -->
-                <div class="flex items-center justify-between gap-4 w-full flex-wrap">
+        <div class="flex items-start gap-4">
+            <!-- Left Column: Chart & AI -->
+            <div class="w-2/3 space-y-4">
+                <div class="bg-gray-100 rounded-lg p-8 mt-8">
+                    <!-- General Information -->
+                <div class="flex items-center justify-between gap-4 w-full">
                     <div>
                         <div class="flex items-center gap-4">
                             <p class="text-4xl uppercase font-black">{{ $trade->symbol ?? 'N/A'  }}</p>
@@ -200,9 +201,9 @@
 
                     </div>
                 </div>
-                <div class="border-b border-gray-309">
 
-                </div>
+                <div class="border-b border-gray-300 my-4"></div>
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Entry Price</p>
@@ -231,9 +232,129 @@
                         <p>{{ $trade->risk_reward }}</p>
                     </div>
                 </div>
+                </div>
+                <!-- Chart Snapshot -->
+                <div class="bg-gray-100 rounded-lg p-8">
+                    <div class="flex items-center gap-3 text-gray-800 mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-8 text-primary">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                        </svg>
+                        <p class="text-2xl font-bold">Chart Snapshot</p>
+                    </div>
+                    @if($trade->chart_picture)
+                        <x-optimized-image 
+                            :src="$trade->direct_chart_url ?? ''" 
+                            alt="Chart Snapshot"
+                            class="cursor-pointer mt-4 rounded-lg shadow-sm hover:scale-[1.02] transition-transform duration-300 ease-in-out"
+                            object="contain"
+                            onclick="chartModal.showModal()"
+                            fetchpriority="high" />
+                        <dialog id="chartModal" class="modal">
+                            <div class="modal-box w-11/12 max-w-[75vw]">
+                                <x-optimized-image 
+                                    :src="$trade->direct_chart_url ?? ''" 
+                                    alt="Full Chart"
+                                    class="w-full rounded-lg shadow-sm"
+                                    object="contain" />
+                                <div class="flex justify-end w-full mt-4">
+                                    <a href="{{ $trade->direct_chart_url }}" target="_blank" class="btn btn-primary">
+                                        View Image
+                                    </a>
+                                </div>
+                            </div>
+                            <form method="dialog" class="modal-backdrop">
+                                <button>close</button>
+                            </form>
+                        </dialog>
+                    @elseif(session('chart_uploading'))
+                        <div class="mt-4 bg-gray-200 rounded-lg h-[300px] flex flex-col items-center justify-center animate-pulse border-2 border-dashed border-gray-300 relative overflow-hidden">
+                             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-12 text-gray-400 mb-2">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                             </svg>
+                             <p class="font-bold text-gray-500 uppercase tracking-widest text-xs">Uploading High-Res Chart...</p>
+                        </div>
+                    @else
+                        <p class="italic text-gray-500">No chart image yet.</p>
+                    @endif
+                </div>
+
+                <!-- AI Analysis -->
+                <div class="bg-gray-100 rounded-lg p-8 mb-8">
+                    <div class="flex items-center justify-between gap-3 text-indigo-900 mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-indigo-100 p-2 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" class="size-6 text-indigo-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                                </svg>
+                            </div>
+                            <p class="text-2xl font-bold">AI Analysis</p>
+                        </div>
+                        @if($trade->ai_analysis && $trade->ai_analysis !== 'PENDING')
+                            <button type="button" class="btn btn-ghost btn-xs text-red-400 hover:text-red-500 font-bold uppercase tracking-widest"
+                                onclick="document.getElementById('delete_ai_audit_modal_{{ $trade->id }}').showModal()">
+                                Clear Audit
+                            </button>
+                        @endif
+                    </div>
+                    @if($trade->ai_analysis === 'PENDING')
+                        <div id="ai-analysis-container" class="flex flex-col items-center justify-center py-12 text-center bg-white border-2 border-dashed border-indigo-200 rounded-2xl shadow-inner group">
+                            <div class="relative mb-6">
+                                <div class="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-indigo-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <h3 class="text-xl font-black text-indigo-900 tracking-tight italic">AI mentors are auditing <span class="text-indigo-600">your edge...</span></h3>
+                            <p class="text-gray-500 text-sm mt-2 max-w-xs mx-auto">This process involves deep chart analysis and forensic data cross-referencing. Est: <span class="font-bold">15-25s</span>.</p>
+                            
+                            {{-- Fallback refresh button if WebSocket fails --}}
+                            <div id="ai-fallback-refresh" class="hidden mt-6">
+                                <button onclick="window.location.reload()" class="btn btn-ghost btn-xs text-indigo-400 font-bold uppercase tracking-widest hover:bg-transparent hover:text-indigo-600 transition-all">
+                                    Taking too long? Refresh manually
+                                </button>
+                            </div>
+                        </div>
+                    @elseif($trade->ai_analysis)
+                        <div id="ai-analysis-container"
+                            class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_h3]:flex [&_h3]:items-center [&_h3]:gap-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900 max-h-[65vh] overflow-y-auto pr-4 scrollbar-thin">
+
+                            {!! \Illuminate\Support\Str::markdown($trade->ai_analysis, [
+                                'html_input' => 'strip',
+                                'allow_unsafe_links' => false
+                            ]) !!}
+                        </div>
+                    @else
+                        <div id="ai-analysis-container">
+                            <p class="italic text-gray-500">No AI analysis yet.</p>
+                            @if($trade->chart_picture)
+                                <form action="{{ route('ai.analyze', $trade->id) }}" method="POST" class="mt-4" onsubmit="document.getElementById('ai-loading-overlay').classList.remove('hidden')">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="btn btn-primary btn-sm flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                            stroke="currentColor" class="size-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                                        </svg>
+                                        Generate AI Analysis
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    @endif
+                </div>
             </div>
-            <!-- Right -->
-            <div class="bg-gray-100 rounded-lg p-8 mt-8 w-1/3 space-y-4">
+
+            <!-- Right Column: Logic & Takeaways -->
+            <div class="w-1/3 space-y-4">
+                <div class="bg-gray-100 rounded-lg p-8 mt-8">
                 <p class="uppercase font-bold mb-4">Setup Context</p>
                 <div>
                     <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Strategy</p>
@@ -254,7 +375,7 @@
                         <p>{{ $trade->session }}</p>
                     </div>
                 </div>
-                <div class="border-b border-gray-300"></div>
+                <div class="border-b border-gray-300 my-4"></div>
                 <div class="">
                     <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Emotional State</p>
                     <div class="flex items-center gap-4 w-full">
@@ -274,173 +395,54 @@
                             <p class="font-medium text-gray-800">{{ $trade->exit_emotion ?? '-' }}</p>
                         </div>
                     </div>
-                </div>
             </div>
-
-        </div>
-        <div class="flex gap-4">
-            <!-- Left -->
-            <div class="bg-gray-100 rounded-lg p-8 mt-8 w-2/3">
-                <!-- Chart Snapshot -->
-                <div class="flex items-center gap-3 text-gray-800  mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-8 text-primary">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                    </svg>
-                    <p class="text-2xl font-bold">Chart Snapshot</p>
                 </div>
-                @if($trade->chart_picture)
-                    <x-optimized-image 
-                        :src="$trade->direct_chart_url ?? ''" 
-                        alt="Chart Snapshot"
-                        class="cursor-pointer mt-4 rounded-lg shadow-sm hover:scale-[1.02] transition-transform duration-300 ease-in-out"
-                        object="contain"
-                        onclick="chartModal.showModal()"
-                        fetchpriority="high" />
-                    <dialog id="chartModal" class="modal">
-                        <div class="modal-box w-11/12 max-w-[75vw]">
-                            <x-optimized-image 
-                                :src="$trade->direct_chart_url ?? ''" 
-                                alt="Full Chart"
-                                class="w-full rounded-lg shadow-sm"
-                                object="contain" />
-                            <div class="flex justify-end w-full mt-4">
-                                <a href="{{ $trade->direct_chart_url }}" target="_blank" class="btn btn-primary">
-                                    View Image
-                                </a>
-                            </div>
-                        </div>
-                        <form method="dialog" class="modal-backdrop">
-                            <button>close</button>
-                        </form>
-                    </dialog>
-                @elseif(session('chart_uploading'))
-                    <div class="mt-4 bg-gray-200 rounded-lg h-[300px] flex flex-col items-center justify-center animate-pulse border-2 border-dashed border-gray-300 relative overflow-hidden">
-                         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
-                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-12 text-gray-400 mb-2">
-                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                         </svg>
-                         <p class="font-bold text-gray-500 uppercase tracking-widest text-xs">Uploading High-Res Chart...</p>
-                    </div>
-                @else
-                    <p class="italic text-gray-500">No chart image yet.</p>
-                @endif
-
-            </div>
-            <!-- Right -->
-            <div class="bg-gray-100 rounded-lg p-8 mt-8 w-1/3 space-y-4">
-                <p class="uppercase font-bold mb-4">Trade Logic</p>
-                <div>
-                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Entry Triggers</p>
-                    @if($trade->reasons->isNotEmpty())
-                        <ul class="list-disc ml-4 space-y-2 text-gray-700">
-                            @foreach($trade->reasons as $reason)
-                                @if($reason->type == 'entry')
-                                    <li>{{ $reason->reason }}</li>
-                                @endif
-                            @endforeach
-                        </ul>
-                    @else
-                        <p class="italic text-gray-500">No entry reasons logged.</p>
-                    @endif
-                </div>
-                <div>
-                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Exit Triggers</p>
-                    @if($trade->reasons->isNotEmpty())
-                        <ul class="list-disc ml-4 space-y-2 text-gray-700">
-                            @foreach($trade->reasons as $reason)
-                                @if($reason->type == 'exit')
-                                    <li>{{ $reason->reason }}</li>
-                                @endif
-                            @endforeach
-                        </ul>
-                    @else
-                        <p class="italic text-gray-500">No exit reasons logged.</p>
-                    @endif
-                </div>
-            </div>
-        </div>
-        <div class="flex gap-4">
-            <div class="bg-gray-100 rounded-lg p-8 my-8 w-2/3">
-                <div class="flex items-center justify-between gap-3 text-indigo-900 mb-6">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-indigo-100 p-2 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="size-6 text-indigo-600">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                            </svg>
-                        </div>
-                        <p class="text-2xl font-bold">AI Analysis</p>
-                    </div>
-                    @if($trade->ai_analysis && $trade->ai_analysis !== 'PENDING')
-                        <button type="button" class="btn btn-ghost btn-xs text-red-400 hover:text-red-500 font-bold uppercase tracking-widest"
-                            onclick="document.getElementById('delete_ai_audit_modal_{{ $trade->id }}').showModal()">
-                            Clear Audit
-                        </button>
-                    @endif
-                </div>
-                @if($trade->ai_analysis === 'PENDING')
-                    <div id="ai-analysis-container" class="flex flex-col items-center justify-center py-12 text-center bg-white border-2 border-dashed border-indigo-200 rounded-2xl shadow-inner group">
-                        <div class="relative mb-6">
-                            <div class="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-indigo-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                                </svg>
-                            </div>
-                        </div>
-                        <h3 class="text-xl font-black text-indigo-900 tracking-tight italic">AI mentors are auditing <span class="text-indigo-600">your edge...</span></h3>
-                        <p class="text-gray-500 text-sm mt-2 max-w-xs mx-auto">This process involves deep chart analysis and forensic data cross-referencing. Est: <span class="font-bold">15-25s</span>.</p>
-                        
-                        {{-- Fallback refresh button if WebSocket fails --}}
-                        <div id="ai-fallback-refresh" class="hidden mt-6">
-                            <button onclick="window.location.reload()" class="btn btn-ghost btn-xs text-indigo-400 font-bold uppercase tracking-widest hover:bg-transparent hover:text-indigo-600 transition-all">
-                                Taking too long? Refresh manually
-                            </button>
-                        </div>
-                    </div>
-                @elseif($trade->ai_analysis)
-                    <div id="ai-analysis-container"
-                        class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_h3]:flex [&_h3]:items-center [&_h3]:gap-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900 max-h-[65vh] overflow-y-auto pr-4 scrollbar-thin">
-
-                        {!! \Illuminate\Support\Str::markdown($trade->ai_analysis, [
-                            'html_input' => 'strip',
-                            'allow_unsafe_links' => false
-                        ]) !!}
-                    </div>
-                @else
-                    <div id="ai-analysis-container">
-                        <p class="italic text-gray-500">No AI analysis yet.</p>
-                        @if($trade->chart_picture)
-                            <form action="{{ route('ai.analyze', $trade->id) }}" method="POST" class="mt-4" onsubmit="document.getElementById('ai-loading-overlay').classList.remove('hidden')">
-                                @csrf
-                                @method('PUT')
-                                <button type="submit" class="btn btn-primary btn-sm flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                        stroke="currentColor" class="size-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.454 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                                    </svg>
-                                    Generate AI Analysis
-                                </button>
-                            </form>
+                <!-- Trade Logic -->
+                <div class="bg-gray-100 rounded-lg p-8">
+                    <p class="uppercase font-bold mb-4">Trade Logic</p>
+                    <div>
+                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Entry Triggers</p>
+                        @if($trade->reasons->isNotEmpty())
+                            <ul class="list-disc ml-4 space-y-2 text-gray-700">
+                                @foreach($trade->reasons as $reason)
+                                    @if($reason->type == 'entry')
+                                        <li>{{ $reason->reason }}</li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="italic text-gray-500">No entry reasons logged.</p>
                         @endif
                     </div>
-                @endif
-            </div>
-            <div class="bg-gray-100 rounded-lg p-8 my-8 w-1/3">
-                <p class="uppercase font-bold mb-4">Key Takeaways</p>
-                @if($trade->lessons->isNotEmpty())
-                    <ul class="list-disc ml-4 space-y-2 text-gray-700">
-                        @foreach($trade->lessons as $lesson)
-                            <li>{{ $lesson->lesson }}</li>
-                        @endforeach
-                    </ul>
-                @else
-                    <p class="italic text-gray-500">No lessons recorded for this trade.</p>
-                @endif
+                    <div class="mt-6">
+                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Exit Triggers</p>
+                        @if($trade->reasons->isNotEmpty())
+                            <ul class="list-disc ml-4 space-y-2 text-gray-700">
+                                @foreach($trade->reasons as $reason)
+                                    @if($reason->type == 'exit')
+                                        <li>{{ $reason->reason }}</li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="italic text-gray-500">No exit reasons logged.</p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Key Takeaways -->
+                <div class="bg-gray-100 rounded-lg p-8">
+                    <p class="uppercase font-bold mb-4">Key Takeaways</p>
+                    @if($trade->lessons->isNotEmpty())
+                        <ul class="list-disc ml-4 space-y-2 text-gray-700">
+                            @foreach($trade->lessons as $lesson)
+                                <li>{{ $lesson->lesson }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="italic text-gray-500">No lessons recorded for this trade.</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

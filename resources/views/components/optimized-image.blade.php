@@ -26,11 +26,3 @@
         {{ $attributes->whereDoesntStartWith(['src', 'alt', 'class']) }}
     />
 </div>
-
-<style>
-@keyframes shimmer {
-    100% {
-        transform: translateX(100%);
-    }
-}
-</style>
