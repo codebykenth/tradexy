@@ -10,7 +10,7 @@
 
                 <!-- Desktop Navigation Links -->
                 @auth
-                    <div class="hidden lg:flex items-center gap-6 text-base-content/70">
+                    <div class="hidden xl:flex items-center gap-4 text-base-content/70">
                         <a href="/dashboard" class="hover:text-base-content transition-colors font-medium">Dashboard</a>
                         <a href="/trades" class="hover:text-base-content transition-colors font-medium">Trades</a>
                         <a href="/trades/gallery" class="hover:text-base-content transition-colors font-medium">Gallery</a>
@@ -22,7 +22,7 @@
                         </a>
                     </div>
                 @else
-                    <div class="hidden lg:flex items-center gap-6 text-base-content/70">
+                    <div class="hidden xl:flex items-center gap-6 text-base-content/70">
                         <a href="#features" class="hover:text-base-content transition-colors underline-offset-4 hover:underline">Features</a>
                         <a href="#how-it-works" class="hover:text-base-content transition-colors underline-offset-4 hover:underline">How it Works</a>
                         <a href="#why-tradexy" class="hover:text-base-content transition-colors underline-offset-4 hover:underline">Why Tradexy</a>
@@ -31,7 +31,7 @@
             </div>
 
             <!-- Desktop Actions Section -->
-            <div class="hidden lg:flex items-center gap-4">
+            <div class="hidden xl:flex items-center gap-3">
                 @auth
                     <!-- Global Account Switcher -->
                     <div class="flex items-center bg-base-200 p-1 rounded-xl shadow-inner border border-base-300">
@@ -107,7 +107,7 @@
             </div>
 
             <!-- Mobile Hamburger Section -->
-            <div class="hidden max-lg:flex items-center gap-4">
+            <div class="xl:hidden flex items-center gap-4">
                 <button id="menu-btn" class="btn btn-ghost btn-circle">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -117,7 +117,7 @@
         </nav>
 
         <!-- Mobile Full-screen Dropdown -->
-        <div id="dropdown-menu" class="hidden lg:hidden fixed inset-0 top-16 bg-base-100 z-[99] flex flex-col px-6">
+        <div id="dropdown-menu" class="hidden xl:hidden fixed inset-0 top-16 bg-base-100 z-[99] flex flex-col px-6">
             @auth
                 <!-- User Profile Header -->
                 <div class="py-8 border-b border-base-200">

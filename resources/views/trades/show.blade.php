@@ -291,14 +291,20 @@
                     <p class="text-2xl font-bold">Chart Snapshot</p>
                 </div>
                 @if($trade->chart_picture)
-                    <img src="{{ $trade->direct_chart_url ?? "" }}" alt=""
+                    <x-optimized-image 
+                        :src="$trade->direct_chart_url ?? ''" 
+                        alt="Chart Snapshot"
                         class="cursor-pointer mt-4 rounded-lg shadow-sm hover:scale-[1.02] transition-transform duration-300 ease-in-out"
+                        object="contain"
                         onclick="chartModal.showModal()"
-                        fetchpriority="high">
+                        fetchpriority="high" />
                     <dialog id="chartModal" class="modal">
                         <div class="modal-box w-11/12 max-w-[75vw]">
-                            <img src="{{ $trade->direct_chart_url ?? "" }}" alt="Chart Snapshot"
-                                class="w-full rounded-lg shadow-sm">
+                            <x-optimized-image 
+                                :src="$trade->direct_chart_url ?? ''" 
+                                alt="Full Chart"
+                                class="w-full rounded-lg shadow-sm"
+                                object="contain" />
                             <div class="flex justify-end w-full mt-4">
                                 <a href="{{ $trade->direct_chart_url }}" target="_blank" class="btn btn-primary">
                                     View Image
