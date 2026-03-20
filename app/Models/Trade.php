@@ -120,7 +120,8 @@ class Trade extends Model
         // --- GCS to CDN Swap for existing records ---
         $cdnBase = config('filesystems.disks.gcs.url');
         if ($url && $cdnBase && str_contains($url, 'storage.googleapis.com')) {
-            // Replaces https://storage.googleapis.com/bucket/path with https://cdn.yourdomain.com/bucket/path
+            // Replaces https://storage.googleapis.com with https://cdn.yoursite.com
+            // Ensure cdnBase doesn't have a trailing slash
             return str_replace('https://storage.googleapis.com', rtrim($cdnBase, '/'), $url);
         }
 
