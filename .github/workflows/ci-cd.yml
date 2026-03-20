@@ -189,9 +189,8 @@ jobs:
 
             docker-compose -f docker-compose.dev.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.dev.yml exec -T app php artisan storage:link || true
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan config:clear
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan route:clear
-            docker-compose -f docker-compose.dev.yml exec -T app php artisan view:clear
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan optimize
+            docker-compose -f docker-compose.dev.yml exec -T app php artisan queue:restart
             docker-compose -f docker-compose.dev.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
             docker image prune -af
@@ -257,9 +256,8 @@ jobs:
 
             docker-compose -f docker-compose.staging.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.staging.yml exec -T app php artisan storage:link || true
-            docker-compose -f docker-compose.staging.yml exec -T app php artisan config:cache
-            docker-compose -f docker-compose.staging.yml exec -T app php artisan route:cache
-            docker-compose -f docker-compose.staging.yml exec -T app php artisan view:cache
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan optimize
+            docker-compose -f docker-compose.staging.yml exec -T app php artisan queue:restart
             docker-compose -f docker-compose.staging.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
             docker image prune -af
@@ -325,9 +323,8 @@ jobs:
 
             docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
             docker-compose -f docker-compose.prod.yml exec -T app php artisan storage:link || true
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan optimize
+            docker-compose -f docker-compose.prod.yml exec -T app php artisan queue:restart
             docker-compose -f docker-compose.prod.yml exec -T app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
             docker image prune -af

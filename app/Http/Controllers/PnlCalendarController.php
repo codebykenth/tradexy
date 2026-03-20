@@ -43,11 +43,12 @@ class PnlCalendarController extends Controller
         $cacheKey = "pnl_calendar_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_{$currentYear}_{$currentMonth}_v{$version}";
 
         $data = Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $currentMonth, $currentYear) {
-            // Fetch trades for the selected month
+            // Fetch trades for the selected month - only necessary columns for PnL calculation
             $tradeQuery = Trade::where('user_id', $userId)
                 ->whereNotNull('close_datetime')
                 ->whereYear('close_datetime', $currentYear)
-                ->whereMonth('close_datetime', $currentMonth);
+                ->whereMonth('close_datetime', $currentMonth)
+                ->select(['id', 'user_id', 'total_pnl', 'close_datetime']);
 
             if ($accountMode !== 'all') {
                 $tradeQuery->where('is_demo', $accountMode === 'demo');

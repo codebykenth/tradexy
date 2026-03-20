@@ -75,19 +75,30 @@ class StrategyController extends Controller
      */
     public function show(int $id)
     {
-        $strategy = $this->getOwnedStrategies($id);
+        $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
 
-        $strategy->load(['rules', 'trades' => function ($query) use ($accountMode, $marketMode) {
+        $tradeFilter = function ($q) use ($accountMode, $marketMode) {
             if ($accountMode !== 'all') {
-                $query->where('is_demo', $accountMode === 'demo');
+                $q->where('is_demo', $accountMode === 'demo');
             }
             if ($marketMode !== 'all') {
-                $query->where('market', $marketMode);
+                $q->where('market', $marketMode);
             }
-            $query->latest('close_datetime');
-        }]);
+        };
+
+        // Fetch strategy with all stats in a single optimized query
+        $strategy = Strategy::where('user_id', $userId)
+            ->withCount(['trades as trades_count' => $tradeFilter])
+            ->withSum(['trades as net_pnl' => $tradeFilter], 'total_pnl')
+            ->withSum(['trades as total_win_amount' => fn ($q) => $tradeFilter($q->where('total_pnl', '>', 0))], 'total_pnl')
+            ->withSum(['trades as total_loss_amount' => fn ($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
+            ->withAvg(['trades as avg_win' => fn ($q) => $tradeFilter($q->where('total_pnl', '>', 0))], 'total_pnl')
+            ->withAvg(['trades as avg_loss' => fn ($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
+            ->withCount(['trades as winning_trades_count' => fn ($q) => $tradeFilter($q->where('total_pnl', '>', 0))])
+            ->with(['rules']) // Keep loading rules
+            ->findOrFail($id);
 
         return view('strategies.show', compact('strategy'));
     }

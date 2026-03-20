@@ -49,8 +49,9 @@ final class TradeController extends Controller
                     'id', 'user_id', 'strategy_id', 'symbol', 'market', 'is_demo',
                     'quantity', 'total_pnl', 'close_datetime', 'open_datetime',
                     'avg_entry_price', 'avg_exit_price', 'stop_loss_price', 'take_profit_price',
-                    'entry_side', 'exit_side', 'chart_picture', 'ai_analysis',
-                ]);
+                    'entry_side', 'exit_side', 'chart_picture',
+                ])
+                ->selectRaw('CASE WHEN ai_analysis IS NOT NULL AND ai_analysis != "" THEN 1 ELSE 0 END as has_ai_analysis');
 
             if ($accountMode !== 'all') {
                 $query->where('is_demo', $accountMode === 'demo');
