@@ -107,22 +107,35 @@ class Trade extends Model
     {
         $url = $this->chart_picture;
 
-        if ($url && str_contains($url, 'drive.google.com')) {
-            // Extract ID
+        if (!$url) {
+            return null;
+        }
+
+        // 1. Handle Google Drive legacy URLs (lh3.googleusercontent.com)
+        if (str_contains($url, 'drive.google.com')) {
             if (preg_match('/file\/d\/([a-zA-Z0-9_-]+)/', $url, $matches)) {
                 $fileId = $matches[1];
 
-                // Bypasses the 403 Forbidden error
                 return "https://lh3.googleusercontent.com/d/{$fileId}?scale=1&.png";
             }
         }
 
-        // --- GCS to CDN Swap for existing records ---
+        // 2. Fix Duplicated Bucket Paths (common Firebase/GCS migration issue)
+        $bucket = config('filesystems.disks.gcs.bucket');
+        $gcsBase = "storage.googleapis.com/{$bucket}";
+
+        if ($bucket && str_contains($url, "{$gcsBase}/{$bucket}/")) {
+            $url = str_replace("{$gcsBase}/{$bucket}/", "{$gcsBase}/", $url);
+        }
+
+        // 3. GCS to CDN Swap
         $cdnBase = config('filesystems.disks.gcs.url');
-        if ($url && $cdnBase && str_contains($url, 'storage.googleapis.com')) {
-            // Replaces https://storage.googleapis.com with https://cdn.yoursite.com
-            // Ensure cdnBase doesn't have a trailing slash
-            return str_replace('https://storage.googleapis.com', rtrim($cdnBase, '/'), $url);
+        if ($cdnBase && str_contains($url, 'storage.googleapis.com')) {
+            // Replace 'https://storage.googleapis.com/your-bucket' with 'https://cdn.site.com'
+            // This gives absolute control to the GCS_URL env variable.
+            $search = "https://storage.googleapis.com/{$bucket}";
+
+            return str_replace($search, rtrim($cdnBase, '/'), $url);
         }
 
         return $url;
