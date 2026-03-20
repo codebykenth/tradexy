@@ -51,7 +51,7 @@ final class TradeController extends Controller
                     'avg_entry_price', 'avg_exit_price', 'stop_loss_price', 'take_profit_price',
                     'entry_side', 'exit_side', 'chart_picture',
                 ])
-                ->selectRaw('CASE WHEN ai_analysis IS NOT NULL AND ai_analysis != "" THEN 1 ELSE 0 END as has_ai_analysis');
+                ->selectRaw("CASE WHEN ai_analysis IS NOT NULL AND ai_analysis != '' THEN 1 ELSE 0 END as has_ai_analysis");
 
             if ($accountMode !== 'all') {
                 $query->where('is_demo', $accountMode === 'demo');
