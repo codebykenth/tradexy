@@ -121,21 +121,19 @@ class Trade extends Model
         }
 
         // 2. Fix Duplicated Bucket Paths (common Firebase/GCS migration issue)
-        $bucket = config('filesystems.disks.gcs.bucket');
-        $gcsBase = "storage.googleapis.com/{$bucket}";
-
-        if ($bucket && str_contains($url, "{$gcsBase}/{$bucket}/")) {
-            $url = str_replace("{$gcsBase}/{$bucket}/", "{$gcsBase}/", $url);
-        }
+        // This regex collapses segments like /bucket/bucket/ into /bucket/
+        $url = preg_replace('/(storage\.googleapis\.com\/([^\/]+))\/\2\//', '$1/', $url);
 
         // 3. GCS to CDN Swap
         $cdnBase = config('filesystems.disks.gcs.url');
-        if ($cdnBase && str_contains($url, 'storage.googleapis.com')) {
-            // Replace 'https://storage.googleapis.com/your-bucket' with 'https://cdn.site.com'
-            // This gives absolute control to the GCS_URL env variable.
-            $search = "https://storage.googleapis.com/{$bucket}";
+        $bucket = config('filesystems.disks.gcs.bucket');
 
-            return str_replace($search, rtrim($cdnBase, '/'), $url);
+        if ($cdnBase && str_contains($url, 'storage.googleapis.com')) {
+            // Replace 'https://storage.googleapis.com/your-bucket' with 'https://cdn.site.com/'
+            $search = "https://storage.googleapis.com/{$bucket}";
+            $cleanCDN = rtrim($cdnBase, '/').'/';
+
+            return str_replace($search.'/', $cleanCDN, $url);
         }
 
         return $url;
