@@ -31,8 +31,8 @@
                         class="bg-indigo-600 text-white rounded py-1 px-3 text-sm font-bold flex items-center justify-center">1</span>
                     <h2 class="text-xl font-bold text-gray-900">General Information</h2>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div>
+                <div class="grid grid-cols-12 gap-x-6 gap-y-4">
+                    <div class="col-span-12 md:col-span-2">
                         <fieldset class="fieldset w-full">
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
@@ -43,7 +43,7 @@
                             @error('symbol') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
-                    <div>
+                    <div class="col-span-12 md:col-span-4">
                         <fieldset class="fieldset w-full">
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
@@ -55,7 +55,7 @@
                             @enderror
                         </fieldset>
                     </div>
-                    <div>
+                    <div class="col-span-12 md:col-span-4">
                         <fieldset class="fieldset w-full">
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
@@ -68,7 +68,7 @@
                             @enderror
                         </fieldset>
                     </div>
-                    <div>
+                    <div class="col-span-12 md:col-span-2">
                         <fieldset class="fieldset w-full">
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
@@ -92,7 +92,7 @@
                             @error('strategy') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
-                    <div>
+                    <div class="col-span-12 md:col-span-3">
                         <fieldset class="fieldset w-full">
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
@@ -114,12 +114,12 @@
                             @error('timeframe') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
-                    <div>
+                    <div class="col-span-12 md:col-span-4 self-end">
                         <fieldset class="fieldset w-full">
-                            <legend
+                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
                                 Trade Type</legend>
-                            <label class="label cursor-pointer justify-start gap-4 h-full">
+                            <label class="label cursor-pointer justify-start gap-4 h-12">
                                 <input type="hidden" name="is_demo" value="0">
                                 <input type="checkbox" name="is_demo" value="1" class="checkbox checkbox-warning" {{ old('is_demo', $trade->is_demo) ? 'checked' : '' }} />
                                 <span class="label-text font-bold text-warning uppercase">Demo Trade</span>

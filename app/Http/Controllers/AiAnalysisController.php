@@ -22,4 +22,12 @@ final class AiAnalysisController extends Controller
 
         return redirect()->back()->with('success', 'AI is currently analyzing your chart. It will appear here shortly!');
     }
+
+    public function destroy(int $id): RedirectResponse
+    {
+        $trade = Trade::where('user_id', Auth::id())->findOrFail($id);
+        $trade->update(['ai_analysis' => null]);
+
+        return redirect()->back()->with('success', 'AI analysis deleted successfully.');
+    }
 }

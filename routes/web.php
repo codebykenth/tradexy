@@ -29,6 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::put('analyze/{id}', [AiAnalysisController::class, 'analyze'])
         ->middleware('throttle:ai-analysis')
         ->name('ai.analyze');
+    Route::delete('analyze/{id}', [AiAnalysisController::class, 'destroy'])
+        ->name('ai.analyze.destroy');
 });
 
 // Developer-only migration routes
