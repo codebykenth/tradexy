@@ -49,7 +49,13 @@ class ProfileController extends Controller
             $this->queueProfilePictureUpload($request, $user);
         }
 
-        return redirect()->route('profile.show')->with('success', 'Profile updated successfully.');
+        $redirect = redirect()->route('profile.show')->with('success', 'Profile updated successfully.');
+
+        if ($hasNewFile) {
+            $redirect->with('profile_uploading', true);
+        }
+
+        return $redirect;
     }
 
     /**
@@ -69,7 +75,7 @@ class ProfileController extends Controller
         FileUpload::dispatch(
             tempPath: $tempPath,
             directory: "users/{$user->id}",
-            userId: $user->id,
+            userId: (string) $user->id,
             modelClass: User::class,
             modelId: (string) $user->id,
             field: 'profile_picture',
@@ -99,7 +105,7 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         if ($user->profile_picture) {
-            $this->fileService->deleteFile($user->profile_picture, "users/{$user->id}", 'profile');
+            $this->fileService->deleteFile($user->profile_picture);
         }
 
         $user->profile_picture = null;

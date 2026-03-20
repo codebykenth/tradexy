@@ -101,37 +101,34 @@
                 <button>close</button>
             </form>
         </dialog>
-        <div class="flex gap-4">
-            <!-- Left -->
-            <div class="bg-gray-100 rounded-lg p-8 mt-8 w-2/3 space-y-4">
-                <!-- General Information -->
-                <div class="flex items-center justify-between gap-4 w-full">
-                    <div>
-                        <div class="flex items-center gap-4">
-                            <p class="text-4xl uppercase font-black">{{ $trade->symbol ?? 'N/A'  }}</p>
-                            <div class="badge badge-outline uppercase text-xs font-bold">
+         <div class="flex flex-col lg:flex-row gap-6 mt-8">
+            <!-- Left: General Information -->
+            <div class="bg-gray-100 rounded-lg p-6 md:p-8 flex-1">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="space-y-4">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <p class="text-3xl md:text-4xl uppercase font-black tracking-tight">{{ $trade->symbol ?? 'N/A'  }}</p>
+                            <div class="badge badge-outline uppercase text-[10px] font-bold">
                                 {{ $trade->market ?? 'crypto' }}</div>
                             <div @class([
                                 "badge",
-                                "uppercase",
+                                "uppercase font-bold text-[10px]",
                                 "badge-success" => $trade->exit_side === "short",
                                 "badge-error" => $trade->exit_side === "long"
                             ])>{{ $trade->entry_side }}</div>
-                            <div class="badge badge-neutral">{{ $trade->leverage ?? 'N/A'  }}x</div>
+                            <div class="badge badge-neutral text-[10px]">{{ $trade->leverage ?? 'N/A'  }}x</div>
                             @if($trade->is_demo)
-                                <div class="badge badge-warning uppercase text-xs font-bold font-mono tracking-tighter shadow-sm border border-warning/30">
+                                <div class="badge badge-warning uppercase text-[10px] font-bold font-mono tracking-tighter shadow-sm border border-warning/30">
                                     Demo
                                 </div>
                             @endif
-
                         </div>
+                        
                         @if ($trade->order_id)
-                            <div class="text-sm text-gray-400">
-                                <p>Order ID: {{ $trade->order_id ?? 'N/A' }}</p>
-                            </div>
+                            <p class="text-[10px] text-gray-400 font-mono tracking-tighter">ID: {{ $trade->order_id }}</p>
                         @endif
 
-                        <div class="flex gap-8 mt-4">
+                        <div class="flex flex-wrap gap-6 mt-2">
                             <div class="flex items-center gap-2 text-gray-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-6 text-gray-400">
@@ -174,66 +171,62 @@
 
                     <div class="text-right">
                         <p class="uppercase">Net P&L</p>
+                    <div class="text-left md:text-right w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-200">
+                        <p class="uppercase text-[10px] font-bold text-gray-400 tracking-widest">Net P&L Result</p>
                         <p @class([
-                            'text-5xl',
+                            'text-3xl md:text-5xl font-black tracking-tighter',
                             'text-red-500' => $trade->total_pnl < 0,
                             'text-green-500' => $trade->total_pnl > 0,
                         ])>${{ number_format($trade->total_pnl, 2) ?? 'N/A'  }}</p>
                         <p @class([
-                            'text-sm font-medium opacity-60',
-                        ])>Gross: ${{ number_format($trade->closed_pnl, 2) ?? 'N/A'  }} | Fees: ${{ number_format($trade->total_fees, 2) ?? 'N/A'  }}</p>
+                            'text-[10px] font-bold opacity-60 uppercase mt-1',
+                        ])>Gross: ${{ number_format($trade->closed_pnl, 2) }} | Fees: ${{ number_format($trade->total_fees, 2) }}</p>
 
                         @if(($trade->market ?? 'crypto') === 'pse')
-                            <div class="text-xs text-gray-400 mt-1 text-right space-y-0.5">
-                                @if($trade->broker_commission)
-                                <p>Broker: ₱{{ number_format($trade->broker_commission, 2) }}</p> @endif
-                                @if($trade->pse_trans_fee)
-                                <p>PSE Trans: ₱{{ number_format($trade->pse_trans_fee, 2) }}</p> @endif
-                                @if($trade->sccp_fee)
-                                <p>SCCP: ₱{{ number_format($trade->sccp_fee, 2) }}</p> @endif
-                                @if($trade->pse_vat)
-                                <p>VAT: ₱{{ number_format($trade->pse_vat, 2) }}</p> @endif
-                                @if($trade->sales_tax)
-                                <p>Sales Tax: ₱{{ number_format($trade->sales_tax, 2) }}</p> @endif
+                            <div class="text-[9px] text-gray-400 mt-2 flex flex-wrap md:justify-end gap-x-3 gap-y-1 uppercase font-bold tracking-tight">
+                                @if($trade->broker_commission) <span>Broker: ₱{{ number_format($trade->broker_commission, 2) }}</span> @endif
+                                @if($trade->pse_trans_fee) <span>PSE Trans: ₱{{ number_format($trade->pse_trans_fee, 2) }}</span> @endif
+                                @if($trade->sccp_fee) <span>SCCP: ₱{{ number_format($trade->sccp_fee, 2) }}</span> @endif
+                                @if($trade->pse_vat) <span>VAT: ₱{{ number_format($trade->pse_vat, 2) }}</span> @endif
+                                @if($trade->sales_tax) <span>Sales Tax: ₱{{ number_format($trade->sales_tax, 2) }}</span> @endif
                             </div>
                         @endif
-
                     </div>
                 </div>
-                <div class="border-b border-gray-309">
 
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="divider opacity-10"></div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
                     <div>
-                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Entry Price</p>
-                        <p>{{ $trade->avg_entry_price ?? 'N/A'  }}</p>
+                        <p class="uppercase text-[10px] font-bold text-gray-400 tracking-widest mb-1">Entry Price</p>
+                        <p class="font-bold text-gray-800 tracking-tight">{{ number_format((float)($trade->avg_entry_price ?? 0), 8, '.', '') }}</p>
                     </div>
                     <div>
-                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Exit Price</p>
-                        <p>{{ $trade->avg_exit_price ?? 'N/A'  }}</p>
+                        <p class="uppercase text-[10px] font-bold text-gray-400 tracking-widest mb-1">Exit Price</p>
+                        <p class="font-bold text-gray-800 tracking-tight">{{ number_format((float)($trade->avg_exit_price ?? 0), 8, '.', '') }}</p>
                     </div>
                     <div>
-                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Quantity</p>
-                        <p>{{ $trade->quantity !== null ? (strpos((string) $trade->quantity, '.') !== false ? rtrim(rtrim((string) $trade->quantity, '0'), '.') : $trade->quantity) : 'N/A' }}
-                        </p>
+                        <p class="uppercase text-[10px] font-bold text-gray-400 tracking-widest mb-1">Quantity</p>
+                        <p class="font-bold text-gray-800 tracking-tight">{{ $trade->quantity }}</p>
                     </div>
 
                     <div>
-                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Stoploss</p>
-                        <p>{{ $trade->stop_loss_price ?? 'N/A' }}</p>
+                        <p class="uppercase text-[10px] font-bold text-gray-400 tracking-widest mb-1">Stoploss</p>
+                        <p class="font-bold text-gray-600 tracking-tight">{{ $trade->stop_loss_price ?? '-' }}</p>
                     </div>
                     <div>
-                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Take Profit</p>
-                        <p>{{ $trade->take_profit_price ?? 'N/A' }}</p>
+                        <p class="uppercase text-[10px] font-bold text-gray-400 tracking-widest mb-1">Take Profit</p>
+                        <p class="font-bold text-gray-600 tracking-tight">{{ $trade->take_profit_price ?? '-' }}</p>
                     </div>
                     <div>
-                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Risk Reward</p>
-                        <p>{{ $trade->risk_reward }}</p>
+                        <p class="uppercase text-[10px] font-bold text-gray-400 tracking-widest mb-1">Risk Reward</p>
+                        <p class="badge badge-neutral badge-sm font-bold">{{ $trade->risk_reward }}</p>
                     </div>
                 </div>
             </div>
-            <!-- Right -->
-            <div class="bg-gray-100 rounded-lg p-8 mt-8 w-1/3 space-y-4">
+
+            <!-- Right: Setup Context -->
+            <div class="bg-gray-100 rounded-lg p-6 md:p-8 w-full lg:w-1/3 space-y-6">
                 <p class="uppercase font-bold mb-4">Setup Context</p>
                 <div>
                     <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Strategy</p>
@@ -315,6 +308,14 @@
                             <button>close</button>
                         </form>
                     </dialog>
+                @elseif(session('chart_uploading'))
+                    <div class="mt-4 bg-gray-200 rounded-lg h-[400px] flex flex-col items-center justify-center animate-pulse border-2 border-dashed border-gray-300 relative overflow-hidden">
+                         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-12 text-gray-400 mb-2">
+                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                         </svg>
+                         <p class="font-bold text-gray-500 uppercase tracking-widest text-xs">Uploading High-Res Chart...</p>
+                    </div>
                 @else
                     <p class="italic text-gray-500">No chart image yet.</p>
                 @endif
@@ -488,12 +489,18 @@
 
             if (typeof Echo !== 'undefined') {
                 Echo.private('App.Models.User.{{ auth()->id() }}')
-                    .listen('.TradeAnalysisGenerated', (e) => {
-                        console.log('AI Analysis Finished Event:', e);
-                        if (e.trade.id == {{ $trade->id }}) {
-                            window.location.reload();
-                        }
-                    });
+                        .listen('.TradeAnalysisGenerated', (e) => {
+                            console.log('AI Analysis Finished Event:', e);
+                            if (e.trade.id == {{ $trade->id }}) {
+                                window.location.reload();
+                            }
+                        })
+                        .listen('.TradeFileUploaded', (e) => {
+                            console.log('Trade File Uploaded Event:', e);
+                            if (e.trade.id == {{ $trade->id }}) {
+                                window.location.reload();
+                            }
+                        });
             }
         });
     </script>

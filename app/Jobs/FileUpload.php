@@ -31,6 +31,8 @@ final class FileUpload implements ShouldQueue
         private readonly string $modelClass,
         private readonly string $modelId,
         private readonly string $field,
+        private readonly ?string $originalName = null,
+        private readonly ?string $userId = null,
         private readonly ?string $oldFileUrl = null
     ) {}
 
@@ -55,7 +57,8 @@ final class FileUpload implements ShouldQueue
             $this->oldFileUrl,
             $uploadedFile,
             $this->directory,
-            null
+            null,
+            $this->originalName
         );
 
         // 3. Update the Model
@@ -65,6 +68,15 @@ final class FileUpload implements ShouldQueue
             $model->update([
                 $this->field => $this->fileUrl,
             ]);
+
+            // Real-time broadcasting
+            if ($this->userId) {
+                if ($this->modelClass === \App\Models\Trade::class) {
+                    broadcast(new \App\Events\TradeFileUploaded($model->fresh()));
+                } elseif ($this->modelClass === \App\Models\User::class) {
+                    broadcast(new \App\Events\ProfilePictureUploaded($model->fresh()));
+                }
+            }
         }
 
         // 4. Cleanup local temp file
@@ -77,11 +89,7 @@ final class FileUpload implements ShouldQueue
 
         // If upload happened but something else failed, cleanup Firebase
         if ($this->fileUrl) {
-            $fileService->deleteFile(
-                $this->fileUrl,
-                $this->directory,
-                null
-            );
+            $fileService->deleteFile($this->fileUrl);
         }
 
         // Always cleanup local temp file

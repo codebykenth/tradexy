@@ -28,14 +28,15 @@ class FileService
      * @param  string|null  $referenceId  Optional reference ID (e.g., product ID) to organize files
      * @return string|null URL to the uploaded file, or null if upload failed
      */
-    public function uploadFile($file, string $folderPath, ?string $referenceId = null): ?string
+    public function uploadFile($file, string $folderPath, ?string $referenceId = null, ?string $originalName = null): ?string
     {
         if (!$file) {
             return null;
         }
 
-        // Create unique filename using timestamp and original extension
-        $fileName = time().'_'.preg_replace('/[^A-Za-z0-9\._-]/', '_', $file->getClientOriginalName());
+        // Use original filename (sanitized) to retain user context
+        $baseName = $originalName ?? $file->getClientOriginalName();
+        $fileName = time().'_'.preg_replace('/[^A-Za-z0-9\._-]/', '_', $baseName);
 
         // Build path correctly with environment prefix
         $envPrefix = $this->getEnvPrefix();
@@ -68,18 +69,18 @@ class FileService
     /**
      * Update an existing file with a new one
      */
-    public function updateFile($url, $file, $folderPath, $referenceId = null)
+    public function updateFile($url, $file, $folderPath, $referenceId = null, ?string $originalName = null)
     {
         $fileUrl = $url;
 
         if ($file) {
             // Delete the old file if it exists
             if ($url) {
-                $this->deleteFile($url, $folderPath, $referenceId);
+                $this->deleteFile($url);
             }
 
             // Upload the new file
-            $fileUrl = $this->uploadFile($file, $folderPath, $referenceId);
+            $fileUrl = $this->uploadFile($file, $folderPath, $referenceId, $originalName);
         }
 
         return $fileUrl;
@@ -88,7 +89,7 @@ class FileService
     /**
      * Delete a file from Google Cloud Storage
      */
-    public function deleteFile(?string $url, string $folderPath, ?string $referenceId = null)
+    public function deleteFile(?string $url)
     {
         // Skip if URL is empty
         if (!$url || !str_starts_with($url, 'http')) {

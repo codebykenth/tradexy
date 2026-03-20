@@ -219,7 +219,7 @@ final class TradeController extends Controller
         $trade = $this->findOwnedTrade($id);
 
         if ($trade->chart_picture) {
-            $this->fileService->deleteFile($trade->chart_picture, "users/{$trade->user_id}/trades", null);
+            $this->fileService->deleteFile($trade->chart_picture);
         }
 
         $trade->delete();
@@ -267,8 +267,14 @@ final class TradeController extends Controller
 
         $action = $trade->wasRecentlyCreated ? 'created' : 'updated';
 
-        return redirect()->route('trades.index')
+        $redirect = redirect()->route('trades.show', $trade->id)
             ->with('success', "Trade {$action} successfully.");
+
+        if ($request->hasFile('chart_picture')) {
+            $redirect->with('chart_uploading', true);
+        }
+
+        return $redirect;
     }
 
     // Recalculates server-side derived fields (symbol, entry/exit totals, PSE defaults)
@@ -355,11 +361,7 @@ final class TradeController extends Controller
     private function removeChart(Trade $trade): void
     {
         if ($trade->chart_picture) {
-            $this->fileService->deleteFile(
-                $trade->chart_picture,
-                "users/{$trade->user_id}/trades",
-                null
-            );
+            $this->fileService->deleteFile($trade->chart_picture);
 
             $trade->update(['chart_picture' => null]);
         }
@@ -381,10 +383,12 @@ final class TradeController extends Controller
         // 2. Dispatch the job to handle the Firebase upload and old file deletion
         FileUpload::dispatch(
             tempPath: $tempPath,
+            originalName: $file->getClientOriginalName(),
             directory: "users/{$trade->user_id}/trades",
             modelClass: Trade::class,
             modelId: (string) $trade->id,
             field: 'chart_picture',
+            userId: (string) auth()->id(),
             oldFileUrl: $trade->getOriginal('chart_picture')
         );
     }

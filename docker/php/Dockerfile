@@ -11,13 +11,18 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpq-dev \
     postgresql-client \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libwebp-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install \
         pdo \
         pdo_pgsql \
         mbstring \
         zip \
         exif \
-        pcntl
+        pcntl \
+        gd
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

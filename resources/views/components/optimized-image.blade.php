@@ -22,7 +22,7 @@
         decoding="async"
         class="w-full h-full object-{{ $object }} opacity-0 transition-opacity duration-500"
         onload="this.classList.remove('opacity-0')"
-        onerror="this.onerror=null; this.src='/images/placeholder.png'; this.classList.remove('opacity-0');"
+        onerror="this.onerror=null; this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23f3f4f6%22/%3E%3Cpath stroke=%22%239ca3af%22 stroke-width=%221.5%22 d=%22M30 40l20 20 20-20%22 fill=%22none%22/%3E%3Ctext x=%2250%22 y=%2270%22 font-family=%22sans-serif%22 font-size=%228%22 text-anchor=%22middle%22 fill=%22%239ca3af%22%3ENo Image%3C/text%3E%3C/svg%3E'; this.classList.remove('opacity-0');"
         {{ $attributes->whereDoesntStartWith(['src', 'alt', 'class']) }}
     />
 </div>

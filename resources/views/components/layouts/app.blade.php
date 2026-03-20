@@ -8,7 +8,7 @@
 
     <!-- Reverb Dynamic Config for frontend without needing Vite rebuilds -->
     <meta name="reverb-app-key" content="{{ config('broadcasting.connections.reverb.key') }}">
-    <meta name="reverb-host" content="{{ config('broadcasting.connections.reverb.options.host') }}">
+    <meta name="reverb-host" content="{{ env('REVERB_HOST', 'localhost') }}">
     <meta name="reverb-port" content="{{ config('broadcasting.connections.reverb.options.port') }}">
     <meta name="reverb-scheme" content="{{ config('broadcasting.connections.reverb.options.scheme') }}">
 
@@ -85,22 +85,26 @@
                         }
 
                         // 2. Trigger auto-reload if on Trades Index or Dashboard
-                        const path = window.location.pathname;
+                        const path = window.location.pathname || '';
                         if (path.includes('/trades') || path.includes('/dashboard')) {
                             setTimeout(() => {
                                 window.location.reload();
                             }, 2000);
                         }
+                    })
+                    .listen('.ProfilePictureUploaded', (e) => {
+                        console.log('Profile Picture Uploaded Event Received:', e);
+                        window.location.reload();
                     });
 
                 // Market News Updates (Public Channel)
                 window.Echo.channel('market-insights')
-                    .listen('MarketNewsGenerated', (e) => {
+                    .listen('.MarketNewsGenerated', (e) => {
                         if (window.showToast) {
                             window.showToast(e.message, 'info');
                         }
 
-                        const path = window.location.pathname;
+                        const path = window.location.pathname || '';
                         if (path.includes('/insights') || path.includes('/dashboard')) {
                             setTimeout(() => {
                                 window.location.reload();
