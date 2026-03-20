@@ -41,7 +41,12 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => tap(rtrim(env('APP_URL', 'http://localhost'), '/').'/storage', function (string &$url) {
+                // First, collapse any duplicated path segments (e.g. /bucket/bucket/)
+                while (preg_match('/\/([^\/]+)\/\1\//', $url)) {
+                    $url = preg_replace('/\/([^\/]+)\/\1\//', '/$1/', $url);
+                }
+            }),
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -64,7 +69,7 @@ return [
             'driver' => 'gcs',
             'key_file_path' => base_path(env('GOOGLE_CLOUD_KEY_FILE', env('FIREBASE_CREDENTIALS'))),
             'project_id' => env('GOOGLE_CLOUD_PROJECT_ID', 'your-project-id'),
-            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET', env('FIREBASE_STORAGE_BUCKET')),
+            'bucket' => rtrim((string) env('GOOGLE_CLOUD_STORAGE_BUCKET', env('FIREBASE_STORAGE_BUCKET')), '/'),
             'path_prefix' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', ''),
             'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null),
             'apiEndpoint' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', null),

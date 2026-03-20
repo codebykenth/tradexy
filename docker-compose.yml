@@ -25,20 +25,20 @@ services:
     networks:
       - laravel
 
-  postgres:
-    image: postgres:16
-    container_name: laravel_postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5433:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - laravel
+  # postgres:
+  #   image: postgres:16
+  #   container_name: laravel_postgres
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: ${DB_DATABASE}
+  #     POSTGRES_USER: ${DB_USERNAME}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   networks:
+  #     - laravel
 
   queue:
     build:
@@ -50,7 +50,7 @@ services:
       - .:/var/www
     depends_on:
       - app
-      - postgres
+      # - postgres
     networks:
       - laravel
     command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
@@ -65,7 +65,7 @@ services:
       - .:/var/www
     depends_on:
       - app
-      - postgres
+      # - postgres
     networks:
       - laravel
     command: php artisan reverb:start --host="0.0.0.0" --port=8080
@@ -73,5 +73,6 @@ services:
 networks:
   laravel:
 
-volumes:
-  pgdata:
+# volumes:
+#   pgdata:
+volumes: {}

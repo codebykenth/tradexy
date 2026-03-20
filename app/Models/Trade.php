@@ -122,7 +122,9 @@ class Trade extends Model
 
         // 2. Fix Duplicated Bucket Paths (common Firebase/GCS migration issue)
         // This regex collapses ANY duplicated segment (e.g., /bucket/bucket/ or /users/users/)
-        $url = preg_replace('/\/([^\/]+)\/\1\//', '/$1/', $url);
+        while (preg_match('/\/([^\/]+)\/\1\//', (string) $url)) {
+            $url = preg_replace('/\/([^\/]+)\/\1\//', '/$1/', (string) $url);
+        }
 
         // 3. GCS to CDN Swap
         $cdnBase = config('filesystems.disks.gcs.url');
