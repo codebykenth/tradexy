@@ -165,7 +165,7 @@
 
                         <div>
                             <button type="submit"
-                                class="flex w-full justify-center rounded-md bg-gray-900 px-3 p-2.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 transition-colors">
+                                class="flex w-full justify-center rounded-md bg-gray-900 px-3 p-2.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 transition-colors cursor-pointer">
                                 Sign in
                             </button>
                         </div>

@@ -165,7 +165,7 @@ final class TradeController extends Controller
 
     public function create()
     {
-        $strategies = Strategy::all();
+        $strategies = Strategy::where('user_id', Auth::id())->get();
 
         return view('trades.create', compact('strategies'));
     }
@@ -186,7 +186,7 @@ final class TradeController extends Controller
     public function edit(int $id)
     {
         $trade = $this->findOwnedTrade($id, ['strategy', 'lessons', 'reasons']);
-        $strategies = Strategy::all();
+        $strategies = Strategy::where('user_id', Auth::id())->get();
 
         return view('trades.edit', compact('trade', 'strategies'));
     }

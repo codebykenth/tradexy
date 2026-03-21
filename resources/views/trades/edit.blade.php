@@ -71,23 +71,20 @@
                     <div class="col-span-12 md:col-span-2">
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
-                                Strategy</legend>
+                                class="fieldset-legend w-full flex justify-between items-center uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                <span>Strategy</span>
+                                <a href="{{ route('strategies.create') }}" target="_blank"
+                                    class="text-[10px] text-blue-600 dark:text-blue-400 font-bold hover:underline normal-case">
+                                    + ADD NEW
+                                </a>
+                            </legend>
                             <select class="select w-full" name="strategy_id">
                                 <option disabled @if(!old('strategy_id')) selected @endif>Select strategy</option>
-                                @if($strategies)
-                                    @foreach ($strategies as $strategy)
-                                        <option value="{{$strategy->id}}" @selected(old('strategy_id', $trade->strategy_id) == $strategy->id)>
-                                            {{ $strategy->name }}
-                                        </option>
-                                    @endforeach
-                                @else
-                                    <option value="1" @selected(old('strategy_id', $trade->strategy_id) == 1)>Breakout
+                                @foreach ($strategies as $strategy)
+                                    <option value="{{$strategy->id}}" @selected(old('strategy_id', $trade->strategy_id) == $strategy->id)>
+                                        {{ $strategy->name }}
                                     </option>
-                                    <option value="2" @selected(old('strategy_id', $trade->strategy_id) == 2)>Breakdown
-                                    </option>
-                                    <option value="3" @selected(old('strategy_id', $trade->strategy_id) == 3)>Range</option>
-                                @endif
+                                @endforeach
                             </select>
                             @error('strategy') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>

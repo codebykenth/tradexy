@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 final class TradingModeController extends Controller
@@ -16,12 +15,17 @@ final class TradingModeController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        $userId = Auth::id();
+        $user = auth()->user();
+        if (!$user) {
+            return back();
+        }
+        $userId = $user->id;
 
         if ($request->has('account_mode')) {
             $mode = $request->input('account_mode', 'real');
             if (in_array($mode, ['real', 'demo', 'all'])) {
                 session(['account_mode' => $mode]);
+                $user->update(['account_mode' => $mode]);
             }
         }
 
@@ -29,6 +33,7 @@ final class TradingModeController extends Controller
             $market = $request->input('market_type', 'crypto');
             if (in_array($market, ['crypto', 'pse', 'all'])) {
                 session(['market_type' => $market]);
+                $user->update(['market_type' => $market]);
             }
         }
 
