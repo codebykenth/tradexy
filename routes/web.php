@@ -60,6 +60,10 @@ Route::middleware(['throttle:read'])->group(function () {
         ])->header('Content-Type', 'text/xml');
     });
 
+    Route::view('terms-and-conditions', 'legal.terms')->name('terms');
+    Route::view('privacy-policy', 'legal.privacy')->name('privacy');
+    Route::view('data-deletion', 'legal.deletion')->name('deletion');
+
     Route::fallback(function () {
         return response()->view('errors.404', [], 404);
     });

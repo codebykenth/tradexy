@@ -93,7 +93,7 @@ Laravel 12 trading journal project — follow these rules strictly:
 - Laravel 12 + Vite + Tailwind + DaisyUI.
 - Ziggy for typed JS route helpers.
 - Blade templates — no Livewire or Inertia unless explicitly requested.
-- FreeImage.host for chart image hosting via `Http::asForm()->post()` with `format=json`.
+- Firebase storage for chart image hosting.
 
 ## ALWAYS
 

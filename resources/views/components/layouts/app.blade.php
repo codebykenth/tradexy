@@ -67,9 +67,9 @@
             class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <div>© {{ date('Y') }} Tradexy — All rights reserved.</div>
             <div class="flex gap-6">
-                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Terms of Service</a>
-                <a href="#" class="hover:text-gray-900 dark:hover:text-white transition-colors">Data Deletion</a>
+                <a href="{{ route('privacy') }}" class="hover:text-gray-900 dark:hover:text-white transition-colors">Privacy Policy</a>
+                <a href="{{ route('terms') }}" class="hover:text-gray-900 dark:hover:text-white transition-colors">Terms of Service</a>
+                <a href="{{ route('deletion') }}" class="hover:text-gray-900 dark:hover:text-white transition-colors">Data Deletion</a>
             </div>
         </div>
     </footer>
