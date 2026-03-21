@@ -142,7 +142,7 @@
                                 <div>
                                     <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Open</p>
                                     <p class="font-medium">
-                                        {{ $trade->open_datetime ? \Carbon\Carbon::parse($trade->open_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}
+                                        {{ $trade->open_datetime ? $trade->open_datetime->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}
                                     </p>
                                 </div>
                             </div>
@@ -155,7 +155,7 @@
                                 <div>
                                     <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Close</p>
                                     <p class="font-medium">
-                                        {{ $trade->close_datetime ? \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}
+                                        {{ $trade->close_datetime ? $trade->close_datetime->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}
                                     </p>
                                 </div>
                             </div>
@@ -179,10 +179,10 @@
                             'text-5xl',
                             'text-red-500' => $trade->total_pnl < 0,
                             'text-green-500' => $trade->total_pnl > 0,
-                        ])>${{ number_format($trade->total_pnl, 2) ?? 'N/A'  }}</p>
+                        ])>@currency($trade->total_pnl, $trade->market)</p>
                         <p @class([
                             'text-sm font-medium opacity-60',
-                        ])>Gross: ${{ number_format($trade->closed_pnl, 2) ?? 'N/A'  }} | Fees: ${{ number_format($trade->total_fees, 2) ?? 'N/A'  }}</p>
+                        ])>Gross: @currency($trade->closed_pnl, $trade->market) | Fees: @currency($trade->total_fees, $trade->market)</p>
 
                         @if(($trade->market ?? 'crypto') === 'pse')
                             <div class="text-xs text-gray-400 mt-1 text-right space-y-0.5">

@@ -1,14 +1,15 @@
 <?php
 
 if (app()->environment(['production'])) {
-    // Fetch trades every 5 mins for faster updates
-    Schedule::command('trades:fetch-pnl')->twiceDaily()->withoutOverlapping();
-    Schedule::command('trades:fetch-pnl --demo')->twiceDaily()->withoutOverlapping();
+    // Fetch trades
+    Schedule::command('trades:fetch-pnl')->twiceDaily()->timezone('Asia/Manila')->withoutOverlapping();
+    Schedule::command('trades:fetch-pnl --demo')->twiceDaily()->timezone('Asia/Manila')->withoutOverlapping();
 
-    // Fetch account balance daily (local time)
+    // Fetch account balance daily
     Schedule::command('account:fetch-balance')->daily()->timezone('Asia/Manila')->withoutOverlapping();
     Schedule::command('account:fetch-balance --demo')->daily()->timezone('Asia/Manila')->withoutOverlapping();
 
+    // Generate AI news
     Schedule::command('generate:daily-news')->daily()->timezone('Asia/Manila')->withoutOverlapping();
 }
 
