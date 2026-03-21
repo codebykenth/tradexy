@@ -93,7 +93,7 @@
                                         'text-red-400' => $ownedTrade->total_pnl < 0
                                     ])>@currency($ownedTrade->total_pnl, $ownedTrade->market)</span>
                                 </td>
-                                <td class="w-16 text-center" onclick="event.stopPropagation()">
+                                <td class="w-16 text-center">
                                     @if($ownedTrade->chart_picture)
                                         <div class="tooltip tooltip-left" data-tip="Click trade to view chart">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -104,7 +104,7 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td class="w-16 text-center" onclick="event.stopPropagation()">
+                                <td class="w-16 text-center">
                                     @if($ownedTrade->has_ai_analysis)
                                         <div class="tooltip tooltip-left" data-tip="AI Analysis Available (Click to view)">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -342,10 +342,10 @@
                             <td>${trade.duration || 'N/A'}</td>
                             <td>${parseFloat(trade.quantity)}</td>
                             <td class="text-right pr-8"><span class="font-bold ${pnlClass}">${formattedPnl}</span></td>
-                            <td onclick="event.stopPropagation()">
-                                ${trade.chart_picture ? '<span class="text-xs opacity-50 italic">Has Chart</span>' : '-'}
+                            <td>
+                                ${trade.chart_picture ? '<span class="text-xs opacity-50 italic text-center block">Has Chart</span>' : '-'}
                             </td>
-                            <td onclick="event.stopPropagation()">
+                            <td>
                                 ${trade.has_ai_analysis ? `
                                     <div class="tooltip tooltip-left" data-tip="AI Analysis Available (Click trade to view)">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-indigo-400 mx-auto">
