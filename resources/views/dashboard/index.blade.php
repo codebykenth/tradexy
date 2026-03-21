@@ -14,7 +14,7 @@
                     <span
                         class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Today</span>
                     <span id="stat-today" class="text-xl font-bold {{ $todayPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
-                        {{ $todayPnl >= 0 ? '+' : '-' }}${{ number_format(abs($todayPnl), 2) }}
+                        {{ $todayPnl >= 0 ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs($todayPnl), 2) }}
                     </span>
                 </div>
                 <!-- This Week -->
@@ -23,7 +23,7 @@
                     <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">This
                         Week</span>
                     <span id="stat-week" class="text-xl font-bold {{ $weekPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
-                        {{ $weekPnl >= 0 ? '+' : '-' }}${{ number_format(abs($weekPnl), 2) }}
+                        {{ $weekPnl >= 0 ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs($weekPnl), 2) }}
                     </span>
                 </div>
                 <!-- This Month -->
@@ -32,7 +32,7 @@
                     <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">This
                         Month</span>
                     <span id="stat-month" class="text-xl font-bold {{ $monthPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
-                        {{ $monthPnl >= 0 ? '+' : '-' }}${{ number_format(abs($monthPnl), 2) }}
+                        {{ $monthPnl >= 0 ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs($monthPnl), 2) }}
                     </span>
                 </div>
                 <!-- All Time -->
@@ -41,7 +41,7 @@
                     <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">All
                         Time</span>
                     <span id="stat-total" class="text-xl font-bold {{ $totalPnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
-                        {{ $totalPnl >= 0 ? '+' : '-' }}${{ number_format(abs($totalPnl), 2) }}
+                        {{ $totalPnl >= 0 ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs($totalPnl), 2) }}
                     </span>
                     <span id="stat-count" class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ $tradeCount }} trades</span>
                 </div>
@@ -161,7 +161,7 @@
                         <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $bestTrade?->symbol ?? 'N/A' }}
                         </div>
                         <div class="text-emerald-600 dark:text-emerald-400 font-bold text-xl">
-                            +${{ number_format($bestTrade?->total_pnl ?? 0, 2) }}
+                            +{{ $currencySymbol }}{{ number_format(\App\Helpers\CurrencyFormatter::normalizeValueAmount($bestTrade?->total_pnl ?? 0, $bestTrade?->market ?? 'crypto'), 2) }}
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
                             {{ $bestTrade ? \Carbon\Carbon::parse($bestTrade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') : '' }}
@@ -178,7 +178,7 @@
                         <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $worstTrade?->symbol ?? 'N/A' }}
                         </div>
                         <div class="text-red-600 dark:text-red-400 font-bold text-xl">
-                            -${{ number_format(abs($worstTrade?->total_pnl ?? 0), 2) }}
+                            -{{ $currencySymbol }}{{ number_format(abs(\App\Helpers\CurrencyFormatter::normalizeValueAmount($worstTrade?->total_pnl ?? 0, $worstTrade?->market ?? 'crypto')), 2) }}
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
                             {{ $worstTrade ? \Carbon\Carbon::parse($worstTrade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') : '' }}
@@ -210,7 +210,7 @@
                             class="bg-gray-50 dark:bg-[#20222a] border border-gray-200 dark:border-gray-800 rounded-lg p-3">
                             <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Avg Win</div>
                             <div class="text-lg font-bold text-green-600 dark:text-green-500">
-                                +${{ number_format($avgWin, 2) }}
+                                +{{ $currencySymbol }}{{ number_format($avgWin, 2) }}
                             </div>
                         </div>
 
@@ -219,7 +219,7 @@
                             class="bg-gray-50 dark:bg-[#20222a] border border-gray-200 dark:border-gray-800 rounded-lg p-3">
                             <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Avg Loss</div>
                             <div class="text-lg font-bold text-red-600 dark:text-red-500">
-                                -${{ number_format(abs($avgLoss), 2) }}
+                                -{{ $currencySymbol }}{{ number_format(abs($avgLoss), 2) }}
                             </div>
                         </div>
                     </div>
@@ -240,7 +240,7 @@
                                     </div>
                                 </div>
                                 <div class="font-bold {{ $symbolStat->net_pnl >= 0 ? 'text-green-500' : 'text-red-500' }}">
-                                    {{ $symbolStat->net_pnl >= 0 ? '+' : '-' }}${{ number_format(abs($symbolStat->net_pnl), 2) }}
+                                    {{ $symbolStat->net_pnl >= 0 ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs($symbolStat->net_pnl), 2) }}
                                 </div>
                             </div>
                         @empty
@@ -274,7 +274,7 @@
                                     <div class="text-xs text-gray-500 mt-0.5">
                                         <span
                                             class="{{ $trade->total_pnl >= 0 ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400' }}">
-                                            {{ $trade->total_pnl >= 0 ? '+' : '-' }}${{ number_format(abs($trade->total_pnl), 2) }}
+                                            {{ $trade->total_pnl >= 0 ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs(\App\Helpers\CurrencyFormatter::normalizeValueAmount($trade->total_pnl, $trade->market)), 2) }}
                                         </span>
                                         &bull;
                                         {{ $trade->human_time }}
@@ -369,7 +369,7 @@
                 function updateStat(id, value) {
                     const el = document.getElementById(id);
                     if (!el) return;
-                    const formatted = (value >= 0 ? '+' : '-') + '$' + Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    const formatted = (value >= 0 ? '+' : '-') + data.currencySymbol + Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     el.textContent = formatted;
                     el.className = `text-xl font-bold ${value >= 0 ? 'text-green-500' : 'text-red-500'}`;
                 }

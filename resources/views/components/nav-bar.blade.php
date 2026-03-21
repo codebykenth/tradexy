@@ -67,6 +67,23 @@
                         @endforeach
                     </div>
 
+                    <!-- Currency Switcher -->
+                    <div class="flex items-center bg-base-200 p-1 rounded-xl shadow-inner border border-base-300">
+                        @foreach(['USD' => 'bg-info text-info-content', 'PHP' => 'bg-success text-success-content'] as $currencyValue => $activeClass)
+                        <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
+                            @csrf
+                            <input type="hidden" name="preferred_currency" value="{{ $currencyValue }}">
+                            <button type="submit" @class([
+                                'px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer',
+                                $activeClass . ' shadow-sm scale-110 z-10' => session('preferred_currency', 'USD') === $currencyValue,
+                                'text-base-content/40 hover:text-base-content' => session('preferred_currency', 'USD') !== $currencyValue
+                            ])>
+                                {{ $currencyValue }}
+                            </button>
+                        </form>
+                        @endforeach
+                    </div>
+
                     <!-- Avatar/Profile Dropdown -->
                     <div class="relative ml-2">
                         <button id="avatar-btn" class="w-10 h-10 rounded-full bg-primary text-primary-content flex justify-center items-center cursor-pointer shadow hover:scale-105 transition-transform overflow-hidden">
@@ -187,6 +204,22 @@
                                             'bg-secondary text-secondary-content shadow' => session('market_type', 'crypto') === $mv,
                                             'text-base-content/40' => session('market_type', 'crypto') !== $mv
                                         ])>{{ strtoupper($mv) }}</button>
+                                    </form>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between bg-base-100 p-2 rounded-2xl border border-base-200">
+                            <span class="text-xs font-black uppercase tracking-tight pl-2">Currency</span>
+                            <div class="flex bg-base-200 p-1 rounded-xl">
+                                @foreach(['USD', 'PHP'] as $cv)
+                                    <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
+                                        @csrf
+                                        <input type="hidden" name="preferred_currency" value="{{ $cv }}">
+                                        <button type="submit" @class([
+                                            'px-4 py-1.5 rounded-lg text-[10px] font-black uppercase',
+                                            'bg-info text-info-content shadow' => session('preferred_currency', 'USD') === $cv,
+                                            'text-base-content/40' => session('preferred_currency', 'USD') !== $cv
+                                        ])>{{ $cv }}</button>
                                     </form>
                                 @endforeach
                             </div>

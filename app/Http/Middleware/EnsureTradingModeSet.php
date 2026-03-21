@@ -20,6 +20,7 @@ final class EnsureTradingModeSet
             // Always favor the database preference for authenticated users
             session(['account_mode' => $user->account_mode ?? 'real']);
             session(['market_type' => $user->market_type ?? 'crypto']);
+            session(['preferred_currency' => $user->preferred_currency ?? 'USD']);
         } else {
             if (!session()->has('account_mode')) {
                 session(['account_mode' => 'real']);
@@ -27,6 +28,10 @@ final class EnsureTradingModeSet
 
             if (!session()->has('market_type')) {
                 session(['market_type' => 'crypto']);
+            }
+
+            if (!session()->has('preferred_currency')) {
+                session(['preferred_currency' => 'USD']);
             }
         }
 

@@ -6,6 +6,12 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @property string $formatted_wallet
+ * @property string $formatted_equity
+ * @property string $formatted_pnl
+ * @property string $local_date
+ */
 class Balance extends Model
 {
     protected $fillable = [

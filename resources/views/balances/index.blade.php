@@ -36,17 +36,17 @@
                                     </div>
                                 </td>                                
                                 <td>
-                                    ${{ number_format($balance->wallet_balance, 2) }}
+                                    @currency($balance->wallet_balance, $balance->market)
                                 </td>
                                 <td>
-                                    ${{ number_format($balance->total_equity, 2) }}
+                                    @currency($balance->total_equity, $balance->market)
                                 </td>
                                 <td>
                                     <span @class([
                                         'font-bold',
                                         'text-green-500' => $balance->cum_realised_pnl > 0,
                                         'text-red-500' => $balance->cum_realised_pnl < 0
-                                    ])>${{ number_format($balance->cum_realised_pnl, 2) }}</span>
+                                    ])>@currency($balance->cum_realised_pnl, $balance->market)</span>
                                 </td>
                                 <td class="text-right">
                                     <div class="flex gap-4 items-center justify-center">
@@ -118,9 +118,9 @@
                                                 <span class="badge badge-xs font-bold uppercase py-2 ${marketBadgeClass}">${balance.market}</span>
                                             </div>
                                         </td>
-                                        <td>$${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2}).format(balance.wallet_balance)}</td>
-                                        <td>$${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2}).format(balance.total_equity)}</td>
-                                        <td><span class="font-bold ${pnlClass}">$${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2}).format(balance.cum_realised_pnl)}</span></td>
+                                        <td>${balance.formatted_wallet}</td>
+                                        <td>${balance.formatted_equity}</td>
+                                        <td><span class="font-bold ${pnlClass}">${balance.formatted_pnl}</span></td>
                                         <td class="text-right">
                                             <div class="flex gap-4 items-center justify-center">
                                                 <button type="button" onclick="event.stopPropagation(); document.getElementById('edit_modal_${balance.id}').showModal()" class="text-blue-500 hover:text-blue-700 transition cursor-pointer">
@@ -186,14 +186,14 @@
                 <div class="modal-box">
                     <h3 class="text-lg font-bold">Balance on {{ $balance->local_date }}</h3>
                     <div class="py-4 space-y-2 text-left">
-                        <p><strong>Wallet Balance:</strong> {{ $balance->wallet_balance }}</p>
-                        <p><strong>Total Equity:</strong> {{ $balance->total_equity }}</p>
+                        <p><strong>Wallet Balance:</strong> @currency($balance->wallet_balance, $balance->market)</p>
+                        <p><strong>Total Equity:</strong> @currency($balance->total_equity, $balance->market)</p>
                         <p><strong>Realised Pnl (Cum):</strong>
                             <span @class([
                                 'font-bold',
                                 'text-green-500' => $balance->cum_realised_pnl > 0,
                                 'text-red-500' => $balance->cum_realised_pnl < 0
-                            ])>{{ $balance->cum_realised_pnl }}</span>
+                            ])>@currency($balance->cum_realised_pnl, $balance->market)</span>
                         </p>
                     </div>
                 </div>

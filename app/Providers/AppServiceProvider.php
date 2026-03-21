@@ -57,5 +57,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
         });
+
+        // Global Currency Directive
+        \Illuminate\Support\Facades\Blade::directive('currency', function ($expression) {
+            return "<?php echo \App\Helpers\CurrencyFormatter::format($expression); ?>";
+        });
     }
 }

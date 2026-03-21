@@ -1,15 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Helpers\CurrencyFormatter;
 use App\Models\Balance;
 use App\Models\MarketNews;
 use App\Models\Trade;
+use App\Services\CurrencyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
-class DashboardController extends Controller
+final class DashboardController extends Controller
 {
+    public function __construct(
+        private readonly CurrencyService $currencyService
+    ) {}
+
     public function index(Request $request)
     {
         $data = $this->getDashboardData();
@@ -26,14 +35,16 @@ class DashboardController extends Controller
         $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
+        $prefCurrency = session('preferred_currency', 'USD');
 
-        $version = \Illuminate\Support\Facades\Cache::get("trades_version_user_{$userId}", '1');
-        $cacheKey = "dashboard_data_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_v{$version}";
+        $version = Cache::get("trades_version_user_{$userId}", '1');
+        $cacheKey = "dash_v{$version}_u{$userId}_m{$accountMode}_mar{$marketMode}_cur{$prefCurrency}";
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode) {
+        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $prefCurrency) {
             $latestNews = MarketNews::latest()->first();
+            $rate = $this->currencyService->getRate();
 
-            // Fetch Balances for Equity Curve (Pluck only what we need)
+            // Fetch Balances for Equity Curve
             $balanceQuery = Balance::where('user_id', $userId);
             if ($accountMode !== 'all') {
                 $balanceQuery->where('is_demo', $accountMode === 'demo');
@@ -42,11 +53,30 @@ class DashboardController extends Controller
                 $balanceQuery->where('market', $marketMode);
             }
 
-            $balances = $balanceQuery->oldest('date')->select(['date', 'total_equity'])->get();
-            $equityCategories = $balances->map(fn ($b) => $b->date->format('M d, y'))->toArray();
-            $equitySeries = $balances->map(fn ($b) => (float) $b->total_equity)->toArray();
+            $balances = $balanceQuery->oldest('date')->select(['date', 'total_equity', 'market'])->get();
 
-            // Aggregate Trade Stats in SQL (Avoid loading all models)
+            // Normalize Equity Curve
+            $equityData = $balances->groupBy(fn ($b) => $b->date->format('Y-m-d'))
+                ->map(function ($group) use ($rate, $prefCurrency) {
+                    $total = 0;
+                    foreach ($group as $b) {
+                        if ($b->market === 'crypto') {
+                            $total += ($prefCurrency === 'PHP') ? ((float) $b->total_equity * $rate) : (float) $b->total_equity;
+                        } else {
+                            $total += ($prefCurrency === 'USD') ? ((float) $b->total_equity / $rate) : (float) $b->total_equity;
+                        }
+                    }
+
+                    return [
+                        'date' => $group->first()->date->format('M d, y'),
+                        'value' => round($total, 2),
+                    ];
+                });
+
+            $equityCategories = $equityData->pluck('date')->toArray();
+            $equitySeries = $equityData->pluck('value')->toArray();
+
+            // Separate Market Stats Aggregation
             $tradeQuery = Trade::where('user_id', $userId)->whereNotNull('close_datetime');
             if ($accountMode !== 'all') {
                 $tradeQuery->where('is_demo', $accountMode === 'demo');
@@ -55,44 +85,103 @@ class DashboardController extends Controller
                 $tradeQuery->where('market', $marketMode);
             }
 
-            // Main Stats Aggregation
-            $stats = (clone $tradeQuery)->selectRaw('
+            $stats = (clone $tradeQuery)->selectRaw("
                 COUNT(*) as trade_count,
-                SUM(total_pnl) as total_pnl,
+                SUM(CASE WHEN market = 'crypto' THEN total_pnl ELSE 0 END) as crypto_pnl,
+                SUM(CASE WHEN market = 'pse' THEN total_pnl ELSE 0 END) as pse_pnl,
                 COUNT(CASE WHEN total_pnl > 0 THEN 1 END) as win_count,
-                SUM(CASE WHEN total_pnl > 0 THEN total_pnl ELSE 0 END) as total_win_amount,
-                SUM(CASE WHEN total_pnl < 0 THEN ABS(total_pnl) ELSE 0 END) as total_loss_amount,
-                MAX(total_pnl) as best_trade_pnl,
-                MIN(total_pnl) as worst_trade_pnl
-            ')->first();
+                SUM(CASE WHEN market = 'crypto' AND total_pnl > 0 THEN total_pnl ELSE 0 END) as crypto_win,
+                SUM(CASE WHEN market = 'pse' AND total_pnl > 0 THEN total_pnl ELSE 0 END) as pse_win,
+                SUM(CASE WHEN market = 'crypto' AND total_pnl < 0 THEN ABS(total_pnl) ELSE 0 END) as crypto_loss,
+                SUM(CASE WHEN market = 'pse' AND total_pnl < 0 THEN ABS(total_pnl) ELSE 0 END) as pse_loss
+            ")->first();
 
             /** @var \App\Models\Trade $stats */
             $tradeCount = (int) ($stats->trade_count ?? 0);
             $winCount = (int) ($stats->win_count ?? 0);
-            $totalPnl = (float) ($stats->total_pnl ?? 0);
-            $totalWinAmount = (float) ($stats->total_win_amount ?? 0);
-            $totalLossAmount = (float) ($stats->total_loss_amount ?? 0);
+
+            // Normalize PnL Stat
+            $totalPnl = ($prefCurrency === 'PHP')
+                ? ($stats->crypto_pnl * $rate) + $stats->pse_pnl
+                : $stats->crypto_pnl + ($stats->pse_pnl / $rate);
+
+            $totalWinAmount = ($prefCurrency === 'PHP')
+                ? ($stats->crypto_win * $rate) + $stats->pse_win
+                : $stats->crypto_win + ($stats->pse_win / $rate);
+
+            $totalLossAmount = ($prefCurrency === 'PHP')
+                ? ($stats->crypto_loss * $rate) + $stats->pse_loss
+                : $stats->crypto_loss + ($stats->pse_loss / $rate);
 
             $winRate = $tradeCount > 0 ? round(($winCount / $tradeCount) * 100, 1) : 0;
             $profitFactor = $totalLossAmount > 0 ? round($totalWinAmount / $totalLossAmount, 2) : ($totalWinAmount > 0 ? 99.99 : 0);
-            $currentBalance = $balances->last() ? (float) $balances->last()->total_equity : 0;
 
-            // Time-based PnL (Native SQL is faster)
+            // Current Balance requires market consideration on the last balance entry
+            $lastBalance = $balances->last();
+            if ($lastBalance) {
+                if ($marketMode === 'all') {
+                    $currentBalance = $equitySeries[array_key_last($equitySeries)] ?? 0;
+                } else {
+                    if ($lastBalance->market === 'crypto') {
+                        $currentBalance = ($prefCurrency === 'PHP') ? ($lastBalance->total_equity * $rate) : (float) $lastBalance->total_equity;
+                    } else {
+                        $currentBalance = ($prefCurrency === 'USD') ? ($lastBalance->total_equity / $rate) : (float) $lastBalance->total_equity;
+                    }
+                }
+            } else {
+                $currentBalance = 0;
+            }
+
+            // Time-based PnL
             $now = now()->setTimezone('Asia/Manila');
-            $todayPnl = (clone $tradeQuery)->where('close_datetime', '>=', $now->copy()->startOfDay()->setTimezone('UTC'))->sum('total_pnl');
-            $weekPnl = (clone $tradeQuery)->where('close_datetime', '>=', $now->copy()->startOfWeek()->setTimezone('UTC'))->sum('total_pnl');
-            $monthPnl = (clone $tradeQuery)->where('close_datetime', '>=', $now->copy()->startOfMonth()->setTimezone('UTC'))->sum('total_pnl');
+            $periodicTrades = (clone $tradeQuery)->select(['market', 'total_pnl', 'close_datetime'])->get();
 
-            // Best/Worst Trade (Record)
-            $bestTrade = (clone $tradeQuery)->orderByDesc('total_pnl')->first();
-            $worstTrade = (clone $tradeQuery)->orderBy('total_pnl')->first();
+            $todayPnl = $weekPnl = $monthPnl = 0;
+            $startOfDay = $now->copy()->startOfDay()->setTimezone('UTC');
+            $startOfWeek = $now->copy()->startOfWeek()->setTimezone('UTC');
+            $startOfMonth = $now->copy()->startOfMonth()->setTimezone('UTC');
 
-            // Streaks (Still needs a loop, but we only pluck PnL values to keep it light)
-            $pnlValues = (clone $tradeQuery)->orderBy('close_datetime', 'asc')->pluck('total_pnl')->toArray();
+            foreach ($periodicTrades as $t) {
+                $val = ($t->market === 'crypto')
+                    ? (($prefCurrency === 'PHP') ? ($t->total_pnl * $rate) : $t->total_pnl)
+                    : (($prefCurrency === 'USD') ? ($t->total_pnl / $rate) : $t->total_pnl);
+
+                if ($t->close_datetime >= $startOfDay) {
+                    $todayPnl += $val;
+                }
+                if ($t->close_datetime >= $startOfWeek) {
+                    $weekPnl += $val;
+                }
+                if ($t->close_datetime >= $startOfMonth) {
+                    $monthPnl += $val;
+                }
+            }
+
+            // Best/Worst Trade (Find in Normalized Value)
+            $allTradesForRecords = (clone $tradeQuery)->get();
+            $bestTrade = $worstTrade = null;
+            $maxVal = -INF;
+            $minVal = INF;
+
+            foreach ($allTradesForRecords as $t) {
+                $val = ($t->market === 'crypto')
+                    ? (($prefCurrency === 'PHP') ? ($t->total_pnl * $rate) : (float) $t->total_pnl)
+                    : (($prefCurrency === 'USD') ? ($t->total_pnl / $rate) : (float) $t->total_pnl);
+
+                if ($val > $maxVal) {
+                    $maxVal = $val;
+                    $bestTrade = $t;
+                }
+                if ($val < $minVal) {
+                    $minVal = $val;
+                    $worstTrade = $t;
+                }
+            }
+
+            // Streaks
+            $streakPnls = (clone $tradeQuery)->orderBy('close_datetime', 'asc')->pluck('total_pnl')->toArray();
             $currentWinStreak = $maxWinStreak = $currentLossStreak = $maxLossStreak = 0;
-
-            foreach ($pnlValues as $pnlValue) {
-                $pnl = (float) $pnlValue;
+            foreach ($streakPnls as $pnl) {
                 if ($pnl > 0) {
                     $currentWinStreak++;
                     $currentLossStreak = 0;
@@ -106,68 +195,51 @@ class DashboardController extends Controller
                 }
             }
 
-            // PnL Curve Data (Pluck date and PnL)
-            $pnlChartData = (clone $tradeQuery)->orderBy('close_datetime', 'asc')
-                ->select(['close_datetime', 'total_pnl'])
-                ->get();
-
+            // PnL Curve Data (Unified running total in target currency)
+            $pnlChartData = (clone $tradeQuery)->orderBy('close_datetime', 'asc')->select(['close_datetime', 'total_pnl', 'market'])->get();
             $pnlCategories = [];
             $pnlSeries = [];
             $runningPnl = 0;
 
-            /** @var \App\Models\Trade $t */
             foreach ($pnlChartData as $t) {
-                $runningPnl += (float) $t->total_pnl;
-                $closeTime = $t->close_datetime;
-                $pnlCategories[] = $closeTime->setTimezone('Asia/Manila')->format('M d, y');
+                $val = ($t->market === 'crypto')
+                    ? (($prefCurrency === 'PHP') ? ($t->total_pnl * $rate) : (float) $t->total_pnl)
+                    : (($prefCurrency === 'USD') ? ($t->total_pnl / $rate) : (float) $t->total_pnl);
+
+                $runningPnl += $val;
+                $pnlCategories[] = $t->close_datetime->setTimezone('Asia/Manila')->format('M d, y');
                 $pnlSeries[] = round($runningPnl, 2);
             }
 
             $avgWin = $winCount > 0 ? $totalWinAmount / $winCount : 0;
-            $strictLossCount = (int) (clone $tradeQuery)->where('total_pnl', '<', 0)->count();
+            $strictLossCount = $tradeCount - $winCount; // Approximation
             $avgLoss = $strictLossCount > 0 ? $totalLossAmount / $strictLossCount : 0;
 
-            // Top Symbols
-            $topSymbolsQuery = Trade::selectRaw('symbol, COUNT(*) as trades_count, SUM(total_pnl) as net_pnl, SUM(CASE WHEN total_pnl > 0 THEN 1 ELSE 0 END) as win_count')
+            // Top Symbols (Needs manual normalization per row)
+            $topSymbols = Trade::selectRaw('symbol, market, COUNT(*) as trades_count, SUM(total_pnl) as net_pnl, SUM(CASE WHEN total_pnl > 0 THEN 1 ELSE 0 END) as win_count')
                 ->where('user_id', $userId)
-                ->whereNotNull('close_datetime');
-
-            if ($accountMode !== 'all') {
-                $topSymbolsQuery->where('is_demo', $accountMode === 'demo');
-            }
-            if ($marketMode !== 'all') {
-                $topSymbolsQuery->where('market', $marketMode);
-            }
-
-            $topSymbols = $topSymbolsQuery->groupBy('symbol')
+                ->whereNotNull('close_datetime')
+                ->when($accountMode !== 'all', fn ($q) => $q->where('is_demo', $accountMode === 'demo'))
+                ->when($marketMode !== 'all', fn ($q) => $q->where('market', $marketMode))
+                ->groupBy('symbol', 'market')
                 ->orderByDesc('trades_count')
                 ->limit(5)
                 ->get()
-                ->map(function ($symbol) {
+                ->map(function ($symbol) use ($rate, $prefCurrency) {
                     $symbol->win_rate = $symbol->trades_count > 0 ? round(($symbol->win_count / $symbol->trades_count) * 100) : 0;
-                    $symbol->net_pnl = (float) $symbol->net_pnl;
+                    $val = ($symbol->market === 'crypto')
+                        ? (($prefCurrency === 'PHP') ? ($symbol->net_pnl * $rate) : (float) $symbol->net_pnl)
+                        : (($prefCurrency === 'USD') ? ($symbol->net_pnl / $rate) : (float) $symbol->net_pnl);
+                    $symbol->net_pnl = (float) $val;
 
                     return $symbol;
                 });
 
             // Recent Activity
-            $recentActivityQuery = Trade::with(['strategy', 'reasons'])
-                ->where('user_id', $userId)
-                ->whereNotNull('close_datetime');
-
-            if ($accountMode !== 'all') {
-                $recentActivityQuery->where('is_demo', $accountMode === 'demo');
-            }
-            if ($marketMode !== 'all') {
-                $recentActivityQuery->where('market', $marketMode);
-            }
-
-            $recentActivity = $recentActivityQuery->orderByDesc('close_datetime')
-                ->limit(5)
-                ->get()
+            $recentActivity = (clone $tradeQuery)->with(['strategy', 'reasons'])->orderByDesc('close_datetime')->limit(5)->get()
                 ->map(function ($trade) {
-                    $trade->human_time = \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->diffForHumans();
-                    $trade->formatted_pnl = ($trade->total_pnl >= 0 ? '+' : '-').'$'.number_format(abs($trade->total_pnl), 2);
+                    $trade->human_time = $trade->close_datetime->setTimezone('Asia/Manila')->diffForHumans();
+                    $trade->formatted_pnl = CurrencyFormatter::format($trade->total_pnl, $trade->market);
 
                     return $trade;
                 });
@@ -194,7 +266,7 @@ class DashboardController extends Controller
                 'topSymbols',
                 'recentActivity',
                 'latestNews'
-            );
+            ) + ['currencySymbol' => ($prefCurrency === 'PHP' ? '₱' : '$')];
         });
     }
 }

@@ -17,6 +17,12 @@ use Illuminate\Support\Facades\Cache;
  * @property float $net_pnl
  * @property float $total_win_amount
  * @property float $total_loss_amount
+ * @property float $crypto_pnl
+ * @property float $pse_pnl
+ * @property float $crypto_win
+ * @property float $pse_win
+ * @property float $crypto_loss
+ * @property float $pse_loss
  * @property string $human_time
  * @property string $formatted_pnl
  * @property string $direct_chart_url

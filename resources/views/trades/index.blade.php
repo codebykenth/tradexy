@@ -91,7 +91,7 @@
                                         'font-bold',
                                         'text-green-400' => $ownedTrade->total_pnl > 0,
                                         'text-red-400' => $ownedTrade->total_pnl < 0
-                                    ])>{{ number_format($ownedTrade->total_pnl, 2) }}</span>
+                                    ])>@currency($ownedTrade->total_pnl, $ownedTrade->market)</span>
                                 </td>
                                 <td class="w-16 text-center" onclick="event.stopPropagation()">
                                     @if($ownedTrade->chart_picture)
@@ -322,7 +322,7 @@
                     const closeDate = new Date(trade.close_datetime);
                     const formattedDate = closeDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
                     const pnlClass = trade.total_pnl > 0 ? 'text-green-400' : (trade.total_pnl < 0 ? 'text-red-400' : '');
-                    const formattedPnl = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(trade.total_pnl);
+                    const formattedPnl = trade.formatted_pnl;
                     
                     return `
                         <tr class="hover cursor-pointer" onclick="window.location='/trades/${trade.id}'">

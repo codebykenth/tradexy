@@ -21,6 +21,14 @@ final class TradingModeController extends Controller
         }
         $userId = $user->id;
 
+        if ($request->has('preferred_currency')) {
+            $currency = $request->input('preferred_currency', 'USD');
+            if (in_array($currency, ['USD', 'PHP'])) {
+                session(['preferred_currency' => $currency]);
+                $user->update(['preferred_currency' => $currency]);
+            }
+        }
+
         if ($request->has('account_mode')) {
             $mode = $request->input('account_mode', 'real');
             if (in_array($mode, ['real', 'demo', 'all'])) {

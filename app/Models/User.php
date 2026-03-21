@@ -32,6 +32,7 @@ class User extends Authenticatable
         'provider_id',
         'account_mode',
         'market_type',
+        'preferred_currency',
     ];
 
     /**

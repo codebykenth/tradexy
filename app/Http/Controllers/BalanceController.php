@@ -33,9 +33,10 @@ final class BalanceController extends Controller
         $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
+        $prefCurrency = session('preferred_currency', 'USD');
         $page = request()->get('page', 1);
 
-        $cacheKey = "balances_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_page_{$page}";
+        $cacheKey = "balances_u{$userId}_a{$accountMode}_m{$marketMode}_c{$prefCurrency}_p{$page}";
 
         return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $page) {
             $query = Balance::where('user_id', $userId);
@@ -49,7 +50,7 @@ final class BalanceController extends Controller
             }
 
             // Get total count for pagination
-            $total = $query->count();
+            $total = (clone $query)->count();
 
             // Get items for current page
             $perPage = 10;
@@ -71,6 +72,9 @@ final class BalanceController extends Controller
             // Transform the collection to include formatted attributes for JS
             $balances->getCollection()->transform(function ($balance) {
                 $balance->local_date = \Carbon\Carbon::parse($balance->date)->format('M d, Y');
+                $balance->formatted_wallet = \App\Helpers\CurrencyFormatter::format($balance->wallet_balance, $balance->market);
+                $balance->formatted_equity = \App\Helpers\CurrencyFormatter::format($balance->total_equity, $balance->market);
+                $balance->formatted_pnl = \App\Helpers\CurrencyFormatter::format($balance->cum_realised_pnl, $balance->market);
 
                 return $balance;
             });

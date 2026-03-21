@@ -37,10 +37,11 @@ final class TradeController extends Controller
         $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
+        $prefCurrency = session('preferred_currency', 'USD');
         $page = request()->get('page', 1);
 
         $version = Cache::get("trades_version_user_{$userId}", now()->timestamp);
-        $cacheKey = "trades_data_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_page_{$page}_v{$version}";
+        $cacheKey = "trades_v{$version}_u{$userId}_m{$accountMode}_mar{$marketMode}_cur{$prefCurrency}_p{$page}";
 
         return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $page) {
             $query = Trade::with(['strategy'])
@@ -62,7 +63,7 @@ final class TradeController extends Controller
             }
 
             // Get total count for pagination
-            $total = $query->count();
+            $total = (clone $query)->count();
 
             // Get items for current page
             $perPage = 10;
@@ -71,6 +72,12 @@ final class TradeController extends Controller
                 ->take($perPage)
                 ->latest('close_datetime')
                 ->get();
+
+            $items->map(function ($trade) {
+                $trade->formatted_pnl = \App\Helpers\CurrencyFormatter::format($trade->total_pnl, $trade->market);
+
+                return $trade;
+            });
 
             // Manually create paginator from cached data
             $ownedTrades = new \Illuminate\Pagination\LengthAwarePaginator(
