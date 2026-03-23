@@ -6,7 +6,7 @@
                     subtitle="Record a snapshot of your account balance and equity." />
             </div>
         </div>
-        <form action="{{ route('balances.store') }}" method="post" class="bg-gray-100 rounded-lg p-8 my-8" id="form">
+        <form action="{{ route('balances.store') }}" method="post" class="bg-base-200 rounded-lg p-8 my-8" id="form">
             @csrf
             <x-errors />
             <div class="">
@@ -14,7 +14,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/70">
                                 Date & Time
                             </legend>
                             <input type="datetime-local" class="input w-full" name="date" />
@@ -24,7 +24,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/70">
                                 Wallet Balance</legend>
                             <input type="number" step="any" class="input w-full" placeholder="" name="wallet_balance" />
                             <!-- Put Error Here -->
@@ -33,7 +33,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/70">
                                 Unrealized PnL (Optional)</legend>
                             <input type="number" step="any" class="input w-full" placeholder="" />
                             <!-- Put Error Here -->
@@ -42,7 +42,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/70">
                                 Total Equity</legend>
                             <input type="number" step="any" class="input w-full" placeholder="" name="total_equity" />
                             <!-- Put Error Here -->
@@ -51,7 +51,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/70">
                                 Cuumulative Realized PnL</legend>
                             <input type="number" step="any" class="input w-full" placeholder=""
                                 name="cum_realised_pnl" />
@@ -61,7 +61,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/70">
                                 Market</legend>
                             <select class="select w-full" name="market">
                                 <option value="crypto" @selected(old('market', session('market_type') === 'all' ? 'crypto' : session('market_type', 'crypto')) === 'crypto')>Crypto</option>
@@ -72,7 +72,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/70">
                                 Account Mode</legend>
                             <label class="label cursor-pointer justify-start gap-4">
                                 <input type="checkbox" name="is_demo" value="1" class="checkbox checkbox-warning" {{ old('is_demo', session('account_mode') === 'demo') ? 'checked' : '' }} />

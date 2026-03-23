@@ -35,10 +35,10 @@ final class BalanceController extends Controller
         $marketMode = session('market_type', 'crypto');
         $prefCurrency = session('preferred_currency', 'USD');
         $page = request()->get('page', 1);
+        $version = Cache::get("balances_version_user_{$userId}", now()->timestamp);
+        $cacheKey = "balances_v{$version}_u{$userId}_a{$accountMode}_m{$marketMode}_c{$prefCurrency}_p{$page}";
 
-        $cacheKey = "balances_u{$userId}_a{$accountMode}_m{$marketMode}_c{$prefCurrency}_p{$page}";
-
-        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $page) {
+        return Cache::remember($cacheKey, now()->addHours(6), function () use ($userId, $accountMode, $marketMode, $page) {
             $query = Balance::where('user_id', $userId);
 
             if ($accountMode !== 'all') {
@@ -147,19 +147,6 @@ final class BalanceController extends Controller
     private function clearBalanceCache(): void
     {
         $userId = Auth::id();
-        $accountModes = ['real', 'demo', 'all'];
-        $marketTypes = ['crypto', 'pse', 'forex', 'stocks', 'indices', 'commodities', 'all'];
-
-        foreach ($accountModes as $mode) {
-            foreach ($marketTypes as $market) {
-                // Clear all pages by using cache tags or pattern matching
-                for ($page = 1; $page <= 100; $page++) {
-                    Cache::forget("balances_user_{$userId}_mode_{$mode}_market_{$market}_page_{$page}");
-                }
-
-                // Clear dashboard cache (since balances affect equity curve)
-                Cache::forget("dashboard_data_user_{$userId}_mode_{$mode}_market_{$market}");
-            }
-        }
+        Cache::put("balances_version_user_{$userId}", (string) now()->timestamp, now()->addDays(30));
     }
 }

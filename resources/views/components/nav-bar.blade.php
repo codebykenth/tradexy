@@ -1,4 +1,4 @@
-<header class="w-full text-sm border-b border-base-200 py-4 relative bg-base-100">
+<header class="w-full text-sm border-b border-base-200 py-4 sticky top-0 z-50 bg-base-100/80 backdrop-blur-md transition-all duration-300">
     <div class="max-w-7xl mx-auto px-6">
         <nav class="flex items-center justify-between gap-4 w-full">
             <!-- Logo Section -->
