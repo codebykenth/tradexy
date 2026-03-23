@@ -6,7 +6,7 @@
                     subtitle="Define a new trading strategy to assign to your trades." />
             </div>
         </div>
-        <form action="{{ route('strategies.store') }}" method="post" class="bg-gray-100 rounded-lg p-8 my-8" id="form">
+        <form action="{{ route('strategies.store') }}" method="post" class="bg-base-200 rounded-lg p-8 my-8" id="form">
             @csrf
             <x-errors />
 
@@ -14,7 +14,7 @@
                 <!-- Name -->
                 <div>
                     <fieldset class="fieldset w-full">
-                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                             Strategy Name*
                         </legend>
                         <input type="text" class="input w-full @error('name') input-error @enderror" name="name"
@@ -26,7 +26,7 @@
                 <!-- Status -->
                 <div>
                     <fieldset class="fieldset w-full">
-                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                             Status
                         </legend>
                         <select class="select w-full @error('status') input-error @enderror" name="status">
@@ -41,7 +41,7 @@
                 <!-- Target R:R -->
                 <div>
                     <fieldset class="fieldset w-full">
-                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                             Target R:R
                         </legend>
                         <input type="number" step="0.01" class="input w-full @error('target_rr') input-error @enderror"
@@ -53,7 +53,7 @@
                 <!-- Max Risk Per Trade -->
                 <div>
                     <fieldset class="fieldset w-full">
-                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                             Max Risk Per Trade (%)
                         </legend>
                         <input type="number" step="0.01"
@@ -70,7 +70,7 @@
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <fieldset class="fieldset w-full">
-                            <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                            <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Strategy Color
                             </legend>
                             <input type="color" class="input p-1 h-12 w-full @error('color') input-error @enderror" name="color"
@@ -80,7 +80,7 @@
                     </div>
                     <div>
                         <fieldset class="fieldset w-full">
-                            <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                            <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Type / Category
                             </legend>
                             <select class="select w-full" name="category[]">
@@ -97,12 +97,12 @@
                 <!-- Markets & Timeframes -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <legend class="fieldset-legend uppercase font-semibold text-[10px] tracking-wider text-gray-400 mb-2">
+                        <legend class="fieldset-legend uppercase font-semibold text-[10px] tracking-wider text-base-content/30 mb-2">
                             Markets
                         </legend>
                         <div class="flex flex-wrap gap-2">
                             @foreach(['crypto', 'pse', 'forex', 'stocks', 'indices', 'commodities'] as $m)
-                                <label class="label cursor-pointer gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+                                <label class="label cursor-pointer gap-2 bg-base-100 px-3 py-1.5 rounded-lg border border-base-300">
                                     <input type="checkbox" name="markets[]" value="{{ $m }}" @checked(collect(old('markets'))->contains($m)) class="checkbox checkbox-sm checkbox-primary" />
                                     <span class="label-text uppercase text-[10px] font-black tracking-tighter">{{ $m }}</span>
                                 </label>
@@ -110,12 +110,12 @@
                         </div>
                     </div>
                     <div>
-                        <legend class="fieldset-legend uppercase font-semibold text-[10px] tracking-wider text-gray-400 mb-2">
+                        <legend class="fieldset-legend uppercase font-semibold text-[10px] tracking-wider text-base-content/30 mb-2">
                             Timeframes
                         </legend>
                         <div class="flex flex-wrap gap-2">
                             @foreach(['1m', '5m', '15m', '1h', '4h', '1d', '1w'] as $tf)
-                                <label class="label cursor-pointer gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+                                <label class="label cursor-pointer gap-2 bg-base-100 px-3 py-1.5 rounded-lg border border-base-300">
                                     <input type="checkbox" name="timeframes[]" value="{{ $tf }}" @checked(collect(old('timeframes'))->contains($tf)) class="checkbox checkbox-sm checkbox-primary" />
                                     <span class="label-text uppercase text-[10px] font-black tracking-tighter">{{ $tf }}</span>
                                 </label>
@@ -128,7 +128,7 @@
             <!-- Description -->
             <div class="mb-6">
                 <fieldset class="fieldset w-full">
-                    <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                    <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                         Description
                     </legend>
                     <textarea class="textarea w-full @error('description') input-error @enderror" name="description"
@@ -143,7 +143,7 @@
                 <div class="flex items-center gap-3 mb-6">
                     <span
                         class="bg-indigo-600 text-white rounded py-1 px-3 text-sm font-bold flex items-center justify-center">Rules</span>
-                    <h2 class="text-xl font-bold text-gray-900">Define Strategy Rules</h2>
+                    <h2 class="text-xl font-bold text-base-content">Define Strategy Rules</h2>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">

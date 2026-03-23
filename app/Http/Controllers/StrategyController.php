@@ -19,7 +19,10 @@ class StrategyController extends Controller
         $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
-        $cacheKey = "strategies_user_{$userId}_mode_{$accountMode}_market_{$marketMode}";
+        $page = request()->get('page', 1);
+
+        $version = Cache::get("strategies_version_user_{$userId}", now()->timestamp);
+        $cacheKey = "strategies_v{$version}_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_page_{$page}";
 
         $strategies = Cache::remember($cacheKey, now()->addHours(6), function () use ($userId, $accountMode, $marketMode) {
             $query = Strategy::where('user_id', $userId);
@@ -41,7 +44,7 @@ class StrategyController extends Controller
                 ->withAvg(['trades as avg_loss' => fn ($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
                 ->withCount(['trades as winning_trades_count' => fn ($q) => $tradeFilter($q->where('total_pnl', '>', 0))])
                 ->orderByDesc('net_pnl')
-                ->get();
+                ->paginate(10);
         });
 
         return view('strategies.index', compact('strategies'));
@@ -198,13 +201,6 @@ class StrategyController extends Controller
     private function clearStrategyCache(): void
     {
         $userId = Auth::id();
-        $accountModes = ['real', 'demo', 'all'];
-        $marketTypes = ['crypto', 'pse', 'forex', 'stocks', 'indices', 'commodities', 'all'];
-
-        foreach ($accountModes as $mode) {
-            foreach ($marketTypes as $market) {
-                Cache::forget("strategies_user_{$userId}_mode_{$mode}_market_{$market}");
-            }
-        }
+        Cache::put("strategies_version_user_{$userId}", (string) (now()->timestamp), now()->addDays(30));
     }
 }

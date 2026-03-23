@@ -1,4 +1,4 @@
-<header class="w-full text-sm border-b border-base-200 dark:border-base-800 py-4 relative bg-base-100">
+<header class="w-full text-sm border-b border-base-200 py-4 relative bg-base-100">
     <div class="max-w-7xl mx-auto px-6">
         <nav class="flex items-center justify-between gap-4 w-full">
             <!-- Logo Section -->
@@ -84,6 +84,18 @@
                         @endforeach
                     </div>
 
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="btn btn-ghost btn-circle btn-sm tooltip tooltip-bottom" data-tip="Toggle Theme">
+                        <!-- Sun Icon (shown in dark mode) -->
+                        <svg id="sun-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
+                        </svg>
+                        <!-- Moon Icon (shown in light mode) -->
+                        <svg id="moon-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </button>
+
                     <!-- Avatar/Profile Dropdown -->
                     <div class="relative ml-2">
                         <button id="avatar-btn" class="w-10 h-10 rounded-full bg-primary text-primary-content flex justify-center items-center cursor-pointer shadow hover:scale-105 transition-transform overflow-hidden">
@@ -125,6 +137,16 @@
 
             <!-- Mobile Hamburger Section -->
             <div class="xl:hidden flex items-center gap-4">
+                <button id="mobile-theme-toggle" class="btn btn-ghost btn-circle tooltip tooltip-left" data-tip="Toggle Theme">
+                    <!-- Sun Icon (shown in dark mode) -->
+                    <svg id="mobile-sun-icon" class="hidden w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
+                    </svg>
+                    <!-- Moon Icon (shown in light mode) -->
+                    <svg id="mobile-moon-icon" class="hidden w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
                 <button id="menu-btn" class="btn btn-ghost btn-circle">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -134,7 +156,7 @@
         </nav>
 
         <!-- Mobile Full-screen Dropdown -->
-        <div id="dropdown-menu" class="hidden xl:hidden fixed inset-0 top-16 bg-base-100 z-[99] flex flex-col px-6">
+        <div id="dropdown-menu" class="hidden xl:hidden fixed inset-0 top-16 bg-base-100 z-[99] flex flex-col px-6 text-base-content">
             @auth
                 <!-- User Profile Header -->
                 <div class="py-8 border-b border-base-200">
@@ -147,8 +169,8 @@
                             @endif
                         </div>
                         <div>
-                            <p class="font-black text-xl text-base-content uppercase tracking-tight">{{ Auth::user()->name }}</p>
-                            <p class="text-sm text-base-content/60">{{ Auth::user()->email }}</p>
+                            <p class="font-black text-xl uppercase tracking-tight">{{ Auth::user()->name }}</p>
+                            <p class="text-sm opacity-60">{{ Auth::user()->email }}</p>
                         </div>
                     </div>
                     <div class="mt-6 grid grid-cols-2 gap-3">
@@ -162,7 +184,7 @@
 
                 <!-- Navigation List -->
                 <div class="flex-1 overflow-y-auto py-6 space-y-2">
-                    <p class="text-[10px] font-black uppercase text-base-content/40 tracking-widest mb-2 px-2">Navigation</p>
+                    <p class="text-[10px] font-black uppercase opacity-40 tracking-widest mb-2 px-2">Navigation</p>
                     <a href="/dashboard" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Dashboard</a>
                     <a href="/trades" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Trade Log</a>
                     <a href="/trades/gallery" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Visual Gallery</a>
@@ -174,7 +196,7 @@
 
                 <!-- Global Modes (Mobile) -->
                 <div class="py-6 border-t border-base-200 bg-base-200/30 -mx-6 px-6">
-                    <p class="text-[10px] font-black uppercase text-base-content/40 tracking-widest mb-4">View Preferences</p>
+                    <p class="text-[10px] font-black uppercase opacity-40 tracking-widest mb-4">View Preferences</p>
                     <div class="space-y-4">
                         <div class="flex items-center justify-between bg-base-100 p-2 rounded-2xl border border-base-200">
                             <span class="text-xs font-black uppercase tracking-tight pl-2">Account Mode</span>
@@ -186,7 +208,7 @@
                                         <button type="submit" @class([
                                             'px-4 py-1.5 rounded-lg text-[10px] font-black uppercase',
                                             'bg-primary text-primary-content shadow' => session('account_mode', 'real') === $mv,
-                                            'text-base-content/40' => session('account_mode', 'real') !== $mv
+                                            'opacity-40' => session('account_mode', 'real') !== $mv
                                         ])>{{ strtoupper($mv) }}</button>
                                     </form>
                                 @endforeach
@@ -202,7 +224,7 @@
                                         <button type="submit" @class([
                                             'px-4 py-1.5 rounded-lg text-[10px] font-black uppercase',
                                             'bg-secondary text-secondary-content shadow' => session('market_type', 'crypto') === $mv,
-                                            'text-base-content/40' => session('market_type', 'crypto') !== $mv
+                                            'opacity-40' => session('market_type', 'crypto') !== $mv
                                         ])>{{ strtoupper($mv) }}</button>
                                     </form>
                                 @endforeach
@@ -218,7 +240,7 @@
                                         <button type="submit" @class([
                                             'px-4 py-1.5 rounded-lg text-[10px] font-black uppercase',
                                             'bg-info text-info-content shadow' => session('preferred_currency', 'USD') === $cv,
-                                            'text-base-content/40' => session('preferred_currency', 'USD') !== $cv
+                                            'opacity-40' => session('preferred_currency', 'USD') !== $cv
                                         ])>{{ $cv }}</button>
                                     </form>
                                 @endforeach
@@ -247,7 +269,7 @@
         if (menuBtn && dropdownMenu) {
             menuBtn.addEventListener('click', () => {
                 dropdownMenu.classList.toggle('hidden');
-                document.body.classList.toggle('overflow-hidden'); // Prevent background scroll
+                document.body.classList.toggle('overflow-hidden');
             });
         }
 
@@ -264,5 +286,43 @@
                 }
             });
         }
+
+        // Theme logic
+        const updateThemeIcons = () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const sunIcons = [document.getElementById('sun-icon'), document.getElementById('mobile-sun-icon')];
+            const moonIcons = [document.getElementById('moon-icon'), document.getElementById('mobile-moon-icon')];
+            const themeToggles = [document.getElementById('theme-toggle'), document.getElementById('mobile-theme-toggle')];
+            const newTip = currentTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+
+            if (currentTheme === 'dark') {
+                sunIcons.forEach(i => i?.classList.remove('hidden'));
+                moonIcons.forEach(i => i?.classList.add('hidden'));
+            } else {
+                sunIcons.forEach(i => i?.classList.add('hidden'));
+                moonIcons.forEach(i => i?.classList.remove('hidden'));
+            }
+
+            themeToggles.forEach(t => {
+                if (t) t.setAttribute('data-tip', newTip);
+            });
+        };
+
+        const toggleTheme = () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcons();
+        };
+
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
+
+        if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+        if (mobileThemeToggleBtn) mobileThemeToggleBtn.addEventListener('click', toggleTheme);
+        
+        // Initial icon state
+        updateThemeIcons();
     });
 </script>

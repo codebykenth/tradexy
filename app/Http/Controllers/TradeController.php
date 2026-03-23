@@ -444,11 +444,7 @@ final class TradeController extends Controller
         }
 
         // Clear strategies cache (since trade counts affect strategy stats)
-        foreach ($accountModes as $mode) {
-            foreach ($marketTypes as $market) {
-                Cache::forget("strategies_user_{$userId}_mode_{$mode}_market_{$market}");
-            }
-        }
+        Cache::put("strategies_version_user_{$userId}", (string) (now()->timestamp), now()->addDays(30));
 
         // Clear PnL calendar cache for current and adjacent months
         $now = now();

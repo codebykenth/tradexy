@@ -13,7 +13,7 @@
             <span class="badge w-full md:w-auto badge-outline text-xs border-primary text-primary uppercase tracking-wider font-bold">Shared Trade Review</span>
         </div>
         <!-- Trade Header -->
-        <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+        <div class="bg-base-100 rounded-xl p-8 shadow-sm border border-base-300">
             <div class="flex items-center justify-between gap-4 w-full">
                 <div>
                     <div class="flex items-center gap-4">
@@ -31,30 +31,30 @@
                     </div>
 
                     <div class="flex gap-8 mt-4">
-                        <div class="flex items-center gap-2 text-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-gray-400">
+                        <div class="flex items-center gap-2 text-base-content/70">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-base-content/40">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
                             </svg>
                             <div>
-                                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Open</p>
+                                <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider">Open</p>
                                 <p class="font-medium text-sm">{{ $trade->open_datetime ? \Carbon\Carbon::parse($trade->open_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 text-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-gray-400">
+                        <div class="flex items-center gap-2 text-base-content/70">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-base-content/40">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-12 3h12" />
                             </svg>
                             <div>
-                                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Close</p>
+                                <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider">Close</p>
                                 <p class="font-medium text-sm">{{ $trade->close_datetime ? \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y h:i A') : 'N/A' }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 text-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-gray-400">
+                        <div class="flex items-center gap-2 text-base-content/70">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-base-content/40">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
                             <div>
-                                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Duration</p>
+                                <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider">Duration</p>
                                 <p class="font-medium text-sm">{{ $trade->duration }}</p>
                             </div>
                         </div>
@@ -62,7 +62,7 @@
                 </div>
 
                 <div class="text-right">
-                    <p class="uppercase text-sm text-gray-500">Net P&L</p>
+                    <p class="uppercase text-sm text-base-content/50">Net P&L</p>
                     <p @class([
                         'text-4xl font-black',
                         'text-red-500' => $trade->total_pnl < 0,
@@ -74,24 +74,24 @@
 
         <!-- Trade Details Grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Entry Price</p>
+            <div class="bg-base-100 rounded-xl p-6 shadow-sm border border-base-300">
+                <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider">Entry Price</p>
                 <p class="text-lg font-semibold mt-1">{{ $trade->avg_entry_price ?? 'N/A' }}</p>
             </div>
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Exit Price</p>
+            <div class="bg-base-100 rounded-xl p-6 shadow-sm border border-base-300">
+                <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider">Exit Price</p>
                 <p class="text-lg font-semibold mt-1">{{ $trade->avg_exit_price ?? 'N/A' }}</p>
             </div>
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider">Risk Reward</p>
+            <div class="bg-base-100 rounded-xl p-6 shadow-sm border border-base-300">
+                <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider">Risk Reward</p>
                 <p class="text-lg font-semibold mt-1">{{ $trade->risk_reward }}</p>
             </div>
         </div>
 
         <div class="flex flex-col md:flex-row gap-6 mt-6">
             <!-- Chart -->
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 w-full md:w-2/3">
-                <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-4">Chart Snapshot</p>
+            <div class="bg-base-100 rounded-xl p-6 shadow-sm border border-base-300 w-full md:w-2/3">
+                <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-4">Chart Snapshot</p>
                 @if($trade->chart_picture)
                     <img src="{{ $trade->direct_chart_url ?? '' }}" alt="Chart Snapshot" class="w-full rounded-lg shadow-sm cursor-pointer hover:scale-[1.02] transition-transform duration-300 ease-in-out" onclick="chartModal.showModal()">
                     
@@ -114,9 +114,9 @@
             </div>
 
             <!-- Setup Context -->
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 w-full md:w-1/3 space-y-4">
+            <div class="bg-base-100 rounded-xl p-6 shadow-sm border border-base-300 w-full md:w-1/3 space-y-4">
                 <div>
-                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Strategy</p>
+                    <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-2">Strategy</p>
                     @if($trade->strategy)
                         <p class="font-medium">{{ $trade->strategy->name }}</p>
                     @else
@@ -125,18 +125,18 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-1">Timeframe</p>
+                        <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-1">Timeframe</p>
                         <p class="font-medium">{{ $trade->timeframe ?? 'N/A' }}</p>
                     </div>
                     <div>
-                        <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-1">Session</p>
+                        <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-1">Session</p>
                         <p class="font-medium">{{ $trade->session }}</p>
                     </div>
                 </div>
-                <div class="border-t border-gray-200 pt-4">
-                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Entry Triggers</p>
+                <div class="border-t border-base-300 pt-4">
+                    <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-2">Entry Triggers</p>
                     @if($trade->reasons->where('type', 'entry')->isNotEmpty())
-                        <ul class="list-disc ml-4 space-y-1 text-gray-700 text-sm">
+                        <ul class="list-disc ml-4 space-y-1 text-base-content/70 text-sm">
                             @foreach($trade->reasons->where('type', 'entry') as $reason)
                                 <li>{{ $reason->reason }}</li>
                             @endforeach
@@ -145,10 +145,10 @@
                         <p class="italic text-gray-400 text-sm">No entry reasons logged.</p>
                     @endif
                 </div>
-                <div class="border-t border-gray-200 pt-4">
-                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Exit Triggers</p>
+                <div class="border-t border-base-300 pt-4">
+                    <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-2">Exit Triggers</p>
                     @if($trade->reasons->where('type', 'exit')->isNotEmpty())
-                        <ul class="list-disc ml-4 space-y-1 text-gray-700 text-sm">
+                        <ul class="list-disc ml-4 space-y-1 text-base-content/70 text-sm">
                             @foreach($trade->reasons->where('type', 'exit') as $reason)
                                 <li>{{ $reason->reason }}</li>
                             @endforeach
@@ -157,10 +157,10 @@
                         <p class="italic text-gray-400 text-sm">No exit reasons logged.</p>
                     @endif
                 </div>
-                <div class="border-t border-gray-200 pt-4">
-                    <p class="uppercase text-xs font-bold text-gray-500 tracking-wider mb-2">Lessons Learned</p>
+                <div class="border-t border-base-300 pt-4">
+                    <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-2">Lessons Learned</p>
                     @if($trade->lessons->isNotEmpty())
-                        <ul class="list-disc ml-4 space-y-1 text-gray-700 text-sm">
+                        <ul class="list-disc ml-4 space-y-1 text-base-content/70 text-sm">
                             @foreach($trade->lessons as $lesson)
                                 <li>{{ $lesson->lesson }}</li>
                             @endforeach
@@ -174,7 +174,7 @@
 
         <!-- AI Analysis -->
         @if($trade->ai_analysis)
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mt-6">
+            <div class="bg-base-100 rounded-xl p-6 shadow-sm border border-base-300 mt-6">
                 <div class="flex items-center gap-3 mb-6">
                     <div class="bg-indigo-100 p-2 rounded-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-indigo-600">
@@ -183,7 +183,7 @@
                     </div>
                     <p class="text-xl font-bold">AI Analysis</p>
                 </div>
-                <div class="text-left text-gray-700 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-gray-200 [&_h3]:pb-2 [&_p]:mb-4 [&_p]:text-gray-600 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-gray-700 [&_strong]:font-bold [&_strong]:text-gray-900">
+                <div class="text-left text-base-content/80 text-[15px] leading-relaxed [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-base-content [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:border-b [&_h3]:border-base-300 [&_h3]:pb-2 [&_p]:mb-4 [&_p]:text-base-content/60 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:text-base-content/80 [&_strong]:font-bold [&_strong]:text-base-content">
                     {!! \Illuminate\Support\Str::markdown($trade->ai_analysis, [
                         'html_input' => 'strip',
                         'allow_unsafe_links' => false

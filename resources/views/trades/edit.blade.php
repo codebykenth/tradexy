@@ -6,17 +6,17 @@
             </div>
         </div>
 
-        <!-- Market Type (locked — cannot change after creation) -->
+        <!-- Market Display -->
         <div class="flex items-center gap-2 mb-2">
-            <span
-                class="inline-flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider">
+            <div
+                class="inline-flex items-center gap-2 rounded-lg bg-base-300 p-1 text-sm font-bold uppercase tracking-wider">
                 {{ ($trade->market ?? 'crypto') === 'pse' ? '🇵🇭 PSE' : '₿ Crypto' }}
-            </span>
+            </div>
             <span class="text-xs text-gray-400">Market type cannot be changed after creation.</span>
         </div>
 
         <form id="form" action="{{ route('trades.update', $trade->id) }}" method="post" enctype="multipart/form-data"
-            class="bg-gray-100 rounded-lg p-8 my-4">
+            class="bg-base-200 rounded-lg p-8 my-4">
             @csrf
             @method('PUT')
             <input type="hidden" name="market" id="market-input"
@@ -29,13 +29,13 @@
                 <div class="flex items-center gap-3 mb-6">
                     <span
                         class="bg-indigo-600 text-white rounded py-1 px-3 text-sm font-bold flex items-center justify-center">1</span>
-                    <h2 class="text-xl font-bold text-gray-900">General Information</h2>
+                    <h2 class="text-xl font-bold text-base-content">General Information</h2>
                 </div>
                 <div class="grid grid-cols-12 gap-x-6 gap-y-4">
                     <div class="col-span-12 md:col-span-2">
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Symbol</legend>
                             <input type="text" class="input w-full @error('symbol') input-error @enderror"
                                 placeholder="BTCUSDT" name="symbol" value="{{ old('symbol', $trade->symbol ?? '') }}"
@@ -46,7 +46,7 @@
                     <div class="col-span-12 md:col-span-4">
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Open Trade Date Time</legend>
                             <input type="datetime-local" step="1"
                                 class="input w-full @error('open_datetime') input-error @enderror" name="open_datetime"
@@ -58,7 +58,7 @@
                     <div class="col-span-12 md:col-span-4">
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Close Trade Date Time</legend>
                             <input type="datetime-local" step="1"
                                 class="input w-full @error('close_datetime') input-error @enderror"
@@ -71,7 +71,7 @@
                     <div class="col-span-12 md:col-span-2">
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend w-full flex justify-between items-center uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend w-full flex justify-between items-center uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 <span>Strategy</span>
                                 <a href="{{ route('strategies.create') }}" target="_blank"
                                     class="text-[10px] text-blue-600 dark:text-blue-400 font-bold hover:underline normal-case">
@@ -92,7 +92,7 @@
                     <div class="col-span-12 md:col-span-3">
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Timeframe</legend>
                             <select class="select w-full @error('timeframe') input-error @enderror" name="timeframe"
                                 id="timeframe-select">
@@ -114,7 +114,7 @@
                     <div class="col-span-12 md:col-span-4 self-end">
                         <fieldset class="fieldset w-full">
                              <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Trade Type</legend>
                             <label class="label cursor-pointer justify-start gap-4 h-12">
                                 <input type="hidden" name="is_demo" value="0">
@@ -130,14 +130,14 @@
                 <div class="flex items-center gap-3 mb-6">
                     <span
                         class="bg-green-600 text-white rounded py-1 px-3 text-sm font-bold flex items-center justify-center">2</span>
-                    <h2 class="text-xl font-bold text-gray-900">Entry Details</h2>
+                    <h2 class="text-xl font-bold text-base-content">Entry Details</h2>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
                     <!-- Entry Side (Crypto only) -->
                     <div class="crypto-only-field">
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Entry Side</legend>
                             <select class="select w-full @error('entry_side') input-error @enderror" name="entry_side"
                                 id="entry-side">
@@ -154,18 +154,18 @@
                     <div class="crypto-only-field">
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Leverage (X)</legend>
                             <input type="number" placeholder=""
-                                class="input w-full @error('leverage') input-error @enderror" name="leverage"
-                                value="{{ old('leverage', $trade->leverage ?? null) }}" />
+                                class="input bg-base-300 text-base-content/50 cursor-not-allowed" name="leverage"
+                                value="{{ old('leverage', $trade->leverage ?? null) }}" readonly />
                             @error('leverage') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>
                     </div>
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Avg Entry Price</legend>
                             <input type="number" step="any" placeholder=""
                                 class="input w-full @error('avg_entry_price') input-error @enderror"
@@ -179,7 +179,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Quantity</legend>
                             <input type="number" step="any" placeholder=""
                                 class="input quantity w-full @error('quantity') input-error @enderror" name="quantity"
@@ -190,16 +190,17 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Total Entry Val</legend>
-                            <input type="number" placeholder="" class="input w-full" disabled
-                                value="{{ $trade->quantity * $trade->avg_entry_price }}" id="total-entry-val" />
+                            <input type="number" placeholder=""
+                                class="input bg-base-300 text-base-content/50 cursor-not-allowed" readonly id="total-entry-val"
+                                name="cum_entry_value" value="{{ old('cum_entry_value', $trade->cum_entry_value) }}" />
                         </fieldset>
                     </div>
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Stoploss</legend>
                             <input type="number" step="any" placeholder=""
                                 class="input w-full @error('stop_loss_price') input-error @enderror"
@@ -212,7 +213,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Take Profit</legend>
                             <input type="number" step="any" placeholder=""
                                 class="input w-full @error('take_profit_price') input-error @enderror"
@@ -225,7 +226,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Emotion (Entry)</legend>
                             <input type="text" placeholder="e.g. FOMO, Confident"
                                 class="input w-full @error('entry_emotion') input-error @enderror" name="entry_emotion"
@@ -250,7 +251,7 @@
                 </div>
                 <div class="w-full mt-6">
                     <fieldset class="fieldset w-full reasons-fieldset">
-                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                             Reason for entry</legend>
 
                         @php $entryReasons = $trade->reasons->where('type', 'entry')->values(); @endphp
@@ -300,14 +301,14 @@
                 <div class="flex items-center gap-3 mb-6">
                     <span
                         class="bg-red-600 text-white rounded py-1 px-3 text-sm font-bold flex items-center justify-center">3</span>
-                    <h2 class="text-xl font-bold text-gray-900">Exit Details</h2>
+                    <h2 class="text-xl font-bold text-base-content">Exit Details</h2>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <!-- Exit Side (Crypto only) -->
                     <div class="crypto-only-field">
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Exit Side</legend>
                             <select class="select w-full @error('exit_side') input-error @enderror" name="exit_side"
                                 id="exit-side">
@@ -323,7 +324,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Avg Exit Price</legend>
                             <input type="number" step="any" placeholder=""
                                 class="input w-full @error('avg_exit_price') input-error @enderror"
@@ -337,7 +338,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Closed Size</legend>
                             <input type="number" placeholder="" class="input w-full" disabled
                                 value="{{ $trade->quantity }}" id="closed-size" />
@@ -346,7 +347,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Total Exit Val</legend>
                             <input type="number" placeholder="" class="input w-full" disabled
                                 value="{{ $trade->quantity * $trade->avg_exit_price }}" id="total-exit-val" />
@@ -355,7 +356,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Emotion (Exit)</legend>
                             <input type="text" placeholder="e.g. FOMO, Confident"
                                 class="input w-full @error('exit_emotion') input-error @enderror" name="exit_emotion"
@@ -378,7 +379,7 @@
                 </div>
                 <div class="w-full mt-6">
                     <fieldset class="fieldset w-full reasons-fieldset">
-                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                        <legend class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                             Reason for exit</legend>
 
                         @php $exitReasons = $trade->reasons->where('type', 'exit')->values(); @endphp
@@ -428,7 +429,7 @@
                 <div class="flex items-center gap-3 mb-6">
                     <span
                         class="bg-blue-600 text-white rounded py-1 px-3 text-sm font-bold flex items-center justify-center">4</span>
-                    <h2 class="text-xl font-bold text-gray-900">PnL & Fees</h2>
+                    <h2 class="text-xl font-bold text-base-content">PnL & Fees</h2>
                 </div>
 
                 <!-- Crypto Fees -->
@@ -436,7 +437,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Open Fee</legend>
                             <input type="number" step="any" placeholder=""
                                 class="input w-full @error('open_fees') input-error @enderror" name="open_fees"
@@ -447,7 +448,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Close Fee</legend>
                             <input type="number" step="any" placeholder=""
                                 class="input w-full @error('close_fees') input-error @enderror" name="close_fees"
@@ -459,14 +460,14 @@
 
                 <!-- PSE Fees (auto-calculated from MyTrade rates) -->
                 <div class="pse-only-field">
-                    <p class="text-xs text-gray-400 mb-3">Fees auto-calculated based on MyTrade rates. You can override
+                    <p class="text-xs text-base-content/40 mb-3">Fees auto-calculated based on MyTrade rates. You can override
                         values manually.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-6 pse-only-field">
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Commission (0.25%)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input"
                                 name="broker_commission" id="pse-broker-commission"
@@ -478,7 +479,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 PSE Trans (0.005%)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input"
                                 name="pse_trans_fee" id="pse-trans-fee"
@@ -490,7 +491,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 SCCP (0.01%)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input" name="sccp_fee"
                                 id="pse-sccp-fee" value="{{ old('sccp_fee', $trade->sccp_fee ?? null) }}" />
@@ -500,7 +501,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 VAT (12% of Comm)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input" name="pse_vat"
                                 id="pse-vat" value="{{ old('pse_vat', $trade->pse_vat ?? null) }}" />
@@ -510,7 +511,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Sales Tax (0.1% Sell)</legend>
                             <input type="number" step="any" placeholder="" class="input pse-fee-input" name="sales_tax"
                                 id="pse-sales-tax" value="{{ old('sales_tax', $trade->sales_tax ?? null) }}" />
@@ -524,7 +525,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Gross Pnl</legend>
                             <input type="number" placeholder="" class="input w-full" name="closed_pnl" disabled
                                 value="{{ $trade->closed_pnl }}" id="gross-pnl" />
@@ -533,7 +534,7 @@
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Net Pnl (Total)</legend>
                             <input type="number" placeholder="" class="input w-full" name="total_pnl" disabled
                                 value="{{ $trade->total_pnl }}" id="total-pnl" />
@@ -546,13 +547,13 @@
                 <div class="flex items-center gap-3 mb-6">
                     <span
                         class="bg-purple-600 text-white rounded py-1 px-3 text-sm font-bold flex items-center justify-center">5</span>
-                    <h2 class="text-xl font-bold text-gray-900">Analysis & Media</h2>
+                    <h2 class="text-xl font-bold text-base-content">Analysis & Media</h2>
                 </div>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <fieldset class="fieldset w-full">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Chart Screenshot</legend>
                             @include('trades.partials.chart-upload')
                             @error('chart_picture') <span class="text-error mt-1 text-sm">{{ $message }}</span>
@@ -562,7 +563,7 @@
                     <div class="w-full">
                         <fieldset class="fieldset w-full reasons-fieldset">
                             <legend
-                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Lesson Learned</legend>
                             @php $existingLessons = $trade->lessons->values(); @endphp
 

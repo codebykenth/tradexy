@@ -24,7 +24,7 @@
     <!-- Primary Meta Tags -->
     <meta name="title" content="{{ $pageTitle }}">
     <meta name="description" content="{{ $pageDescription }}">
-    <meta name="theme-color" content="#3b82f6">
+    <meta name="theme-color" content="#2563eb">
     
     <!-- Open Graph / Facebook / Discord -->
     <meta property="og:type" content="website">
@@ -49,27 +49,40 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900" rel="stylesheet" />
 
     <!-- Styles / Scripts -->
     <x-posthog />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <!-- Dark Mode Support -->
+    <script>
+        (function() {
+            const stored = localStorage.getItem('theme');
+            if (stored) {
+                document.documentElement.setAttribute('data-theme', stored);
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            }
+        })();
+    </script>
+
 </head>
 
-<body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] min-h-screen flex flex-col">
+<body class="bg-base-100 text-base-content min-h-screen flex flex-col">
     <x-nav-bar />
     <main>
         {{ $slot }}
     </main>
-    <footer class="w-full border-t border-gray-200 dark:border-[#1F1F1E] py-4 mt-auto bg-[#FDFDFC] dark:bg-[#0a0a0a]">
+    <footer class="w-full border-t border-base-200 py-4 mt-auto bg-base-100">
         <div
-            class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+            class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-base-content/60">
             <div>© {{ date('Y') }} Tradexy — All rights reserved.</div>
             <div class="flex gap-6">
-                <a href="{{ route('privacy') }}" class="hover:text-gray-900 dark:hover:text-white transition-colors">Privacy Policy</a>
-                <a href="{{ route('terms') }}" class="hover:text-gray-900 dark:hover:text-white transition-colors">Terms of Service</a>
-                <a href="{{ route('deletion') }}" class="hover:text-gray-900 dark:hover:text-white transition-colors">Data Deletion</a>
+                <a href="{{ route('privacy') }}" class="hover:text-base-content transition-colors">Privacy Policy</a>
+                <a href="{{ route('terms') }}" class="hover:text-base-content transition-colors">Terms of Service</a>
+                <a href="{{ route('deletion') }}" class="hover:text-base-content transition-colors">Data Deletion</a>
             </div>
         </div>
     </footer>

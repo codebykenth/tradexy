@@ -5,25 +5,25 @@
         <div class="flex flex-col md:flex-row gap-8 mt-6">
             <!-- Left Column: Wins -->
             <div class="flex-1 w-full md:w-1/2">
-                <div class="flex items-center gap-2 mb-6 border-b border-gray-200 pb-2">
+                <div class="flex items-center gap-2 mb-6 border-b border-base-300 pb-2">
                     <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                    <h2 class="text-xl font-bold text-gray-800 uppercase tracking-wide">Winning Trades</h2>
+                    <h2 class="text-xl font-bold text-base-content uppercase tracking-wide">Winning Trades</h2>
                 </div>
                 
                 @if($winningTrades->isNotEmpty())
                     <div class="grid grid-cols-1 gap-6" id="wins-container">
                         @foreach($winningTrades as $trade)
                             <div class="card bg-base-100 shadow-md overflow-hidden cursor-pointer hover:shadow-lg hover:border-green-300 transition-all duration-300 border border-green-100" onclick="window.location='{{ route('trades.show', $trade->id) }}'">
-                                <figure class="h-64 bg-gray-900">
+                                <figure class="h-64 bg-base-300">
                                     <x-optimized-image :src="$trade->direct_chart_url ?? $trade->chart_picture" alt="Chart" class="w-full h-full" object="contain" />
                                 </figure>
-                                <div class="card-body p-4 bg-green-50/30">
+                                <div class="card-body p-4 bg-success/10">
                                     <div class="flex justify-between items-start">
                                         <div>
-                                            <h3 class="font-black uppercase text-gray-800">{{ $trade->symbol }}</h3>
-                                            <p class="text-xs font-medium text-gray-500 mt-0.5">{{ \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') }}</p>
+                                            <h3 class="font-black uppercase text-base-content">{{ $trade->symbol }}</h3>
+                                            <p class="text-xs font-medium text-base-content/60 mt-0.5">{{ \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') }}</p>
                                         </div>
-                                        <div class="badge font-bold border-none shadow-sm bg-green-100 text-green-700">
+                                        <div class="badge badge-success font-bold border-none shadow-sm text-success-content">
                                             +${{ number_format($trade->total_pnl, 2) }}
                                         </div>
                                     </div>
@@ -40,7 +40,7 @@
                         </div>
                     @endif
                 @else
-                    <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center mt-4 text-sm text-gray-500">
+                    <div class="bg-base-200 border-2 border-dashed border-base-300 rounded-xl p-8 text-center mt-4 text-sm text-base-content/60">
                         <span class="block text-2xl mb-2">🌱</span>
                         No winning charts available yet.
                     </div>
@@ -49,25 +49,25 @@
 
             <!-- Right Column: Losses -->
             <div class="flex-1 w-full md:w-1/2">
-                <div class="flex items-center gap-2 mb-6 border-b border-gray-200 pb-2">
+                <div class="flex items-center gap-2 mb-6 border-b border-base-300 pb-2">
                     <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                    <h2 class="text-xl font-bold text-gray-800 uppercase tracking-wide">Losing Trades</h2>
+                    <h2 class="text-xl font-bold text-base-content uppercase tracking-wide">Losing Trades</h2>
                 </div>
                 
                 @if($losingTrades->isNotEmpty())
                     <div class="grid grid-cols-1 gap-6" id="losses-container">
                         @foreach($losingTrades as $trade)
                             <div class="card bg-base-100 shadow-md overflow-hidden cursor-pointer hover:shadow-lg hover:border-red-300 transition-all duration-300 border border-red-100" onclick="window.location='{{ route('trades.show', $trade->id) }}'">
-                                <figure class="h-64 bg-gray-900">
+                                <figure class="h-64 bg-base-300">
                                     <x-optimized-image :src="$trade->direct_chart_url ?? $trade->chart_picture" alt="Chart" class="w-full h-full" object="contain" />
                                 </figure>
-                                <div class="card-body p-4 bg-red-50/30">
+                                <div class="card-body p-4 bg-error/10">
                                     <div class="flex justify-between items-start">
                                         <div>
-                                            <h3 class="font-black uppercase text-gray-800">{{ $trade->symbol }}</h3>
-                                            <p class="text-xs font-medium text-gray-500 mt-0.5">{{ \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') }}</p>
+                                            <h3 class="font-black uppercase text-base-content">{{ $trade->symbol }}</h3>
+                                            <p class="text-xs font-medium text-base-content/60 mt-0.5">{{ \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') }}</p>
                                         </div>
-                                        <div class="badge font-bold border-none shadow-sm bg-red-100 text-red-700">
+                                        <div class="badge badge-error font-bold border-none shadow-sm text-error-content">
                                             -${{ number_format(abs($trade->total_pnl), 2) }}
                                         </div>
                                     </div>
@@ -84,7 +84,7 @@
                         </div>
                     @endif
                 @else
-                    <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center mt-4 text-sm text-gray-500">
+                    <div class="bg-base-200 border-2 border-dashed border-base-300 rounded-xl p-8 text-center mt-4 text-sm text-base-content/60">
                         <span class="block text-2xl mb-2">🛡️</span>
                         No losing charts available yet.
                     </div>

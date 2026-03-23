@@ -52,7 +52,7 @@
                             -${{ number_format(abs($strategy->avg_loss), 2) }}
                         </td>
                         <td @class([
-                            'text-black' => $strategy->hit_ratio == 0,
+                            'text-base-content' => $strategy->hit_ratio == 0,
                             'text-orange-500 font-bold' => $strategy->hit_ratio == 50,
                             'text-green-500 font-bold' => $strategy->hit_ratio > 50,
                             'text-red-500 font-bold' => $strategy->hit_ratio < 50 && $strategy->hit_ratio != 0,
@@ -60,7 +60,7 @@
                             {{ number_format($strategy->hit_ratio, 1) }}%
                         </td>
                         <td @class([
-                            'text-black' => $strategy->edge_ratio == 0,
+                            'text-base-content' => $strategy->edge_ratio == 0,
                             'text-red-500 font-bold' => $strategy->edge_ratio > 0 && $strategy->edge_ratio < 1,
                             'text-orange-500 font-bold' => $strategy->edge_ratio == 1,
                             'text-green-500 font-bold' => $strategy->edge_ratio > 1 && $strategy->edge_ratio <= 2,
@@ -93,17 +93,20 @@
                     </x-table.row>
                 @endforeach
             </x-table>
+            <div class="mt-4">
+                {{ $strategies->links() }}
+            </div>
         @else
             <div class="mt-8">
-                <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+                <div class="bg-base-200 border-2 border-dashed border-base-300 rounded-xl p-12 text-center">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 mb-4">
+                        stroke="currentColor" class="w-12 h-12 mx-auto text-base-content/40 mb-4">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
 
-                    <h3 class="font-bold text-lg text-gray-900 mb-2">No strategies added yet</h3>
-                    <p class="text-gray-500 mb-4">Create your first strategy to start tracking your rules and edge.</p>
+                    <h3 class="font-bold text-lg text-base-content mb-2">No strategies added yet</h3>
+                    <p class="text-base-content/60 mb-4">Create your first strategy to start tracking your rules and edge.</p>
                     <a href="{{ route('strategies.create') }}" class="btn btn-primary">
                         + Create Strategy
                     </a>

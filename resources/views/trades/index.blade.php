@@ -13,9 +13,9 @@
                     </a>
 
                     <div
-                        class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-gray-100 p-2 rounded-lg border border-gray-300">
-                        <span class="text-sm font-semibold text-gray-600 px-2">Bulk Actions:</span>
-                        <select class="select select-sm border-gray-300" name="timeframe" id="bulk-timeframe">
+                        class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-base-200 p-2 rounded-lg border border-base-300">
+                        <span class="text-sm font-semibold text-base-content/70 px-2">Bulk Actions:</span>
+                        <select class="select select-sm border-base-300" name="timeframe" id="bulk-timeframe">
                             <option value="">Timeframe...</option>
                             <option>1m</option>
                             <option>5m</option>
@@ -25,7 +25,7 @@
                             <option>4hr</option>
                             <option>1d</option>
                         </select>
-                        <select class="select select-sm border-gray-300" name="strategy_id" id="bulk-strategy">
+                        <select class="select select-sm border-base-300" name="strategy_id" id="bulk-strategy">
                             <option value="">Strategy...</option>
                             @foreach($strategies as $strategy)
                                 <option value="{{ $strategy->id }}">{{ $strategy->name }}</option>
@@ -33,7 +33,7 @@
                         </select>
 
                         <button class="btn btn-sm btn-primary" id="apply-bulk">Update</button>
-                        <div class="w-px h-6 bg-gray-300 mx-1"></div>
+                        <div class="w-px h-6 bg-base-300 mx-1"></div>
                         <!-- Delete Button -->
                         <button class="btn btn-sm btn-square btn-error btn-outline" id="bulk-delete" aria-label="Delete Selected">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -125,15 +125,15 @@
                 </div>
             @else
                 <div class="mt-8">
-                    <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+                    <div class="bg-base-200 border-2 border-dashed border-base-300 rounded-xl p-12 text-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 mb-4">
+                            stroke="currentColor" class="w-12 h-12 mx-auto text-base-content/40 mb-4">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m-1.5 4.5h.008v.008H6.75V11.25Zm0 3h.008v.008H6.75V14.25Zm0 3h.008v.008H6.75V17.25ZM12 11.25h.008v.008H12V11.25Zm0 3h.008v.008H12V14.25Zm0 3h.008v.008H12V17.25ZM17.25 11.25h.008v.008h-.008V11.25Zm0 3h.008v.008h-.008V14.25Z" />
                         </svg>
 
-                        <h3 class="font-bold text-lg text-gray-900 mb-2">No trades added yet</h3>
-                        <p class="text-gray-500 mb-4">Add your first trade to start analyzing your market edge.</p>
+                        <h3 class="font-bold text-lg text-base-content mb-2">No trades added yet</h3>
+                        <p class="text-base-content/60 mb-4">Add your first trade to start analyzing your market edge.</p>
                         <a href="{{ route('trades.create') }}" class="btn btn-primary">
                             + Add Trade
                         </a>
