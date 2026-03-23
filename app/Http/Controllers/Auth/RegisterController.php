@@ -20,6 +20,9 @@ class RegisterController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => ['required', 'min:8', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'terms' => 'accepted',
+        ], [
+            'terms.accepted' => 'You must agree to the Terms of Service and Privacy Policy to create an account.',
         ]);
 
         $user = User::create($validated);

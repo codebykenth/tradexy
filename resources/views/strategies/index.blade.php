@@ -28,7 +28,11 @@
                 @foreach ($strategies as $strategy)
                     <x-table.row onclick="window.location='{{ route('strategies.show', $strategy->id) }}'">
                         <td class="font-medium">
-                            {{ $strategy->name }}
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="w-3 h-3 rounded-full shadow-sm shrink-0"
+                                    style="background-color: {{ $strategy->color ?? '#6366f1' }};"></span>
+                                <span>{{ $strategy->name }}</span>
+                            </div>
                         </td>
                         <td @class([
                             'text-green-500 font-bold' => $strategy->net_pnl > 0,

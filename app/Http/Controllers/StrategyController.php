@@ -43,7 +43,7 @@ class StrategyController extends Controller
                 ->withAvg(['trades as avg_win' => fn ($q) => $tradeFilter($q->where('total_pnl', '>', 0))], 'total_pnl')
                 ->withAvg(['trades as avg_loss' => fn ($q) => $tradeFilter($q->where('total_pnl', '<', 0))], 'total_pnl')
                 ->withCount(['trades as winning_trades_count' => fn ($q) => $tradeFilter($q->where('total_pnl', '>', 0))])
-                ->orderByDesc('net_pnl')
+                ->orderByRaw('net_pnl DESC NULLS LAST')
                 ->paginate(10);
         });
 

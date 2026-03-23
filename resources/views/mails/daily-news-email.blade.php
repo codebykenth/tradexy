@@ -17,7 +17,7 @@
             $gold = $aiAnalysis['gold'];
             $d = $gold['data'] ?? [];
         @endphp
-        <h2 style="color:#d4af37; margin-bottom: 8px;">🟡 GOLD MARKET UPDATE</h2>
+        <h2 style="color:#d4af37; margin-bottom: 8px;"><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background-color:#d4af37; margin-right:8px; vertical-align:middle;"></span> GOLD MARKET UPDATE</h2>
         <p style="margin: 4px 0;">
             <strong>Bias:</strong> {{ $gold['bias'] ?? "N/A" }}<br>
             <strong>Confidence:</strong> {{ $gold['confidence'] ?? "N/A" }}<br>
@@ -75,7 +75,7 @@
             $crypto = $aiAnalysis['crypto'];
             $d = $crypto['data'] ?? [];
         @endphp
-        <h2 style="color:#f7931a; margin-bottom: 8px;">🟠 BITCOIN MARKET UPDATE</h2>
+        <h2 style="color:#f7931a; margin-bottom: 8px;"><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background-color:#f7931a; margin-right:8px; vertical-align:middle;"></span> BITCOIN MARKET UPDATE</h2>
         <p style="margin: 4px 0;">
             <strong>Bias:</strong> {{ $crypto['bias'] ?? "N/A" }}<br>
             <strong>Confidence:</strong> {{ $crypto['confidence'] ?? "N/A" }}<br>
@@ -128,7 +128,7 @@
     @endif
 
     <p style="font-size: 0.85em; color: #666; text-align: center;">
-        ⚠️ This report is AI-generated for informational purposes only.<br>
+        <span style="display:inline-block; background:#fff3cd; color:#856404; font-weight:bold; padding:2px 6px; border-radius:4px; margin-right:4px;">NOTICE</span> This report is AI-generated for informational purposes only.<br>
         Not financial advice. Always Do Your Own Research (DYOR).
     </p>
 </body>

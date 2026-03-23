@@ -14,7 +14,7 @@
 
 <script type="module">
     document.addEventListener("DOMContentLoaded", function () {
-        const isDarkMode = document.documentElement.classList.contains('dark') || window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark' || document.documentElement.classList.contains('dark');
         const textColor = isDarkMode ? '#9CA3AF' : '#6B7280'; // gray-400 : gray-500
         const gridColor = isDarkMode ? '#1F2937' : '#E5E7EB'; // gray-800 : gray-200
 

@@ -155,8 +155,12 @@
                     <div
                         class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 rounded-lg p-3 mb-3">
                         <div class="flex items-center gap-2 mb-1">
-                            <span class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 uppercase">🏆 Best
-                                Trade</span>
+                            <span class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 uppercase flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-emerald-500">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+                                </svg>
+                                Best Trade
+                            </span>
                         </div>
                         <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $bestTrade?->symbol ?? 'N/A' }}
                         </div>
@@ -172,8 +176,12 @@
                     <div
                         class="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 rounded-lg p-3 mb-4">
                         <div class="flex items-center gap-2 mb-1">
-                            <span class="text-sm font-semibold text-red-600 dark:text-red-400 uppercase">📉 Worst
-                                Trade</span>
+                            <span class="text-sm font-semibold text-red-600 dark:text-red-400 uppercase flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-red-500">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.51m-3.182 5.51-5.511-3.181" />
+                                </svg>
+                                Worst Trade
+                            </span>
                         </div>
                         <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $worstTrade?->symbol ?? 'N/A' }}
                         </div>
@@ -192,7 +200,10 @@
                             class="bg-gray-50 dark:bg-[#20222a] border border-gray-200 dark:border-gray-800 rounded-lg p-3">
                             <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Max Win Streak</div>
                             <div class="text-lg font-bold text-green-600 dark:text-green-500 flex items-center gap-1">
-                                {{ $maxWinStreak }} 🔥
+                                {{ $maxWinStreak }}
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-orange-500">
+                                  <path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176 7.547 7.547 0 0 1-1.705-1.715.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248ZM15.75 14.25a3.75 3.75 0 1 1-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 0 1 1.925-3.546 3.75 3.75 0 0 1 3.255 3.718Z" clip-rule="evenodd" />
+                                </svg>
                             </div>
                         </div>
 
@@ -201,7 +212,10 @@
                             class="bg-gray-50 dark:bg-[#20222a] border border-gray-200 dark:border-gray-800 rounded-lg p-3">
                             <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Max Loss Streak</div>
                             <div class="text-lg font-bold text-red-600 dark:text-red-500 flex items-center gap-1">
-                                {{ $maxLossStreak }} ⚠️
+                                {{ $maxLossStreak }}
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-yellow-500">
+                                  <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+                                </svg>
                             </div>
                         </div>
 

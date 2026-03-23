@@ -14,7 +14,7 @@
 
         <div class="flex flex-col gap-8 my-8">
             <!-- Profile Picture Section -->
-            <div class="bg-gray-100 rounded-lg p-8 flex items-center justify-between gap-6">
+            <div class="bg-base-200 rounded-lg p-8 flex items-center justify-between gap-6 border border-base-300 shadow-sm">
                 <div class="flex items-center gap-6">
                     <div
                         class="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold overflow-hidden shadow-sm relative">
@@ -33,8 +33,8 @@
                         @endif
                     </div>
                     <div>
-                        <p class="text-xl font-bold">{{ Auth::user()->name }}</p>
-                        <p class="text-sm text-gray-500">
+                        <p class="text-xl font-bold text-base-content">{{ Auth::user()->name }}</p>
+                        <p class="text-sm text-base-content/60">
                             @if(session('profile_uploading'))
                                 <span
                                     class="text-primary font-bold animate-pulse uppercase tracking-widest text-[10px]">Uploading
@@ -59,10 +59,10 @@
             <div class="flex flex-col md:flex-row gap-8">
                 <!-- Profile Information Form -->
                 <form id="form" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data"
-                    class="bg-gray-100 rounded-lg p-8 w-full md:w-1/2">
+                    class="bg-base-200 rounded-lg p-8 w-full md:w-1/2 border border-base-300 shadow-sm">
                     @csrf
                     @method('PUT')
-                    <div class="flex items-center gap-3 text-gray-800 mb-6 border-b border-gray-200 pb-4">
+                    <div class="flex items-center gap-3 text-base-content mb-6 border-b border-base-300 pb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-6 text-primary">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -75,7 +75,7 @@
                         <div>
                             <fieldset class="fieldset w-full">
                                 <legend
-                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                     Name</legend>
                                 <input type="text" id="name" name="name" value="{{ old('name', Auth::user()->name) }}"
                                     class="input w-full @error('name') input-error @enderror" required>
@@ -88,7 +88,7 @@
                         <div>
                             <fieldset class="fieldset w-full">
                                 <legend
-                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                     Email</legend>
                                 <input type="email" id="email" name="email"
                                     value="{{ old('email', Auth::user()->email) }}"
@@ -102,7 +102,7 @@
                         <div>
                             <fieldset class="fieldset w-full">
                                 <legend
-                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                     Upload New Picture</legend>
                                 <input type="file" id="profile_picture" name="profile_picture" accept="image/*"
                                     class="file-input file-input-bordered w-full @error('profile_picture') file-input-error @enderror">
@@ -120,11 +120,11 @@
 
                 <!-- Change Password Form -->
                 <form action="{{ route('profile.change-password') }}" method="POST"
-                    class="dirty-check bg-gray-100 rounded-lg p-8 w-full md:w-1/2">
+                    class="dirty-check bg-base-200 rounded-lg p-8 w-full md:w-1/2 border border-base-300 shadow-sm">
                     @csrf
                     @method('PUT')
 
-                    <div class="flex items-center gap-3 text-gray-800 mb-6 border-b border-gray-200 pb-4">
+                    <div class="flex items-center gap-3 text-base-content mb-6 border-b border-base-300 pb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-6 text-primary">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -137,7 +137,7 @@
                         <div>
                             <fieldset class="fieldset w-full">
                                 <legend
-                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                     Current Password</legend>
                                 <div class="relative">
                                     <input type="password" id="current_password" name="current_password"
@@ -161,12 +161,12 @@
                             </fieldset>
                         </div>
 
-                        <div class="border-t border-gray-200 my-2"></div>
+                        <div class="border-t border-base-300 my-2"></div>
 
                         <div>
                             <fieldset class="fieldset w-full">
                                 <legend
-                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                     New Password</legend>
                                 <div class="relative">
                                     <input type="password" id="new_password" name="new_password"
@@ -193,7 +193,7 @@
                         <div>
                             <fieldset class="fieldset w-full">
                                 <legend
-                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                    class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                     Confirm New Password</legend>
                                 <div class="relative">
                                     <input type="password" id="new_password_confirmation"

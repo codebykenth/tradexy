@@ -15,3 +15,24 @@
 @plugin "daisyui" {
     themes: light, dark;
 }
+
+@layer components {
+    /* Fix ApexCharts Tooltip contrast with DaisyUI themes */
+    .apexcharts-tooltip,
+    .apexcharts-tooltip.apexcharts-theme-light, 
+    .apexcharts-tooltip.apexcharts-theme-dark {
+        @apply !bg-base-100 !border !border-base-300 !text-base-content !shadow-lg !rounded-xl;
+    }
+
+    .apexcharts-tooltip-title {
+        @apply !bg-base-200 !border-b !border-base-300 !text-base-content !font-bold !px-3 !py-2;
+    }
+
+    .apexcharts-tooltip-text {
+        @apply !text-base-content !font-medium !px-3 !py-1;
+    }
+
+    .apexcharts-tooltip-series-group {
+        @apply !bg-transparent;
+    }
+}

@@ -431,7 +431,7 @@
                 </div>
 
                 <!-- Key Takeaways -->
-                <div class="bg-base-200 rounded-lg p-8">
+                <div class="bg-base-200 rounded-lg p-8 mb-8">
                     <p class="uppercase font-bold mb-4">Key Takeaways</p>
                     @if($trade->lessons->isNotEmpty())
                         <ul class="list-disc ml-4 space-y-2 text-base-content/70">

@@ -142,18 +142,21 @@
             </script>
         @else
             <div class="mt-8">
-                <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+                <div class="bg-base-200 border-2 border-dashed border-base-300 rounded-xl p-12 text-center shadow-inner">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 mb-4">
+                        stroke="currentColor" class="w-12 h-12 mx-auto text-base-content/30 mb-4">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
                     </svg>
 
-                    <h3 class="font-bold text-lg text-gray-900 mb-2">No balance history yet</h3>
-                    <p class="text-gray-500 mb-4">Add your first balance entry to start monitoring your wallet and equity.
+                    <h3 class="font-bold text-xl text-base-content mb-2">No balance history yet</h3>
+                    <p class="text-base-content/60 mb-6 max-w-sm mx-auto">Add your first balance entry to start monitoring your wallet and equity.
                     </p>
-                    <a href="{{ route('balances.create') }}" class="btn btn-primary">
-                        + Add Entry
+                    <a href="{{ route('balances.create') }}" class="btn btn-primary px-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add Entry
                     </a>
                 </div>
             </div>
@@ -214,7 +217,7 @@
                             <div>
                                 <fieldset class="fieldset w-full">
                                     <legend
-                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                         Date & Time</legend>
                                     <input type="datetime-local" class="input w-full" name="date"
                                         value="{{ \Carbon\Carbon::parse($balance->date)->format('Y-m-d\TH:i') }}"
@@ -224,7 +227,7 @@
                             <div>
                                 <fieldset class="fieldset w-full">
                                     <legend
-                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                         Wallet Balance</legend>
                                     <input type="number" step="any" class="input w-full" name="wallet_balance"
                                         value="{{ $balance->wallet_balance }}" required />
@@ -233,7 +236,7 @@
                             <div>
                                 <fieldset class="fieldset w-full">
                                     <legend
-                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                         Total Equity</legend>
                                     <input type="number" step="any" class="input w-full" name="total_equity"
                                         value="{{ $balance->total_equity }}" required />
@@ -242,7 +245,7 @@
                             <div>
                                 <fieldset class="fieldset w-full">
                                     <legend
-                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                         Cumulative Realized PnL</legend>
                                     <input type="number" step="any" class="input w-full" name="cum_realised_pnl"
                                         value="{{ $balance->cum_realised_pnl }}" required />
@@ -251,7 +254,7 @@
                             <div>
                                 <fieldset class="fieldset w-full">
                                     <legend
-                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                         Market</legend>
                                     <select class="select w-full" name="market">
                                         <option value="crypto" @selected($balance->market === 'crypto')>Crypto</option>
@@ -262,7 +265,7 @@
                             <div>
                                 <fieldset class="fieldset w-full">
                                     <legend
-                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-gray-500">
+                                        class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                         Account Mode</legend>
                                     <label class="label cursor-pointer justify-start gap-4 h-full">
                                         <input type="hidden" name="is_demo" value="0">

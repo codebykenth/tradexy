@@ -170,20 +170,25 @@
                         </div>
 
                         <!-- Terms -->
-                        <div class="flex items-start">
-                            <div class="flex h-6 items-center">
-                                <input id="terms" name="terms" type="checkbox" {{ old('terms') ? 'checked' : '' }}
-                                    class="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900 dark:border-gray-700 dark:bg-[#161615] dark:focus:ring-white">
+                        <div>
+                            <div class="flex items-start">
+                                <div class="flex h-6 items-center">
+                                    <input id="terms" name="terms" type="checkbox" {{ old('terms') ? 'checked' : '' }}
+                                        class="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900 dark:border-gray-700 dark:bg-[#161615] dark:focus:ring-white cursor-pointer">
+                                </div>
+                                <div class="ml-3 text-sm leading-6">
+                                    <label for="terms" class="font-medium text-gray-900 dark:text-gray-300 cursor-pointer">I agree to the
+                                        <a href="/terms-and-conditions"
+                                            class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">Terms
+                                            of
+                                            Service</a> and <a href="/privacy-policy"
+                                            class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">Privacy
+                                            Policy</a></label>
+                                </div>
                             </div>
-                            <div class="ml-3 text-sm leading-6">
-                                <label for="terms" class="font-medium text-gray-900 dark:text-gray-300">I agree to the
-                                    <a href="/terms-and-conditions"
-                                        class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">Terms
-                                        of
-                                        Service</a> and <a href="/privacy-policy"
-                                        class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">Privacy
-                                        Policy</a></label>
-                            </div>
+                            @error('terms')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
