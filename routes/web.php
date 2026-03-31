@@ -13,6 +13,7 @@ use App\Http\Controllers\MigrateStrategiesController;
 use App\Http\Controllers\MigrateTradesController;
 use App\Http\Controllers\PnlCalendarController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ScreenerController;
 use App\Http\Controllers\SharedTradeController;
 use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\TradeBulkController;
@@ -93,6 +94,9 @@ Route::middleware(['throttle:read'])->group(function () {
         Route::get('insights/latest', [DailyNewsController::class, 'latest'])->name('daily-news.latest');
         Route::get('insights', [DailyNewsController::class, 'index'])->name('daily-news.index');
         Route::get('insights/{id}', [DailyNewsController::class, 'show'])->name('daily-news.show');
+
+        // Market Screener
+        Route::get('screener', [ScreenerController::class, 'index'])->name('screener.index');
     });
 });
 

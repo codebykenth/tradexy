@@ -20,6 +20,9 @@
                         <a href="{{ route('daily-news.index') }}" class="hover:text-base-content transition-colors font-medium">
                             Insights
                         </a>
+                        <a href="{{ route('screener.index') }}" class="hover:text-base-content transition-colors font-medium">
+                            Screener
+                        </a>
                     </div>
                 @else
                     <div class="hidden xl:flex items-center gap-6 text-base-content/70">
@@ -192,6 +195,7 @@
                     <a href="/strategies" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">My Strategies</a>
                     <a href="/pnl-calendar" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg text-primary">PnL Calendar</a>
                     <a href="{{ route('daily-news.index') }}" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Market Insights</a>
+                    <a href="{{ route('screener.index') }}" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Screener</a>
                 </div>
 
                 <!-- Global Modes (Mobile) -->

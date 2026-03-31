@@ -11,6 +11,8 @@ services:
       - app_storage_dev:/var/www/storage
       - app_public_dev:/var/www/public-shared
       - ./tradexy-47021-firebase-adminsdk-fbsvc-f8bf8180f3.json:/var/www/storage/app/private/tradexy-47021-firebase-adminsdk-fbsvc-f8bf8180f3.json
+    depends_on:
+      - redis
     networks:
       - tradexy_dev
 
@@ -46,6 +48,7 @@ services:
     depends_on:
       - app
       - reverb
+      - redis
     networks:
       - tradexy_dev
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
@@ -62,9 +65,20 @@ services:
       - "127.0.0.1:8083:8080"
     depends_on:
       - app
+      - redis
     networks:
       - tradexy_dev
     command: php artisan reverb:start --host="0.0.0.0" --port=8080
+
+  redis:
+    image: redis:alpine
+    container_name: tradexy_redis_dev
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - tradexy_dev
 
 networks:
   tradexy_dev:
@@ -72,3 +86,4 @@ networks:
 volumes:
   app_storage_dev:
   app_public_dev:
+  redis_data_dev:
