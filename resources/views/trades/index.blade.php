@@ -2,6 +2,22 @@
     <div class="w-full">
         <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
             <x-page-title title="Logs" subtitle="List of all your trades" />
+
+            {{-- Date filter banner from PnL calendar deep-link --}}
+            @if(!empty($dateFilter))
+                <div class="flex items-center gap-3 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40 rounded-xl text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-blue-500 shrink-0">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                    </svg>
+                    <span class="text-blue-700 dark:text-blue-300 font-medium">
+                        Showing trades for <strong>{{ \Carbon\Carbon::parse($dateFilter)->format('F j, Y') }}</strong>
+                    </span>
+                    <a href="{{ route('trades.index') }}" class="ml-auto text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200 font-semibold transition-colors">
+                        ✕ Clear filter
+                    </a>
+                </div>
+            @endif
+
             @if($ownedTrades->isNotEmpty())
                 <div class="relative h-12 mb-4">
                     <a href="{{ route('trades.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">
@@ -144,8 +160,6 @@
 
     </div>
 
-</x-layouts.app>
-
 <!-- Bulk Delete Confirmation Modal -->
 <dialog id="bulk_delete_confirm_modal" class="modal">
     <div class="modal-box border-2 border-error/20 shadow-2xl">
@@ -168,7 +182,7 @@
         <div class="modal-action">
             <form method="dialog" class="flex gap-3 w-full">
                 <button class="btn flex-1 font-black uppercase tracking-widest text-[10px]">Back</button>
-                <button type="button" onclick="executeBulkDelete()" class="btn btn-error flex-2 font-black uppercase tracking-widest text-[10px] px-8">Confirm Delete</button>
+                <button type="button" id="bulk-delete-confirm-btn" onclick="executeBulkDelete()" class="btn btn-error flex-2 font-black uppercase tracking-widest text-[10px] px-8">Confirm Delete</button>
             </form>
         </div>
     </div>
@@ -178,10 +192,16 @@
 </dialog>
 
 <script>
+    (function () {
     let bulkBtn = document.getElementById('apply-bulk')
     let allTradesBtn = document.querySelector('.all-trade-checkbox')
     let singleTradeCheckbox = document.querySelectorAll('.trade-checkbox')
     let bulkContainer = document.querySelector('.bulk-action-container')
+    let bulkDeleteBtn = document.getElementById('bulk-delete')
+
+    if (!bulkBtn || !allTradesBtn || !bulkContainer || !bulkDeleteBtn) {
+        return;
+    }
 
     // Select a checkbox then show apply button dynamically (toggle)
     for (let i = 0; i < singleTradeCheckbox.length; i++) {
@@ -205,12 +225,20 @@
     function executeBulkDelete() {
         submitBulkAction('delete');
     }
+    window.executeBulkDelete = executeBulkDelete;
 
     function performBulkAction(action) {
         let checkedTrades = document.querySelectorAll('.trade-checkbox:checked');
         let tradeIds = Array.from(checkedTrades).map(cb => cb.value);
 
-        if (tradeIds.length === 0) return;
+        if (tradeIds.length === 0) {
+            if (window.showToast) {
+                window.showToast('Please select at least one trade first.', 'error');
+            } else {
+                alert('Please select at least one trade first.');
+            }
+            return;
+        }
 
         if (action === 'delete') {
             document.getElementById('delete-count-display').textContent = tradeIds.length;
@@ -290,11 +318,16 @@
     }
 
     bulkBtn.addEventListener('click', () => performBulkAction('update'));
-    document.getElementById('bulk-delete').addEventListener('click', () => performBulkAction('delete'));
+    bulkDeleteBtn.addEventListener('click', () => performBulkAction('delete'));
+    const confirmDeleteBtn = document.getElementById('bulk-delete-confirm-btn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', executeBulkDelete);
+    }
     allTradesBtn.addEventListener('click', selectAllTrades)
 
     // Real-time Event Listener
-    if (window.Echo) {
+    if (window.Echo && !window.__tradeIndexEchoInit) {
+        window.__tradeIndexEchoInit = true;
         window.Echo.private("App.Models.User." + @js(auth()->id()))
             .listen('.NewTradesFetched', (e) => {
                 console.log('Real-time event received:', e);
@@ -380,4 +413,6 @@
             });
         }
     }
+    })();
 </script>
+</x-layouts.app>

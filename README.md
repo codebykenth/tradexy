@@ -6,19 +6,24 @@ A professional trading journal application built with Laravel, Tailwind CSS, and
 
 ## Tech Stack
 
-- **Backend:** PHP 8.4, Laravel 12
+- **Backend:** PHP 8.2+, Laravel 12
 - **Frontend:** Blade, Tailwind CSS v4, Vite
-- **Database:** PostgreSQL 16
+- **Database:** PostgreSQL (Neon)
 - **AI:** Google Gemini API
-- **Containerization:** Docker & Docker Compose
+- **File storage:** Google Cloud Storage (production uploads)
+- **Hosting:** [Vercel](https://vercel.com/) (serverless PHP via `vercel-php`)
 
 ---
 
 ## Prerequisites
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
-- [Node.js](https://nodejs.org/) (v20+ recommended) — for running Vite on the host
+- [PHP](https://www.php.net/) 8.2+ with extensions: `pdo_pgsql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`
+- [Composer](https://getcomposer.org/)
+- [Node.js](https://nodejs.org/) v20+
+- [PostgreSQL](https://www.postgresql.org/) 16+ (local install or a hosted instance)
 - [Git](https://git-scm.com/)
+
+For deployment: a [Vercel](https://vercel.com/) account and a hosted PostgreSQL database.
 
 ---
 
@@ -31,85 +36,69 @@ git clone https://github.com/codebykenth/trading-journal-v2.git
 cd trading-journal-v2
 ```
 
-### 2. Install Node Dependencies
+### 2. Install Dependencies
 
 ```bash
+composer install
 npm install
 ```
 
-### 3. Setup Environment Variables
+### 3. Environment Variables
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` and configure the database to use the Docker PostgreSQL container:
+Configure your database. Either set `DB_URL` (recommended for hosted Postgres) or individual fields:
 
 ```env
 DB_CONNECTION=pgsql
-DB_HOST=postgres
+DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_DATABASE=tradexy
-DB_USERNAME=tradexy
-DB_PASSWORD=secret
+DB_USERNAME=your_user
+DB_PASSWORD=your_password
 ```
 
-> **Note:** `DB_HOST=postgres` refers to the Docker service name, not `localhost`. The PHP app container connects to the Postgres container over the Docker network.
+Add API keys and other secrets as needed (`GEMINI_API_KEY`, OAuth credentials, etc.). See `.env.example` for the full list.
 
-### 4. Start Docker Containers
+### 4. Application Key & Database
 
 ```bash
-docker-compose up -d --build
+php artisan key:generate
+php artisan migrate --seed
 ```
 
-This starts:
-| Service | Container | Access |
-|---------|-----------|--------|
-| **PHP-FPM** | `laravel_app` | — |
-| **Nginx** | `laravel_nginx` | http://localhost:8000 |
-| **PostgreSQL** | `laravel_postgres` | localhost:5432 |
-
-### 5. Generate App Key
+### 5. Run the Dev Stack
 
 ```bash
-docker-compose exec app php artisan key:generate
+composer dev
 ```
 
-### 6. Run Migrations & Seeders
+This starts the Laravel dev server, queue worker, and Vite in one terminal. Open **http://127.0.0.1:8000**.
+
+Alternatively, run services separately:
 
 ```bash
-docker-compose exec app php artisan migrate --seed
-```
+# Terminal 1
+php artisan serve
 
-### 7. Start Vite (Frontend Assets)
+# Terminal 2 (optional — skip if QUEUE_FORCE_SYNC=true)
+php artisan queue:listen
 
-In a **separate terminal**, run Vite on the host for instant hot reload:
-
-```bash
+# Terminal 3
 npm run dev
 ```
-
-> **Why on the host?** Running Vite inside Docker on Windows causes ~10 second delays due to volume sync. Running natively gives instant file detection and hot reload.
-
-### 8. Open the App
-
-Visit **http://localhost:8000** in your browser.
 
 ---
 
 ## Daily Workflow
 
-Once the initial setup is done, your daily workflow is:
-
 ```bash
-# Terminal 1 — Start Docker (PHP, Nginx, Postgres)
-docker-compose up -d
-
-# Terminal 2 — Start Vite (hot reload)
-npm run dev
+composer dev
 ```
 
-Then open http://localhost:8000 and start developing!
+Then open http://127.0.0.1:8000.
 
 ---
 
@@ -117,15 +106,14 @@ Then open http://localhost:8000 and start developing!
 
 | Command | Description |
 |---------|-------------|
-| `docker-compose up -d` | Start all containers in background |
-| `docker-compose down` | Stop all containers |
-| `docker-compose exec app php artisan migrate` | Run migrations |
-| `docker-compose exec app php artisan migrate:fresh --seed` | Reset DB & re-seed |
-| `docker-compose exec app php artisan tinker` | Open Laravel REPL |
-| `docker-compose exec app php artisan test` | Run tests |
-| `docker-compose exec app php artisan cache:clear` | Clear application cache |
-| `docker-compose logs -f app` | View PHP container logs |
-| `npm run dev` | Start Vite dev server (hot reload) |
+| `composer dev` | Laravel server + queue + Vite (local dev) |
+| `composer setup` | Fresh install: deps, key, migrate, build assets |
+| `php artisan migrate` | Run migrations |
+| `php artisan migrate:fresh --seed` | Reset DB & re-seed |
+| `php artisan tinker` | Open Laravel REPL |
+| `php artisan test` | Run tests |
+| `php artisan cache:clear` | Clear application cache |
+| `npm run dev` | Vite dev server (hot reload) |
 | `npm run build` | Build production assets |
 
 ---
@@ -134,6 +122,8 @@ Then open http://localhost:8000 and start developing!
 
 ```
 trading-journal-v2/
+├── api/
+│   └── index.php           # Vercel serverless entry point
 ├── app/                    # Laravel application code
 │   ├── Http/Controllers/   # Route controllers
 │   ├── Models/             # Eloquent models
@@ -142,18 +132,14 @@ trading-journal-v2/
 ├── database/
 │   ├── migrations/         # Database migrations
 │   └── seeders/            # Database seeders
-├── docker/
-│   ├── nginx/              # Nginx configuration
-│   └── php/                # PHP Dockerfile
 ├── public/                 # Public assets
-│   └── images/             # Static images
 ├── resources/
 │   ├── css/                # Stylesheets (Tailwind)
 │   ├── js/                 # JavaScript
 │   └── views/              # Blade templates
 ├── routes/                 # Route definitions
 ├── storage/                # Logs, cache, uploads
-├── docker-compose.yml      # Local dev Docker config
+├── vercel.json             # Vercel build & routing config
 ├── vite.config.js          # Vite configuration
 └── .env.example            # Environment template
 ```
@@ -167,11 +153,56 @@ trading-journal-v2/
 | `.env.example` | Template — committed to git |
 | `.env` | Your local config — **never committed** |
 
+Set secrets in the Vercel project dashboard for production (not in git).
+
 ---
 
-## Deployment
+## Deployment (Vercel)
 
-For full deployment instructions (server setup, CI/CD, SSL, domains), see **[deployment-guide.md](deployment-guide.md)**.
+The app is configured for Vercel via `vercel.json`. Static assets are served from `public/`; all other requests route to `api/index.php`.
+
+### 1. Connect the Repository
+
+1. Import the GitHub repo in the [Vercel dashboard](https://vercel.com/new).
+2. Vercel reads `vercel.json` automatically (`buildCommand`, PHP runtime, routes).
+
+### 2. Environment Variables
+
+Add these in **Project → Settings → Environment Variables** (use production values):
+
+| Variable | Notes |
+|----------|-------|
+| `APP_KEY` | From `php artisan key:generate` |
+| `APP_ENV` | `production` |
+| `APP_DEBUG` | `false` |
+| `APP_URL` | Your Vercel or custom domain URL |
+| `DB_URL` | Hosted PostgreSQL connection string |
+| `QUEUE_FORCE_SYNC` | `true` — no background workers on Vercel |
+| `SESSION_DRIVER` | `database` |
+| `CACHE_STORE` | `database` |
+| `GEMINI_API_KEY` | AI analysis |
+| `GOOGLE_CLOUD_*` / `GCS_URL` | File uploads (GCS) |
+| `BROADCAST_CONNECTION` | `pusher` for real-time updates |
+| `REALTIME_ENABLED` | `true` to broadcast events & load Echo |
+| `PUSHER_APP_*` | App ID, key, secret, cluster from [Pusher](https://pusher.com/) |
+| OAuth vars | Update redirect URLs to your production domain |
+
+Vercel sets `VERCEL=1` automatically; logging is configured to use stderr in that environment.
+
+### 3. Database Migrations
+
+Vercel does not run migrations on deploy. Run them against your production database before or after each release:
+
+```bash
+# With production DB_URL in your local .env, or via Vercel CLI:
+php artisan migrate --force
+```
+
+### 4. Deploy
+
+Push to the connected branch (usually `main`). Vercel builds frontend assets (`npm ci && npm run build`) and deploys the PHP function.
+
+For a custom domain, add it under **Project → Settings → Domains** and update `APP_URL` and OAuth callback URLs accordingly.
 
 ---
 

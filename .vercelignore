@@ -1,0 +1,15 @@
+/vendor
+/node_modules
+/bootstrap/cache/packages.php
+/bootstrap/cache/services.php
+/bootstrap/cache/*.php
+/public/hot
+/public/build
+/public/storage
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+.env
+.env.*
+!.env.example

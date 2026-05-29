@@ -282,17 +282,27 @@
             </div>
         </div>
     </div>
-</x-layouts.app>
-@include('components.form-dirty-state-check')
+    @include('components.form-dirty-state-check')
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof Echo !== 'undefined') {
-            Echo.private('App.Models.User.{{ auth()->id() }}')
-                .listen('.ProfilePictureUploaded', (e) => {
-                    console.log('Profile Picture Uploaded:', e);
-                    window.location.reload();
-                });
-        }
-    });
-</script>
+    <script>
+        (function () {
+            const initProfileEcho = () => {
+                if (window.__profileEchoInit) return;
+                if (typeof Echo === 'undefined') return;
+
+                window.__profileEchoInit = true;
+                Echo.private('App.Models.User.{{ auth()->id() }}')
+                    .listen('.ProfilePictureUploaded', (e) => {
+                        console.log('Profile Picture Uploaded:', e);
+                        window.location.reload();
+                    });
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initProfileEcho, { once: true });
+            } else {
+                initProfileEcho();
+            }
+        })();
+    </script>
+</x-layouts.app>

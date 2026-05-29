@@ -93,7 +93,9 @@
                             }
                         @endphp
                         <div class="aspect-square">
-                            <div class="h-full w-full rounded-lg border {{ $borderClass }} {{ $bgClass }} p-2 flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer {{ $isToday ? 'ring-2 ring-blue-500' : '' }}">
+                            {{-- Link to trades.index filtered by this date --}}
+                            <a href="{{ $trades > 0 ? route('trades.index', ['date' => $dateString]) : '#' }}"
+                               class="h-full w-full rounded-lg border {{ $borderClass }} {{ $bgClass }} p-2 flex flex-col justify-between hover:shadow-md transition-shadow {{ $trades > 0 ? 'cursor-pointer' : 'cursor-default' }} {{ $isToday ? 'ring-2 ring-blue-500' : '' }} block">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-medium {{ $trades > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400' }}">
                                         {{ $day }}
@@ -111,7 +113,7 @@
                                 @else
                                     <div class="text-xs text-gray-400 dark:text-gray-500">No trades</div>
                                 @endif
-                            </div>
+                            </a>
                         </div>
                     @endfor
                 </div>

@@ -27,6 +27,7 @@
         ]
     },
     "dependencies": {
+        "@hotwired/turbo": "^8.0.23",
         "apexcharts": "^5.9.0"
     }
 }

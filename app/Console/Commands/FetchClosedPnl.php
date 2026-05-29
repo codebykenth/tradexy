@@ -137,7 +137,7 @@ class FetchClosedPnl extends Command
             $this->info("Created: {$created} | Skipped (duplicates): {$skipped}");
             $this->info('Done!');
 
-            if ($created > 0) {
+            if ($created > 0 && config('app.realtime_enabled')) {
                 $accountType = $isDemo ? 'Demo' : 'Bybit';
                 \App\Events\NewTradesFetched::dispatch($this->user, "Added {$created} new trades from {$accountType}!");
             }

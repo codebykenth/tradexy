@@ -56,6 +56,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | External Cron Token
+    |--------------------------------------------------------------------------
+    |
+    | Shared secret for calling the HTTP cron endpoint (e.g. cron-job.org).
+    | Keep this value private in production.
+    |
+    */
+    'cron_token' => env('CRON_TOKEN', ''),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Realtime Broadcasting Toggle
+    |--------------------------------------------------------------------------
+    |
+    | Enable Pusher / Echo broadcasting (set BROADCAST_CONNECTION=pusher)
+    | environments where websocket infrastructure is not running.
+    |
+    */
+    'realtime_enabled' => env('REALTIME_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

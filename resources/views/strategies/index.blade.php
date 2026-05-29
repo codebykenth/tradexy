@@ -142,5 +142,5 @@
             </dialog>
         @endforeach
     </div>
+    @include('components.form-dirty-state-check')
 </x-layouts.app>
-@include('components.form-dirty-state-check')

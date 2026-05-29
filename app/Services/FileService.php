@@ -112,10 +112,15 @@ class FileService
     }
 
     /**
-     * Compress an image file using GD before uploading
+     * Compress an image file using GD before uploading.
+     * Skips when GD is unavailable (e.g. many serverless PHP runtimes).
      */
     private function compressImage($file): void
     {
+        if (!\extension_loaded('gd')) {
+            return;
+        }
+
         $path = $file->getRealPath();
         $mime = $file->getMimeType();
 
@@ -125,18 +130,24 @@ class FileService
         } // Ignore if < 200KB
 
         if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
-            $image = @imagecreatefromjpeg($path);
+            if (!\function_exists('imagecreatefromjpeg')) {
+                return;
+            }
+            $image = @\imagecreatefromjpeg($path);
             if ($image) {
-                imagejpeg($image, $path, 75); // 75% quality
-                imagedestroy($image);
+                \imagejpeg($image, $path, 75); // 75% quality
+                \imagedestroy($image);
             }
         } elseif ($mime === 'image/png') {
-            $image = @imagecreatefrompng($path);
+            if (!\function_exists('imagecreatefrompng')) {
+                return;
+            }
+            $image = @\imagecreatefrompng($path);
             if ($image) {
-                imagealphablending($image, false);
-                imagesavealpha($image, true);
-                imagepng($image, $path, 6); // Level 6 compression
-                imagedestroy($image);
+                \imagealphablending($image, false);
+                \imagesavealpha($image, true);
+                \imagepng($image, $path, 6); // Level 6 compression
+                \imagedestroy($image);
             }
         }
     }

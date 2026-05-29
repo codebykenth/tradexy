@@ -1,5 +1,8 @@
-<x-layouts.admin title="System Audit Logs">
-    <div class="space-y-8">
+<x-layouts.app title="System Audit Logs">
+    <div class="max-w-7xl mx-auto px-6 space-y-6 mb-8 mt-6">
+        <x-admin-nav />
+        
+        <div class="space-y-8">
         <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
@@ -67,4 +70,4 @@
             {{ $logs->links() }}
         </div>
     </div>
-</x-layouts.admin>
+</x-layouts.app>

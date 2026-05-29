@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\DispatchesQueueOrSync;
 use App\Http\Requests\TradeRequest;
 use App\Jobs\FileUpload;
 use App\Models\Strategy;
@@ -17,6 +18,8 @@ use Illuminate\Support\Str;
 
 final class TradeController extends Controller
 {
+    use DispatchesQueueOrSync;
+
     public function __construct(
         private readonly FileService $fileService,
     ) {}
@@ -39,11 +42,13 @@ final class TradeController extends Controller
         $marketMode = session('market_type', 'crypto');
         $prefCurrency = session('preferred_currency', 'USD');
         $page = request()->get('page', 1);
+        // Date filter from PnL calendar deep-link
+        $dateFilter = request()->get('date');
 
         $version = Cache::get("trades_version_user_{$userId}", now()->timestamp);
-        $cacheKey = "trades_v{$version}_u{$userId}_m{$accountMode}_mar{$marketMode}_cur{$prefCurrency}_p{$page}";
+        $cacheKey = "trades_v{$version}_u{$userId}_m{$accountMode}_mar{$marketMode}_cur{$prefCurrency}_p{$page}".($dateFilter ? "_d{$dateFilter}" : '');
 
-        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $page) {
+        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $page, $dateFilter) {
             $query = Trade::with(['strategy'])
                 ->where('user_id', $userId)
                 ->select([
@@ -60,6 +65,13 @@ final class TradeController extends Controller
 
             if ($marketMode !== 'all') {
                 $query->where('market', $marketMode);
+            }
+
+            // Filter by calendar date (close_datetime stored UTC, calendar dates are Manila)
+            if ($dateFilter && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFilter)) {
+                $start = \Carbon\Carbon::createFromFormat('Y-m-d', $dateFilter, 'Asia/Manila')->startOfDay()->utc();
+                $end = \Carbon\Carbon::createFromFormat('Y-m-d', $dateFilter, 'Asia/Manila')->endOfDay()->utc();
+                $query->whereBetween('close_datetime', [$start, $end]);
             }
 
             // Get total count for pagination
@@ -90,7 +102,7 @@ final class TradeController extends Controller
 
             $strategies = Strategy::where('user_id', $userId)->get();
 
-            return compact('ownedTrades', 'strategies');
+            return compact('ownedTrades', 'strategies', 'dateFilter');
         });
     }
 
@@ -278,7 +290,10 @@ final class TradeController extends Controller
             ->with('success', "Trade {$action} successfully.");
 
         if ($request->hasFile('chart_picture')) {
-            $redirect->with('chart_uploading', true);
+            $trade->refresh();
+            if (!$trade->chart_picture) {
+                $redirect->with('chart_uploading', true);
+            }
         }
 
         return $redirect;
@@ -387,8 +402,26 @@ final class TradeController extends Controller
         // 1. Move the uploaded file to private local storage temporarily
         $tempPath = $file->store('temp', 'local');
 
-        // 2. Dispatch the job to handle the Firebase upload and old file deletion
-        FileUpload::dispatch(
+        // Some serverless runtimes (e.g. Vercel) cannot write to Laravel's local disk path.
+        // Fallback to direct upload so prod uploads do not fail.
+        if ($tempPath === false) {
+            $fileUrl = $this->fileService->updateFile(
+                $trade->getOriginal('chart_picture'),
+                $file,
+                "users/{$trade->user_id}/trades",
+                null,
+                $file->getClientOriginalName()
+            );
+
+            if ($fileUrl) {
+                $trade->update(['chart_picture' => $fileUrl]);
+            }
+
+            return;
+        }
+
+        // 2. Queue job when worker exists, otherwise run sync (serverless fallback)
+        $this->dispatchJob(new FileUpload(
             tempPath: $tempPath,
             originalName: $file->getClientOriginalName(),
             directory: "users/{$trade->user_id}/trades",
@@ -397,7 +430,7 @@ final class TradeController extends Controller
             field: 'chart_picture',
             userId: (string) auth()->id(),
             oldFileUrl: $trade->getOriginal('chart_picture')
-        );
+        ));
     }
 
     // Deletes then recreates entry/exit reasons (idempotent sync)

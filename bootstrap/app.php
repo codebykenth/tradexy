@@ -30,11 +30,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', TransactionalRequest::class);
         $middleware->appendToGroup('web', EnsureTradingModeSet::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackUserActivity::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\TurboRedirect::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
         // Returns real error in dev, friendly message in production
-        $devMessage = fn (\Throwable $e, string $fallback): string => app()->isProduction() ? $fallback : $e->getMessage();
+        // $devMessage = fn (\Throwable $e, string $fallback): string => app()->isProduction() ? $fallback : $e->getMessage();
+        $devMessage = fn (\Throwable $e, string $fallback): string => $e->getMessage();
 
         // Helper to check if we are on a mission-critical page where redirects cause loops
         $isEntryPath = function () {

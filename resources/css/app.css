@@ -17,6 +17,13 @@
 }
 
 @layer components {
+    /* Turbo progress bar uses the primary color and sits above everything */
+    .turbo-progress-bar {
+        @apply !bg-primary;
+        height: 3px;
+        z-index: 9999;
+    }
+
     /* Fix ApexCharts Tooltip contrast with DaisyUI themes */
     .apexcharts-tooltip,
     .apexcharts-tooltip.apexcharts-theme-light, 

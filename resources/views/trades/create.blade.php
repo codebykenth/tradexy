@@ -542,7 +542,7 @@
             </div>
         </form>
     </div>
+    @include('trades.partials.form-scripts')
+    @include('trades.partials.market-toggle-script')
+    @include('components.form-dirty-state-check')
 </x-layouts.app>
-@include('trades.partials.form-scripts')
-@include('trades.partials.market-toggle-script')
-@include('components.form-dirty-state-check')

@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Reverb Dynamic Config for frontend without needing Vite rebuilds -->
-    <meta name="reverb-app-key" content="{{ config('broadcasting.connections.reverb.key') }}">
-    <meta name="reverb-host" content="{{ env('REVERB_HOST', 'localhost') }}">
-    <meta name="reverb-port" content="{{ config('broadcasting.connections.reverb.options.port') }}">
-    <meta name="reverb-scheme" content="{{ config('broadcasting.connections.reverb.options.scheme') }}">
+    @if (config('app.realtime_enabled'))
+        <meta name="realtime-enabled" content="1">
+        <meta name="pusher-app-key" content="{{ config('broadcasting.connections.pusher.key') }}">
+        <meta name="pusher-app-cluster" content="{{ config('broadcasting.connections.pusher.options.cluster') }}">
+    @endif
 
     @php
         $pageTitle = $title ?? config('app.name');
@@ -55,6 +55,11 @@
     <x-posthog />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <!-- Turbo: reload when any tracked asset hash changes -->
+    <meta name="turbo-cache-control" content="no-preview">
+    <meta name="turbo-refresh-method" content="morph">
+    <meta name="turbo-refresh-scroll" content="preserve">
+
     <!-- Dark Mode Support -->
     <script>
         (function() {
@@ -71,62 +76,113 @@
 </head>
 
 <body class="bg-base-100 text-base-content min-h-screen flex flex-col">
-    <x-nav-bar />
-    <main>
-        {{ $slot }}
-    </main>
-    <footer class="w-full border-t border-base-200 py-4 mt-auto bg-base-100">
-        <div
-            class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-base-content/60">
-            <div>© {{ date('Y') }} Tradexy — All rights reserved.</div>
-            <div class="flex gap-6">
-                <a href="{{ route('privacy') }}" class="hover:text-base-content transition-colors">Privacy Policy</a>
-                <a href="{{ route('terms') }}" class="hover:text-base-content transition-colors">Terms of Service</a>
-                <a href="{{ route('deletion') }}" class="hover:text-base-content transition-colors">Data Deletion</a>
+    @php
+        $isGuestTopNavPage = !auth()->check() && request()->routeIs(
+            'login',
+            'register',
+            'forgot-password',
+            'password.reset'
+        );
+        $isLandingGuest = request()->path() === '/' && !auth()->check();
+        $isLoginPage = request()->routeIs('login');
+        $isRegisterPage = request()->routeIs('register');
+    @endphp
+
+    @if($isLandingGuest || $isGuestTopNavPage)
+        <header id="landing-top-nav" class="fixed inset-x-0 top-0 z-50 transition-transform duration-300 ease-out">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 pt-4">
+                <div class="navbar rounded-2xl border border-base-300 bg-base-100/90 backdrop-blur-md shadow-sm">
+                    <div class="navbar-start">
+                        <a href="{{ url('/') }}" class="flex items-center gap-3 px-2">
+                            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8 rounded-lg shadow-sm">
+                            <span class="font-black text-xl tracking-tight">{{ config('app.name', 'Tradexy') }}</span>
+                        </a>
+                    </div>
+                    @if($isLandingGuest)
+                        <div class="navbar-center hidden md:flex">
+                            <ul class="menu menu-horizontal px-1 font-medium">
+                                <li><a href="/#features">Features</a></li>
+                                <li><a href="/#how-it-works">How it Works</a></li>
+                                <li><a href="/#why-tradexy">Why Tradexy</a></li>
+                            </ul>
+                        </div>
+                    @endif
+                    <div class="navbar-end gap-2">
+                        @if($isLandingGuest)
+                            <a href="{{ route('login') }}" class="btn btn-ghost btn-sm">Log in</a>
+                            <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Get Started</a>
+                        @elseif($isLoginPage)
+                            <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Get Started</a>
+                        @elseif($isRegisterPage)
+                            <a href="{{ route('login') }}" class="btn btn-ghost btn-sm">Log in</a>
+                        @else
+                            <a href="{{ route('login') }}" class="btn btn-ghost btn-sm">Log in</a>
+                        @endif
+                    </div>
+                </div>
             </div>
-        </div>
-    </footer>
-    <x-toast />
-    @auth
-        <script type="module">
-            if (window.Echo) {
-                window.Echo.private("App.Models.User." + @js(auth()->id()))
-                    .listen('.NewTradesFetched', (e) => {
-                        // 1. Show the notification
-                        if (window.showToast) {
-                            window.showToast(e.message, 'success');
-                        }
+        </header>
 
-                        // 2. Trigger auto-reload if on Trades Index or Dashboard
-                        const path = window.location.pathname || '';
-                        if (path.includes('/trades') || path.includes('/dashboard')) {
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 2000);
-                        }
-                    })
-                    .listen('.ProfilePictureUploaded', (e) => {
-                        console.log('Profile Picture Uploaded Event Received:', e);
-                        window.location.reload();
-                    });
+        <main class="flex-1 pt-24">
+            {{ $slot }}
+        </main>
 
-                // Market News Updates (Public Channel)
-                window.Echo.channel('market-insights')
-                    .listen('.MarketNewsGenerated', (e) => {
-                        if (window.showToast) {
-                            window.showToast(e.message, 'info');
-                        }
-
-                        const path = window.location.pathname || '';
-                        if (path.includes('/insights') || path.includes('/dashboard')) {
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 2000);
-                        }
-                    });
+        <footer class="w-full border-t border-base-200 py-4 mt-auto bg-base-100">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-base-content/60">
+                <div>© {{ date('Y') }} Tradexy — All rights reserved.</div>
+                <div class="flex gap-6">
+                    <a href="{{ route('privacy') }}" class="hover:text-base-content transition-colors">Privacy Policy</a>
+                    <a href="{{ route('terms') }}" class="hover:text-base-content transition-colors">Terms of Service</a>
+                    <a href="{{ route('deletion') }}" class="hover:text-base-content transition-colors">Data Deletion</a>
+                </div>
+            </div>
+        </footer>
+    @else
+    <div id="app-drawer" class="drawer lg:drawer-open min-h-screen group">
+        <script>
+            if (localStorage.getItem('sidebar-collapsed') === 'true') {
+                document.getElementById('app-drawer').classList.add('sidebar-collapsed');
             }
         </script>
-    @endauth
+        <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+        
+        <div class="drawer-content flex flex-col min-h-screen relative transition-all duration-300">
+            <!-- Mobile Header (Only for true mobile screens) -->
+            <div id="top-header" class="lg:hidden flex items-center justify-between p-4 border-b border-base-200 bg-base-100/80 backdrop-blur-md sticky top-0 z-30">
+                <div class="flex items-center gap-3">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8 rounded-lg shadow-sm">
+                    <span class="font-black text-xl tracking-tight">{{ config('app.name', 'Tradexy') }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="main-drawer" class="btn btn-ghost btn-circle btn-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    </label>
+                </div>
+            </div>
+
+            <main class="flex-1">
+                {{ $slot }}
+            </main>
+            
+            <footer class="w-full border-t border-base-200 py-4 mt-auto bg-base-100">
+                <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-base-content/60">
+                    <div>© {{ date('Y') }} Tradexy — All rights reserved.</div>
+                    <div class="flex gap-6">
+                        <a href="{{ route('privacy') }}" class="hover:text-base-content transition-colors">Privacy Policy</a>
+                        <a href="{{ route('terms') }}" class="hover:text-base-content transition-colors">Terms of Service</a>
+                        <a href="{{ route('deletion') }}" class="hover:text-base-content transition-colors">Data Deletion</a>
+                    </div>
+                </div>
+            </footer>
+        </div> 
+
+        <div class="drawer-side z-40 overflow-visible">
+            <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+            <x-nav-bar />
+        </div>
+    </div>
+    @endif
+    <x-toast />
     <script>
         function togglePassword(id) {
             const input = document.getElementById(id);
@@ -144,6 +200,32 @@
             }
         }
     </script>
+    @if($isLandingGuest)
+        <script>
+            (function () {
+                const nav = document.getElementById('landing-top-nav');
+                if (!nav) return;
+
+                let lastY = window.scrollY;
+                const threshold = 12;
+
+                const updateNav = () => {
+                    const currentY = window.scrollY;
+                    if (currentY <= 8) {
+                        nav.classList.remove('-translate-y-full');
+                    } else if (currentY > lastY + threshold) {
+                        nav.classList.add('-translate-y-full');
+                    } else if (currentY < lastY - threshold) {
+                        nav.classList.remove('-translate-y-full');
+                    }
+                    lastY = currentY;
+                };
+
+                window.addEventListener('scroll', updateNav, { passive: true });
+                updateNav();
+            })();
+        </script>
+    @endif
 </body>
 
 </html>

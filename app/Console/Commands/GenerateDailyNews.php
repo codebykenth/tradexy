@@ -45,8 +45,10 @@ class GenerateDailyNews extends Command
                 'ai_analysis' => $news['aiAnalysis'],
             ]);
 
-            // Broadcast real-time update
-            event(new \App\Events\MarketNewsGenerated);
+            // Broadcast real-time update (temporarily disabled in serverless)
+            if (config('app.realtime_enabled')) {
+                event(new \App\Events\MarketNewsGenerated);
+            }
 
             \App\Models\ActivityLog::create([
                 'action' => 'daily_news_generated',

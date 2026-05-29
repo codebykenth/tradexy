@@ -1,5 +1,5 @@
 <x-layouts.app title="Screener — Tradexy" description="Scan crypto markets using technical indicators.">
-    <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
+    <div id="screener-page" class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
         
         {{-- Top Bar: Set Filters --}}
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4  mb-6">
@@ -302,7 +302,12 @@
     </dialog>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    (function () {
+        const initScreenerPage = () => {
+        const pageRoot = document.getElementById('screener-page');
+        if (!pageRoot || pageRoot.dataset.bound === '1') return;
+        pageRoot.dataset.bound = '1';
+
         // --- Subcategory Pill Switching ---
         const subcatPills = document.querySelectorAll('.subcat-pill');
         const indicatorGrids = document.querySelectorAll('.indicator-grid');
@@ -432,7 +437,7 @@
         // Search Filter
         const searchInput = document.getElementById('indicator-search');
         const allIndicatorGrids = document.querySelectorAll('.indicator-grid');
-        
+        if (!searchInput) return;
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase().trim();
             
@@ -473,17 +478,26 @@
         // Global timeframe update sync
         const globalTimeframe = document.getElementById('global-timeframe');
         const formTimeframe = document.getElementById('form-timeframe');
-        globalTimeframe.addEventListener('change', () => {
+        if (globalTimeframe && formTimeframe) globalTimeframe.addEventListener('change', () => {
             formTimeframe.value = globalTimeframe.value;
         });
 
         // Loading state on run
         const runBtn = document.getElementById('run-screener-btn');
         const mainForm = document.getElementById('screener-form');
+        if (!runBtn || !mainForm) return;
         mainForm.addEventListener('submit', () => {
             runBtn.disabled = true;
             runBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Running...';
         });
-    });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initScreenerPage, { once: true });
+        } else {
+            initScreenerPage();
+        }
+        document.addEventListener('turbo:load', initScreenerPage);
+    })();
     </script>
 </x-layouts.app>

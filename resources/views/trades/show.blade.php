@@ -466,7 +466,10 @@
                 <form action="{{ route('ai.analyze.destroy', $trade->id) }}" method="POST">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-error">Clear Audit</button>
+                    <button type="submit" class="btn btn-error"
+                        onclick="document.getElementById('delete_ai_audit_modal_{{ $trade->id }}').close()">
+                        Clear Audit
+                    </button>
                 </form>
             </div>
         </div>

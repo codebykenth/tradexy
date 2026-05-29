@@ -12,9 +12,19 @@
     <div id="{{ $id }}" class="w-full"></div>
 </div>
 
-<script type="module">
-    document.addEventListener("DOMContentLoaded", function () {
-        const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark' || document.documentElement.classList.contains('dark');
+<script>
+    (function () {
+        const chartId = @js($id);
+
+        const render = () => {
+            const target = document.querySelector('#' + chartId);
+            if (!target || target.dataset.rendered === '1') return;
+            if (!window.ApexCharts) {
+                console.error('ApexCharts is not globally defined in window.');
+                return;
+            }
+
+            const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark' || document.documentElement.classList.contains('dark');
         const textColor = isDarkMode ? '#9CA3AF' : '#6B7280'; // gray-400 : gray-500
         const gridColor = isDarkMode ? '#1F2937' : '#E5E7EB'; // gray-800 : gray-200
 
@@ -94,11 +104,17 @@
             }
         };
 
-        if (window.ApexCharts) {
-            const chart = new window.ApexCharts(document.querySelector("#{{ $id }}"), options);
+            target.dataset.rendered = '1';
+            const chart = new window.ApexCharts(target, options);
             chart.render();
+        };
+
+        // Inline classic <script> re-executes on each Turbo body swap, so
+        // calling render() immediately covers both cold loads and SPA visits.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', render, { once: true });
         } else {
-            console.error("ApexCharts is not globally defined in window.");
+            render();
         }
-    });
+    })();
 </script>

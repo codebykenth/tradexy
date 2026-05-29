@@ -69,8 +69,8 @@ final class FileUpload implements ShouldQueue
                 $this->field => $this->fileUrl,
             ]);
 
-            // Real-time broadcasting
-            if ($this->userId) {
+            // Real-time broadcasting via Pusher when REALTIME_ENABLED=true
+            if (config('app.realtime_enabled') && $this->userId) {
                 if ($this->modelClass === \App\Models\Trade::class) {
                     broadcast(new \App\Events\TradeFileUploaded($model->fresh()));
                 } elseif ($this->modelClass === \App\Models\User::class) {

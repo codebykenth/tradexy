@@ -17,6 +17,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Force Synchronous Jobs
+    |--------------------------------------------------------------------------
+    |
+    | Useful for serverless platforms (e.g. Vercel) where no queue worker
+    | is running. When enabled, jobs are executed immediately in request.
+    |
+    */
+    'force_sync' => env('QUEUE_FORCE_SYNC', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Queue Connections
     |--------------------------------------------------------------------------
     |

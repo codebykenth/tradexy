@@ -46,6 +46,9 @@ Route::middleware(['throttle:auth'])->group(function () {
     Route::middleware('guest')->group(function () {
         Route::post('register', [RegisterController::class, 'store']);
         Route::post('login', [LoginController::class, 'authenticate']);
+        Route::post('forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
+        Route::get('reset-password/{token}', [ForgotPasswordController::class, 'edit'])->name('password.reset');
+        Route::post('reset-password', [ForgotPasswordController::class, 'update'])->name('password.update');
         Route::get('/auth/{provider}', [LoginController::class, 'redirectToProvider']);
         Route::get('/auth/{provider}/callback', [LoginController::class, 'handleProviderCallback']);
     });
@@ -64,10 +67,6 @@ Route::middleware(['throttle:read'])->group(function () {
     Route::view('terms-and-conditions', 'legal.terms')->name('terms');
     Route::view('privacy-policy', 'legal.privacy')->name('privacy');
     Route::view('data-deletion', 'legal.deletion')->name('deletion');
-
-    Route::fallback(function () {
-        return response()->view('errors.404', [], 404);
-    });
 
     // Public shared trade view (no auth required)
     Route::get('shared/trades/{token}', [SharedTradeController::class, 'show'])->name('trades.shared');
@@ -97,6 +96,10 @@ Route::middleware(['throttle:read'])->group(function () {
 
         // Market Screener
         Route::get('screener', [ScreenerController::class, 'index'])->name('screener.index');
+    });
+
+    Route::fallback(function () {
+        return response()->view('errors.404', [], 404);
     });
 });
 

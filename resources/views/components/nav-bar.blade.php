@@ -1,315 +1,208 @@
-<header class="w-full text-sm border-b border-base-200 py-4 sticky top-0 z-50 bg-base-100/80 backdrop-blur-md transition-all duration-300">
-    <div class="max-w-7xl mx-auto px-6">
-        <nav class="flex items-center justify-between gap-4 w-full">
-            <!-- Logo Section -->
-            <div class="flex items-center gap-8">
-                <a href="{{ url('/') }}" class="font-bold text-lg flex items-center gap-2">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8">
-                    {{ config('app.name', 'Tradexy') }}
-                </a>
-
-                <!-- Desktop Navigation Links -->
-                @auth
-                    <div class="hidden xl:flex items-center gap-4 text-base-content/70">
-                        <a href="/dashboard" class="hover:text-base-content transition-colors font-medium">Dashboard</a>
-                        <a href="/trades" class="hover:text-base-content transition-colors font-medium">Trades</a>
-                        <a href="/trades/gallery" class="hover:text-base-content transition-colors font-medium">Gallery</a>
-                        <a href="/balances" class="hover:text-base-content transition-colors font-medium">Balances</a>
-                        <a href="/strategies" class="hover:text-base-content transition-colors font-medium">Strategies</a>
-                        <a href="/pnl-calendar" class="hover:text-base-content transition-colors font-medium">PnL Calendar</a>
-                        <a href="{{ route('daily-news.index') }}" class="hover:text-base-content transition-colors font-medium">
-                            Insights
-                        </a>
-                        <a href="{{ route('screener.index') }}" class="hover:text-base-content transition-colors font-medium">
-                            Screener
-                        </a>
-                    </div>
-                @else
-                    <div class="hidden xl:flex items-center gap-6 text-base-content/70">
-                        <a href="#features" class="hover:text-base-content transition-colors underline-offset-4 hover:underline">Features</a>
-                        <a href="#how-it-works" class="hover:text-base-content transition-colors underline-offset-4 hover:underline">How it Works</a>
-                        <a href="#why-tradexy" class="hover:text-base-content transition-colors underline-offset-4 hover:underline">Why Tradexy</a>
-                    </div>
-                @endauth
-            </div>
-
-            <!-- Desktop Actions Section -->
-            <div class="hidden xl:flex items-center gap-3">
-                @auth
-                    <!-- Global Account Switcher -->
-                    <div class="flex items-center bg-base-200 p-1 rounded-xl shadow-inner border border-base-300">
-                        @foreach(['real' => 'bg-primary text-primary-content', 'demo' => 'bg-warning text-warning-content', 'all' => 'bg-base-300 text-base-content'] as $modeValue => $activeClass)
-                        <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
-                            @csrf
-                            <input type="hidden" name="account_mode" value="{{ $modeValue }}">
-                            <button type="submit" @class([
-                                'px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer',
-                                $activeClass . ' shadow-sm scale-110 z-10' => session('account_mode', 'real') === $modeValue,
-                                'text-base-content/40 hover:text-base-content' => session('account_mode', 'real') !== $modeValue
-                            ])>
-                                {{ $modeValue === 'all' ? 'All' : ucfirst($modeValue) }}
-                            </button>
-                        </form>
-                        @endforeach
-                    </div>
-
-                    <!-- Market Switcher -->
-                    <div class="flex items-center bg-base-200 p-1 rounded-xl shadow-inner border border-base-300">
-                        @foreach(['crypto' => 'bg-secondary text-secondary-content', 'pse' => 'bg-accent text-accent-content', 'all' => 'bg-base-300 text-base-content'] as $marketValue => $activeClass)
-                        <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
-                            @csrf
-                            <input type="hidden" name="market_type" value="{{ $marketValue }}">
-                            <button type="submit" @class([
-                                'px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer',
-                                $activeClass . ' shadow-sm scale-110 z-10' => session('market_type', 'crypto') === $marketValue,
-                                'text-base-content/40 hover:text-base-content' => session('market_type', 'crypto') !== $marketValue
-                            ])>
-                                {{ $marketValue === 'all' ? 'All' : strtoupper($marketValue) }}
-                            </button>
-                        </form>
-                        @endforeach
-                    </div>
-
-                    <!-- Currency Switcher -->
-                    <div class="flex items-center bg-base-200 p-1 rounded-xl shadow-inner border border-base-300">
-                        @foreach(['USD' => 'bg-info text-info-content', 'PHP' => 'bg-success text-success-content'] as $currencyValue => $activeClass)
-                        <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
-                            @csrf
-                            <input type="hidden" name="preferred_currency" value="{{ $currencyValue }}">
-                            <button type="submit" @class([
-                                'px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer',
-                                $activeClass . ' shadow-sm scale-110 z-10' => session('preferred_currency', 'USD') === $currencyValue,
-                                'text-base-content/40 hover:text-base-content' => session('preferred_currency', 'USD') !== $currencyValue
-                            ])>
-                                {{ $currencyValue }}
-                            </button>
-                        </form>
-                        @endforeach
-                    </div>
-
-                    <!-- Theme Toggle -->
-                    <button id="theme-toggle" class="btn btn-ghost btn-circle btn-sm tooltip tooltip-bottom" data-tip="Toggle Theme">
-                        <!-- Sun Icon (shown in dark mode) -->
-                        <svg id="sun-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
-                        </svg>
-                        <!-- Moon Icon (shown in light mode) -->
-                        <svg id="moon-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                        </svg>
-                    </button>
-
-                    <!-- Avatar/Profile Dropdown -->
-                    <div class="relative ml-2">
-                        <button id="avatar-btn" class="w-10 h-10 rounded-full bg-primary text-primary-content flex justify-center items-center cursor-pointer shadow hover:scale-105 transition-transform overflow-hidden">
-                            @if ($profilePicture)
-                                <img src="{{ $profilePicture }}" alt="Profile" class="w-full h-full object-cover">
-                            @else
-                                <span class="font-bold text-sm">{{ $initials }}</span>
-                            @endif
-                        </button>
-                        
-                        <div id="avatar-menu" class="hidden absolute top-full right-0 mt-3 w-56 bg-base-100 rounded-2xl shadow-2xl border border-base-200 py-2 overflow-hidden z-[100]">
-                            <div class="px-4 py-3 border-b border-base-200 bg-base-200/30">
-                                <p class="text-sm font-bold truncate text-base-content">{{ Auth::user()->name }}</p>
-                                <p class="text-xs truncate text-base-content/60">{{ Auth::user()->email }}</p>
-                            </div>
-                            <ul class="py-2">
-                                @if(Auth::user()->is_admin)
-                                    <li><a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-2.5 text-sm font-bold text-primary hover:bg-primary/5 transition-colors">Admin Dashboard</a></li>
-                                @endif
-                                <li><a href="/profile" class="flex items-center px-4 py-2.5 text-sm hover:bg-base-200 transition-colors">Your Profile</a></li>
-                                <li class="border-t border-base-200 mt-2 pt-2">
-                                    <form action="/logout" method="post" class="m-0">
-                                        @csrf
-                                        <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-error font-medium hover:bg-error/5 transition-colors cursor-pointer">
-                                            Sign out
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                @else
-                    <div class="flex items-center gap-4">
-                        <a href="{{ route('login') }}" class="btn btn-ghost btn-sm">Log in</a>
-                        <a href="{{ route('register') }}" class="btn btn-primary btn-sm px-6">Get Started</a>
-                    </div>
-                @endauth
-            </div>
-
-            <!-- Mobile Hamburger Section -->
-            <div class="xl:hidden flex items-center gap-4">
-                <button id="mobile-theme-toggle" class="btn btn-ghost btn-circle tooltip tooltip-left" data-tip="Toggle Theme">
-                    <!-- Sun Icon (shown in dark mode) -->
-                    <svg id="mobile-sun-icon" class="hidden w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
-                    </svg>
-                    <!-- Moon Icon (shown in light mode) -->
-                    <svg id="mobile-moon-icon" class="hidden w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
-                <button id="menu-btn" class="btn btn-ghost btn-circle">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Mobile Full-screen Dropdown -->
-        <div id="dropdown-menu" class="hidden xl:hidden fixed inset-0 top-16 bg-base-100 z-[99] flex flex-col px-6 text-base-content">
-            @auth
-                <!-- User Profile Header -->
-                <div class="py-8 border-b border-base-200">
-                    <div class="flex items-center gap-5">
-                        <div class="w-16 h-16 rounded-full bg-primary text-primary-content flex justify-center items-center shadow-lg overflow-hidden">
-                            @if ($profilePicture)
-                                <img src="{{ $profilePicture }}" alt="Profile" class="w-full h-full object-cover">
-                            @else
-                                <span class="font-black text-xl">{{ $initials }}</span>
-                            @endif
-                        </div>
-                        <div>
-                            <p class="font-black text-xl uppercase tracking-tight">{{ Auth::user()->name }}</p>
-                            <p class="text-sm opacity-60">{{ Auth::user()->email }}</p>
-                        </div>
-                    </div>
-                    <div class="mt-6 grid grid-cols-2 gap-3">
-                        <a href="/profile" class="btn btn-outline btn-md">Profile</a>
-                        <form action="/logout" method="post" class="m-0">
-                            @csrf
-                            <button type="submit" class="btn btn-error btn-outline btn-md w-full">Sign Out</button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Navigation List -->
-                <div class="flex-1 overflow-y-auto py-6 space-y-2">
-                    <p class="text-[10px] font-black uppercase opacity-40 tracking-widest mb-2 px-2">Navigation</p>
-                    <a href="/dashboard" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Dashboard</a>
-                    <a href="/trades" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Trade Log</a>
-                    <a href="/trades/gallery" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Visual Gallery</a>
-                    <a href="/balances" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Account Balances</a>
-                    <a href="/strategies" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">My Strategies</a>
-                    <a href="/pnl-calendar" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg text-primary">PnL Calendar</a>
-                    <a href="{{ route('daily-news.index') }}" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Market Insights</a>
-                    <a href="{{ route('screener.index') }}" class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50 hover:bg-base-200 transition-colors font-bold text-lg">Screener</a>
-                </div>
-
-                <!-- Global Modes (Mobile) -->
-                <div class="py-6 border-t border-base-200 bg-base-200/30 -mx-6 px-6">
-                    <p class="text-[10px] font-black uppercase opacity-40 tracking-widest mb-4">View Preferences</p>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between bg-base-100 p-2 rounded-2xl border border-base-200">
-                            <span class="text-xs font-black uppercase tracking-tight pl-2">Account Mode</span>
-                            <div class="flex bg-base-200 p-1 rounded-xl">
-                                @foreach(['real', 'demo', 'all'] as $mv)
-                                    <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
-                                        @csrf
-                                        <input type="hidden" name="account_mode" value="{{ $mv }}">
-                                        <button type="submit" @class([
-                                            'px-4 py-1.5 rounded-lg text-[10px] font-black uppercase',
-                                            'bg-primary text-primary-content shadow' => session('account_mode', 'real') === $mv,
-                                            'opacity-40' => session('account_mode', 'real') !== $mv
-                                        ])>{{ strtoupper($mv) }}</button>
-                                    </form>
-                                @endforeach
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between bg-base-100 p-2 rounded-2xl border border-base-200">
-                            <span class="text-xs font-black uppercase tracking-tight pl-2">Market Type</span>
-                            <div class="flex bg-base-200 p-1 rounded-xl">
-                                @foreach(['crypto', 'pse', 'all'] as $mv)
-                                    <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
-                                        @csrf
-                                        <input type="hidden" name="market_type" value="{{ $mv }}">
-                                        <button type="submit" @class([
-                                            'px-4 py-1.5 rounded-lg text-[10px] font-black uppercase',
-                                            'bg-secondary text-secondary-content shadow' => session('market_type', 'crypto') === $mv,
-                                            'opacity-40' => session('market_type', 'crypto') !== $mv
-                                        ])>{{ strtoupper($mv) }}</button>
-                                    </form>
-                                @endforeach
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between bg-base-100 p-2 rounded-2xl border border-base-200">
-                            <span class="text-xs font-black uppercase tracking-tight pl-2">Currency</span>
-                            <div class="flex bg-base-200 p-1 rounded-xl">
-                                @foreach(['USD', 'PHP'] as $cv)
-                                    <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
-                                        @csrf
-                                        <input type="hidden" name="preferred_currency" value="{{ $cv }}">
-                                        <button type="submit" @class([
-                                            'px-4 py-1.5 rounded-lg text-[10px] font-black uppercase',
-                                            'bg-info text-info-content shadow' => session('preferred_currency', 'USD') === $cv,
-                                            'opacity-40' => session('preferred_currency', 'USD') !== $cv
-                                        ])>{{ $cv }}</button>
-                                    </form>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @else
-                <div class="flex flex-col gap-4 py-10">
-                    <a href="{{ route('login') }}" class="btn btn-block btn-lg btn-ghost">Log In</a>
-                    <a href="{{ route('register') }}" class="btn btn-block btn-lg btn-primary">Start Journaling</a>
-                </div>
-            @endauth
-        </div>
+<aside id="sidebar-aside" class="flex flex-col min-h-screen bg-base-100 border-r border-base-200 text-base-content transition-[width] duration-300 w-72 group-[.sidebar-collapsed]:w-20 relative z-40">
+    <!-- Logo -->
+    <div class="p-6 flex items-center justify-between gap-3 border-b border-base-200 h-[81px] relative">
+        <a href="{{ url('/') }}" class="flex items-center gap-3 shrink-0 overflow-hidden">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8 rounded-lg shadow-sm shrink-0">
+            <span class="font-black text-xl tracking-tight transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden">{{ config('app.name', 'Tradexy') }}</span>
+        </a>
+        
+        <!-- Desktop Toggle Button (Floating) -->
+        <button onclick="toggleDesktopSidebar()" class="hidden lg:flex btn btn-circle btn-sm absolute -right-4 top-1/2 -translate-y-1/2 bg-base-100 border border-base-200 shadow-md text-base-content/50 hover:text-base-content hover:bg-base-200 z-50 transition-transform hover:scale-110" title="Toggle Sidebar">
+            <svg id="collapse-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+        </button>
     </div>
-</header>
+
+    @auth
+        <!-- Navigation Links -->
+        <div class="flex-1 overflow-y-auto py-6 px-4 space-y-1 relative">
+            <p class="px-2 text-[10px] font-black uppercase opacity-40 tracking-widest mb-2 transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden">Menu</p>
+            
+            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium {{ request()->is('dashboard') ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-base-200' }} group-[.sidebar-collapsed]:justify-center" title="Dashboard">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                <span class="transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden whitespace-nowrap">Dashboard</span>
+            </a>
+            <a href="/trades" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium {{ request()->is('trades') ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-base-200' }} group-[.sidebar-collapsed]:justify-center" title="Trades">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                <span class="transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden whitespace-nowrap">Trades</span>
+            </a>
+            <a href="/trades/gallery" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium {{ request()->is('trades/gallery') ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-base-200' }} group-[.sidebar-collapsed]:justify-center" title="Gallery">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <span class="transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden whitespace-nowrap">Gallery</span>
+            </a>
+            <a href="/balances" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium {{ request()->is('balances') ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-base-200' }} group-[.sidebar-collapsed]:justify-center" title="Balances">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                <span class="transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden whitespace-nowrap">Balances</span>
+            </a>
+            <a href="/strategies" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium {{ request()->is('strategies') ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-base-200' }} group-[.sidebar-collapsed]:justify-center" title="Strategies">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                <span class="transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden whitespace-nowrap">Strategies</span>
+            </a>
+            <a href="/pnl-calendar" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium {{ request()->is('pnl-calendar') ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-base-200' }} group-[.sidebar-collapsed]:justify-center" title="PnL Calendar">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <span class="transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden whitespace-nowrap">PnL Calendar</span>
+            </a>
+            <a href="{{ route('daily-news.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium {{ request()->routeIs('daily-news.*') ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-base-200' }} group-[.sidebar-collapsed]:justify-center" title="Insights">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                <span class="transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden whitespace-nowrap">Insights</span>
+            </a>
+            <a href="{{ route('screener.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium {{ request()->routeIs('screener.*') ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-base-200' }} group-[.sidebar-collapsed]:justify-center" title="Screener">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <span class="transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden whitespace-nowrap">Screener</span>
+            </a>
+        </div>
+
+        <!-- Switchers -->
+        <div class="px-4 py-4 border-t border-base-200 space-y-4 bg-base-200/30 transition-opacity duration-300 group-[.sidebar-collapsed]:opacity-0 group-[.sidebar-collapsed]:hidden">
+            <p class="px-2 text-[10px] font-black uppercase opacity-40 tracking-widest mb-2">View Preferences</p>
+            
+            <!-- Account Mode -->
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold px-2">Account</span>
+                <div class="flex bg-base-200 p-1 rounded-xl shadow-inner border border-base-300">
+                    @foreach(['real' => 'bg-primary text-primary-content', 'demo' => 'bg-warning text-warning-content', 'all' => 'bg-base-300 text-base-content'] as $modeValue => $activeClass)
+                    <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
+                        @csrf
+                        <input type="hidden" name="account_mode" value="{{ $modeValue }}">
+                        <button type="submit" @class([
+                            'px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer',
+                            $activeClass . ' shadow-sm scale-105 z-10' => session('account_mode', 'real') === $modeValue,
+                            'text-base-content/50 hover:text-base-content' => session('account_mode', 'real') !== $modeValue
+                        ])>
+                            {{ $modeValue === 'all' ? 'All' : ucfirst($modeValue) }}
+                        </button>
+                    </form>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Market Switcher -->
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold px-2">Market</span>
+                <div class="flex bg-base-200 p-1 rounded-xl shadow-inner border border-base-300">
+                    @foreach(['crypto' => 'bg-secondary text-secondary-content', 'pse' => 'bg-accent text-accent-content', 'all' => 'bg-base-300 text-base-content'] as $marketValue => $activeClass)
+                    <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
+                        @csrf
+                        <input type="hidden" name="market_type" value="{{ $marketValue }}">
+                        <button type="submit" @class([
+                            'px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer',
+                            $activeClass . ' shadow-sm scale-105 z-10' => session('market_type', 'crypto') === $marketValue,
+                            'text-base-content/50 hover:text-base-content' => session('market_type', 'crypto') !== $marketValue
+                        ])>
+                            {{ $marketValue === 'all' ? 'All' : strtoupper($marketValue) }}
+                        </button>
+                    </form>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Currency Switcher -->
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold px-2">Currency</span>
+                <div class="flex bg-base-200 p-1 rounded-xl shadow-inner border border-base-300">
+                    @foreach(['USD' => 'bg-info text-info-content', 'PHP' => 'bg-success text-success-content'] as $currencyValue => $activeClass)
+                    <form action="{{ route('trading-mode.update') }}" method="POST" class="m-0">
+                        @csrf
+                        <input type="hidden" name="preferred_currency" value="{{ $currencyValue }}">
+                        <button type="submit" @class([
+                            'px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer',
+                            $activeClass . ' shadow-sm scale-105 z-10' => session('preferred_currency', 'USD') === $currencyValue,
+                            'text-base-content/50 hover:text-base-content' => session('preferred_currency', 'USD') !== $currencyValue
+                        ])>
+                            {{ $currencyValue }}
+                        </button>
+                    </form>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <!-- User Profile & Theme -->
+        <div class="p-4 border-t border-base-200 flex items-center justify-between bg-base-100 group-[.sidebar-collapsed]:justify-center">
+            <div class="flex items-center gap-3 overflow-hidden group-[.sidebar-collapsed]:hidden">
+                <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex justify-center items-center shrink-0 shadow-sm">
+                    @if ($profilePicture ?? false)
+                        <img src="{{ $profilePicture }}" alt="Profile" class="w-full h-full object-cover rounded-full">
+                    @else
+                        <span class="font-bold text-sm">{{ $initials ?? substr(Auth::user()->name, 0, 2) }}</span>
+                    @endif
+                </div>
+                <div class="flex-1 min-w-0 transition-opacity duration-300">
+                    <p class="text-sm font-bold truncate">{{ Auth::user()->name }}</p>
+                    <p class="text-[10px] opacity-60 truncate">{{ Auth::user()->email }}</p>
+                </div>
+            </div>
+            
+            <div class="dropdown dropdown-top dropdown-end group-[.sidebar-collapsed]:dropdown-right group-[.sidebar-collapsed]:dropdown-bottom">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm group-[.sidebar-collapsed]:w-10 group-[.sidebar-collapsed]:h-10">
+                    <div class="hidden group-[.sidebar-collapsed]:flex w-10 h-10 rounded-full bg-primary text-primary-content justify-center items-center shrink-0 shadow-sm">
+                        @if ($profilePicture ?? false)
+                            <img src="{{ $profilePicture }}" alt="Profile" class="w-full h-full object-cover rounded-full">
+                        @else
+                            <span class="font-bold text-sm">{{ $initials ?? substr(Auth::user()->name, 0, 2) }}</span>
+                        @endif
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-[.sidebar-collapsed]:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                </div>
+                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-xl bg-base-100 rounded-box w-52 border border-base-200 mb-2 group-[.sidebar-collapsed]:ml-2">
+                    <li>
+                        <a id="theme-toggle" class="flex justify-between cursor-pointer">
+                            Toggle Theme
+                            <svg id="sun-icon" class="hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z"></path></svg>
+                            <svg id="moon-icon" class="hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        </a>
+                    </li>
+                    <li><a href="/profile">Profile Settings</a></li>
+                    @if(Auth::user()->is_admin)
+                        <li><a href="{{ route('admin.dashboard') }}" class="text-primary font-bold">Admin Panel</a></li>
+                    @endif
+                    <div class="divider my-1"></div>
+                    <li>
+                        <form action="{{ url('/logout') }}" method="post" class="m-0 p-0 w-full" data-turbo="false">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="block w-full bg-transparent border-0 text-error text-left px-4 py-2 font-medium rounded-lg transition-colors hover:bg-error/10 hover:text-error focus:outline-none"
+                                onclick="this.form.requestSubmit(); return false;">
+                                Sign Out
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    @else
+        <!-- Guest View -->
+        <div class="flex-1 flex flex-col p-6 gap-4">
+            <a href="/#features" class="hover:text-primary transition-colors font-medium">Features</a>
+            <a href="/#how-it-works" class="hover:text-primary transition-colors font-medium">How it Works</a>
+            <a href="/#why-tradexy" class="hover:text-primary transition-colors font-medium">Why Tradexy</a>
+            
+            <div class="mt-auto flex flex-col gap-3">
+                <a href="{{ route('login') }}" class="btn btn-ghost">Log in</a>
+                <a href="{{ route('register') }}" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    @endauth
+</aside>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const menuBtn = document.getElementById('menu-btn');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        const avatarBtn = document.getElementById('avatar-btn');
-        const avatarMenu = document.getElementById('avatar-menu');
-
-        // Mobile menu toggle
-        if (menuBtn && dropdownMenu) {
-            menuBtn.addEventListener('click', () => {
-                dropdownMenu.classList.toggle('hidden');
-                document.body.classList.toggle('overflow-hidden');
-            });
-        }
-
-        // Desktop avatar toggle
-        if (avatarBtn && avatarMenu) {
-            avatarBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                avatarMenu.classList.toggle('hidden');
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!avatarBtn.contains(e.target) && !avatarMenu.contains(e.target)) {
-                    avatarMenu.classList.add('hidden');
-                }
-            });
-        }
-
-        // Theme logic
+    (function () {
+        // These helpers must be re-wired on every Turbo navigation because the
+        // sidebar lives inside the drawer-side which is part of the replaced body.
         const updateThemeIcons = () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
-            const sunIcons = [document.getElementById('sun-icon'), document.getElementById('mobile-sun-icon')];
-            const moonIcons = [document.getElementById('moon-icon'), document.getElementById('mobile-moon-icon')];
-            const themeToggles = [document.getElementById('theme-toggle'), document.getElementById('mobile-theme-toggle')];
-            const newTip = currentTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
 
             if (currentTheme === 'dark') {
-                sunIcons.forEach(i => i?.classList.remove('hidden'));
-                moonIcons.forEach(i => i?.classList.add('hidden'));
+                if (sunIcon) sunIcon.classList.remove('hidden');
+                if (moonIcon) moonIcon.classList.add('hidden');
             } else {
-                sunIcons.forEach(i => i?.classList.add('hidden'));
-                moonIcons.forEach(i => i?.classList.remove('hidden'));
+                if (sunIcon) sunIcon.classList.add('hidden');
+                if (moonIcon) moonIcon.classList.remove('hidden');
             }
-
-            themeToggles.forEach(t => {
-                if (t) t.setAttribute('data-tip', newTip);
-            });
         };
 
         const toggleTheme = () => {
@@ -320,13 +213,46 @@
             updateThemeIcons();
         };
 
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
+        window.toggleDesktopSidebar = function () {
+            const drawer = document.getElementById('app-drawer');
+            if (!drawer) return;
 
-        if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
-        if (mobileThemeToggleBtn) mobileThemeToggleBtn.addEventListener('click', toggleTheme);
-        
-        // Initial icon state
-        updateThemeIcons();
-    });
+            if (drawer.classList.contains('sidebar-collapsed')) {
+                drawer.classList.remove('sidebar-collapsed');
+                localStorage.setItem('sidebar-collapsed', 'false');
+            } else {
+                drawer.classList.add('sidebar-collapsed');
+                localStorage.setItem('sidebar-collapsed', 'true');
+            }
+            window.updateSidebarIcon();
+        };
+
+        window.updateSidebarIcon = function () {
+            const drawer = document.getElementById('app-drawer');
+            const icon = document.getElementById('collapse-icon');
+            if (!icon) return;
+
+            if (drawer && drawer.classList.contains('sidebar-collapsed')) {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />';
+            } else {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />';
+            }
+        };
+
+        const init = () => {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            if (themeToggleBtn && !themeToggleBtn.dataset.bound) {
+                themeToggleBtn.addEventListener('click', toggleTheme);
+                themeToggleBtn.dataset.bound = '1';
+            }
+            updateThemeIcons();
+            window.updateSidebarIcon();
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init, { once: true });
+        } else {
+            init();
+        }
+    })();
 </script>

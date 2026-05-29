@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\DispatchesQueueOrSync;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Jobs\FileUpload;
@@ -17,6 +18,8 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    use DispatchesQueueOrSync;
+
     public function __construct(
         private readonly FileService $fileService
     ) {}
@@ -71,8 +74,8 @@ class ProfileController extends Controller
         // 1. Move the uploaded file to private local storage temporarily
         $tempPath = $file->store('temp', 'local');
 
-        // 2. Dispatch the job to handle the Firebase upload and old file deletion
-        FileUpload::dispatch(
+        // 2. Queue job when worker exists, otherwise run sync (serverless fallback)
+        $this->dispatchJob(new FileUpload(
             tempPath: $tempPath,
             directory: "users/{$user->id}",
             userId: (string) $user->id,
@@ -80,7 +83,7 @@ class ProfileController extends Controller
             modelId: (string) $user->id,
             field: 'profile_picture',
             oldFileUrl: $user->getOriginal('profile_picture')
-        );
+        ));
     }
 
     /**

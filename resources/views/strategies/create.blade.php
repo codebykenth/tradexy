@@ -272,7 +272,6 @@
             </div>
         </form>
     </div>
+    @include('components.dynamic-repeater-script')
+    @include('components.form-dirty-state-check')
 </x-layouts.app>
-
-@include('components.dynamic-repeater-script')
-@include('components.form-dirty-state-check')

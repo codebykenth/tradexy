@@ -119,7 +119,9 @@ final class AnalyzeTradeJob implements ShouldQueue
 
         $trade->update(['ai_analysis' => $analysis]);
 
-        // Broadcast the result
-        broadcast(new TradeAnalysisGenerated($trade));
+        // Broadcast the result when REALTIME_ENABLED=true (Pusher)
+        if (config('app.realtime_enabled')) {
+            broadcast(new TradeAnalysisGenerated($trade));
+        }
     }
 }
