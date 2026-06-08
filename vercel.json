@@ -9,6 +9,10 @@
     },
     "routes": [
         {
+            "src": "/sitemap.xml",
+            "dest": "/api/index.php"
+        },
+        {
             "src": "/(build|assets|css|js|images|fonts|storage|favicon.ico|robots.txt)(.*)",
             "dest": "/public/$1$2"
         },

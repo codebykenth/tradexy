@@ -72,7 +72,9 @@
             }
         })();
     </script>
-
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2027977096641438"
+     crossorigin="anonymous"></script>
 </head>
 
 <body class="bg-base-100 text-base-content min-h-screen flex flex-col">
