@@ -15,6 +15,55 @@ A professional trading journal application built with Laravel, Tailwind CSS, and
 
 ---
 
+## Features & Limitations
+
+### 1. Core Trade Management
+* **Trade Logging & Editing:** Track trade metrics including entry/exit prices, symbol, timeframe, size, fees, leverage, side (long/short), emotions (entry & exit), and self-reflection lessons.
+* **Trade Views:** Supports a traditional list view (with advanced filters/search) and a visual Gallery View highlighting trade chart screenshots.
+* **Bulk Import:** Supports uploading and parsing multiple trades at once.
+* **Trading Modes:** Ability to toggle and segment trades between Live and Demo accounts.
+* **Image Uploads & CDNs:**
+  * **Availability:** All authenticated users.
+  * **Limitations:** Relies on the globally configured server-side storage disk (Google Cloud Storage / Firebase). Users cannot connect their own custom storage buckets.
+
+### 2. AI-Powered Features
+* **On-Demand Trade Critique:** Users can trigger Gemini AI to analyze their trade and chart screenshot. It returns a structured markdown post-mortem highlighting entry/exit validity, risk management critiques, emotional state analysis, and an execution score.
+  * **Availability:** All authenticated users.
+  * **Usage Limits:** 
+    * *Regular Users:* Strictly limited to **1 analysis per day** (enforced by the `throttle:ai-analysis` rate limiter).
+    * *Developer/Admin Users (User ID 1 or is_admin === true):* **Unlimited**.
+  * **Technical Limitations:** Requires the trade to have a valid, downloadable chart image URL (`direct_chart_url`) and relies on the external Google Gemini API.
+* **AI Market Insights:** Displays scheduled daily macro market reports (e.g., Gold, Crypto analysis) generated using the Gemini API.
+  * **Availability:** All authenticated users.
+
+### 3. Sharing & Collaboration
+* **Public Trade Sharing:** Securely generate tokenized public links for specific trades so users can share their charts and statistics without exposing account details. Links can be revoked at any time.
+  * **Availability:** All authenticated users.
+  * **Usage Limits:** **Unlimited** link generation and revocation.
+  * **Limitations:** Only supports sharing individual trades; there is currently no feature to share full journals, strategy folders, or PnL calendars.
+
+### 4. Strategy & Portfolio Performance
+* **Strategy Manager:** Define and backtest specific trading strategies. Tags trades to strategies to calculate win rates, profit factors, and average PnL per setup.
+* **PnL Calendar:** Visual calendar displaying daily profits/losses (green vs. red days) to track monthly consistency.
+* **Balance Tracker:** Log and chart account balances over time to monitor overall net worth growth.
+* **Market Screener:** A dashboard for filtering and finding active trading setups.
+
+### 5. Automated Integrations & Backend Services
+* **Bybit API Syncing:** Backend cron jobs scheduled to automatically fetch closed PnL and wallet balances from Bybit.
+  * **Availability:** **Admin/Developer only**. Disabled for general users.
+  * **Technical Limitations:** 
+    * Credentials (API Key and Secret) are defined server-side in the `.env` file.
+    * The cron job matches and runs only for the single user designated under `BYBIT_USER_EMAIL` in the `.env`.
+    * Restricted strictly to Bybit's Linear category (USDT perpetuals) and looks back a maximum of 20 days.
+* **Database Backups:** Daily automated backups uploaded securely to Firebase/Google Cloud Storage.
+* **Real-time Notifications:** WebSockets integration (via Pusher) to broadcast events like finished AI analyses or new trade syncs directly to the UI.
+
+### 6. Administration
+* **Admin Dashboard:** Access for administrators/developers to toggle maintenance mode, flush application cache, view system activity logs, and monitor registered users.
+  * **Availability:** Developers and admins only (`User::id === 1` or `is_admin === true`).
+
+---
+
 ## Prerequisites
 
 - [PHP](https://www.php.net/) 8.2+ with extensions: `pdo_pgsql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`

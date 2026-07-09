@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\DispatchesQueueOrSync;
 use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\ProfileDestroyRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Jobs\FileUpload;
 use App\Models\User;
@@ -120,12 +121,8 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(ProfileDestroyRequest $request): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = Auth::user();
 
         $user->delete();

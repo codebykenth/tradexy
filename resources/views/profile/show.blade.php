@@ -241,32 +241,46 @@
                 <dialog id="delete_account_modal" class="modal">
                     <div class="modal-box">
                         <h3 class="font-bold text-lg text-error">Are you absolutely sure?</h3>
-                        <p class="py-4 text-sm">Please enter your password to confirm you would like to permanently
-                            delete your account.</p>
+                        @if (Auth::user()->provider)
+                            <p class="py-4 text-sm">Please enter your email <strong>{{ Auth::user()->email }}</strong> to confirm you would like to permanently delete your account.</p>
+                        @else
+                            <p class="py-4 text-sm">Please enter your password to confirm you would like to permanently delete your account.</p>
+                        @endif
 
                         <form action="{{ route('profile.destroy') }}" method="POST">
                             @csrf
                             @method('DELETE')
 
-                            <div class="mb-4 relative">
-                                <input type="password" id="delete_confirm_password" name="password"
-                                    placeholder="Enter password to confirm" class="input input-bordered w-full pr-10"
-                                    required>
-                                <button type="button" onclick="togglePassword('delete_confirm_password')"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5"
-                                        id="delete_confirm_password-icon">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M15 12.073c0-1.657-1.343-3-3-3s-3 1.343-3 3 1.343 3 3 3 3-1.343 3-3Z" />
-                                    </svg>
-                                </button>
-                                @error('password', 'userDeletion')
-                                    <p class="text-error text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                            @if (Auth::user()->provider)
+                                <div class="mb-4">
+                                    <input type="email" id="delete_confirm_email" name="email_confirmation"
+                                        placeholder="Enter email to confirm" class="input input-bordered w-full @error('email_confirmation', 'userDeletion') input-error @enderror"
+                                        required>
+                                    @error('email_confirmation', 'userDeletion')
+                                        <p class="text-error text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @else
+                                <div class="mb-4 relative">
+                                    <input type="password" id="delete_confirm_password" name="password"
+                                        placeholder="Enter password to confirm" class="input input-bordered w-full pr-10 @error('password', 'userDeletion') input-error @enderror"
+                                        required>
+                                    <button type="button" onclick="togglePassword('delete_confirm_password')"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-5 h-5"
+                                            id="delete_confirm_password-icon">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M15 12.073c0-1.657-1.343-3-3-3s-3 1.343-3 3 1.343 3 3 3 3-1.343 3-3Z" />
+                                        </svg>
+                                    </button>
+                                    @error('password', 'userDeletion')
+                                        <p class="text-error text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endif
 
                             <div class="modal-action">
                                 <button type="button" class="btn btn-ghost"
@@ -279,6 +293,16 @@
                         <button>close</button>
                     </form>
                 </dialog>
+                @if($errors->userDeletion->isNotEmpty())
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+                            const modal = document.getElementById('delete_account_modal');
+                            if (modal) {
+                                modal.showModal();
+                            }
+                        });
+                    </script>
+                @endif
             </div>
         </div>
     </div>

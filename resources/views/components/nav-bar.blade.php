@@ -159,18 +159,18 @@
                     @endif
                     <div class="divider my-1"></div>
                     <li>
-                        <form action="{{ url('/logout') }}" method="post" class="m-0 p-0 w-full" data-turbo="false">
-                            @csrf
-                            <button
-                                type="submit"
-                                class="block w-full bg-transparent border-0 text-error text-left px-4 py-2 font-medium rounded-lg transition-colors hover:bg-error/10 hover:text-error focus:outline-none"
-                                onclick="this.form.requestSubmit(); return false;">
-                                Sign Out
-                            </button>
-                        </form>
+                        <button
+                            type="button"
+                            class="text-error hover:bg-error/10 hover:text-error focus:outline-none w-full text-left"
+                            onclick="document.getElementById('logout-form').submit();">
+                            Sign Out
+                        </button>
                     </li>
                 </ul>
             </div>
+            <form id="logout-form" action="{{ url('/logout') }}" method="POST" class="hidden" data-turbo="false">
+                @csrf
+            </form>
         </div>
     @else
         <!-- Guest View -->

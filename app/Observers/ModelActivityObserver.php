@@ -41,17 +41,23 @@ final class ModelActivityObserver
     private function logActivity(Model $model, string $action): void
     {
         $modelName = class_basename($model);
-        
+
         // Determine user_id: use model's user_id or currently authenticated user
         $userId = $model->user_id ?? Auth::id();
 
-        if (!$userId) {
+        // Prevent foreign key violation if the User record is already deleted
+        $isUserDeletion = $model instanceof \App\Models\User && $action === 'deleted';
+        if ($isUserDeletion) {
+            $userId = null;
+        }
+
+        if (!$userId && !$isUserDeletion) {
             return;
         }
 
         ActivityLog::create([
             'user_id' => $userId,
-            'action' => strtolower($modelName) . '_' . $action,
+            'action' => strtolower($modelName).'_'.$action,
             'description' => "{$modelName} record was {$action}",
             'ip_address' => Request::ip(),
             'user_agent' => Request::userAgent(),
