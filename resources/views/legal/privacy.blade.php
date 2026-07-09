@@ -35,7 +35,7 @@
             </section>
 
             <section class="pt-8 border-t border-gray-200 dark:border-gray-800">
-                <p class="text-sm">Last updated: {{ date('F d, Y') }}</p>
+                <p class="text-sm">Last updated: March 21st, 2026</p>
             </section>
         </div>
     </div>
