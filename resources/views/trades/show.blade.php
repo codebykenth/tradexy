@@ -1,7 +1,7 @@
  <x-layouts.app :title="$trade->symbol . ' Trade Details | ' . config('app.name')">
-    <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
         <div class="flex justify-end items-center mt-8">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('trades.edit', $trade->id ?? 1) }}"
                     class="flex items-center gap-2 p-3 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer font-semibold btn btn-outline">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -101,30 +101,31 @@
                 <button>close</button>
             </form>
         </dialog>
-        <div class="flex items-start gap-4">
+        <div class="flex flex-col lg:flex-row items-start gap-6 mt-8">
             <!-- Left Column: Chart & AI -->
-            <div class="w-2/3 space-y-4">
-                <div class="bg-base-200 rounded-lg p-8 mt-8">
+            <div class="w-full lg:w-2/3 space-y-4">
+                <div class="bg-base-200 rounded-lg p-4 sm:p-8">
                     <!-- General Information -->
-                <div class="flex items-center justify-between gap-4 w-full">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     <div>
-                        <div class="flex items-center gap-4">
-                            <p class="text-4xl uppercase font-black">{{ $trade->symbol ?? 'N/A'  }}</p>
-                            <div class="badge badge-outline uppercase text-xs font-bold">
-                                {{ $trade->market ?? 'crypto' }}</div>
-                            <div @class([
-                                "badge",
-                                "uppercase",
-                                "badge-success" => $trade->exit_side === "short",
-                                "badge-error" => $trade->exit_side === "long"
-                            ])>{{ $trade->entry_side }}</div>
-                            <div class="badge badge-neutral">{{ $trade->leverage ?? 'N/A'  }}x</div>
-                            @if($trade->is_demo)
-                                <div class="badge badge-warning uppercase text-xs font-bold font-mono tracking-tighter shadow-sm border border-warning/30">
-                                    Demo
-                                </div>
-                            @endif
-
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+                            <p class="text-2xl sm:text-4xl uppercase font-black">{{ $trade->symbol ?? 'N/A'  }}</p>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <div class="badge badge-outline uppercase text-xs font-bold">
+                                    {{ $trade->market ?? 'crypto' }}</div>
+                                <div @class([
+                                    "badge",
+                                    "uppercase",
+                                    "badge-success" => $trade->exit_side === "short",
+                                    "badge-error" => $trade->exit_side === "long"
+                                ])>{{ $trade->entry_side }}</div>
+                                <div class="badge badge-neutral">{{ $trade->leverage ?? 'N/A'  }}x</div>
+                                @if($trade->is_demo)
+                                    <div class="badge badge-warning uppercase text-xs font-bold font-mono tracking-tighter shadow-sm border border-warning/30">
+                                        Demo
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                         @if ($trade->order_id)
                             <div class="text-sm text-base-content/40">
@@ -132,7 +133,7 @@
                             </div>
                         @endif
 
-                        <div class="flex gap-8 mt-4">
+                        <div class="flex flex-wrap gap-4 sm:gap-8 mt-4">
                             <div class="flex items-center gap-2 text-base-content/70">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-6 text-base-content/40">
@@ -173,10 +174,10 @@
                         </div>
                     </div>
 
-                    <div class="text-right">
+                    <div class="text-left md:text-right">
                         <p class="uppercase">Net P&L</p>
                         <p @class([
-                            'text-5xl',
+                            'text-4xl sm:text-5xl',
                             'text-red-500' => $trade->total_pnl < 0,
                             'text-green-500' => $trade->total_pnl > 0,
                         ])>@currency($trade->total_pnl, $trade->market)</p>
@@ -185,7 +186,7 @@
                         ])>Gross: @currency($trade->closed_pnl, $trade->market) | Fees: @currency($trade->total_fees, $trade->market)</p>
 
                         @if(($trade->market ?? 'crypto') === 'pse')
-                            <div class="text-xs text-base-content/40 mt-1 text-right space-y-0.5">
+                            <div class="text-xs text-base-content/40 mt-1 text-left md:text-right space-y-0.5">
                                 @if($trade->broker_commission)
                                 <p>Broker: ₱{{ number_format($trade->broker_commission, 2) }}</p> @endif
                                 @if($trade->pse_trans_fee)
@@ -204,7 +205,7 @@
 
                 <div class="border-b border-base-300 my-4"></div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <div>
                         <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider">Entry Price</p>
                         <p>{{ $trade->avg_entry_price ?? 'N/A'  }}</p>
@@ -234,7 +235,7 @@
                 </div>
                 </div>
                 <!-- Chart Snapshot -->
-                <div class="bg-base-200 rounded-lg p-8">
+                <div class="bg-base-200 rounded-lg p-4 sm:p-8">
                     <div class="flex items-center gap-3 text-base-content mb-6">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-8 text-primary">
@@ -282,7 +283,7 @@
                 </div>
 
                 <!-- AI Analysis -->
-                <div class="bg-base-200 rounded-lg p-8 mb-8">
+                <div class="bg-base-200 rounded-lg p-4 sm:p-8 mb-8">
                     <div class="flex items-center justify-between gap-3 text-indigo-900 mb-6">
                         <div class="flex items-center gap-3">
                             <div class="bg-indigo-100 p-2 rounded-lg">
@@ -353,8 +354,8 @@
             </div>
 
             <!-- Right Column: Logic & Takeaways -->
-            <div class="w-1/3 space-y-4">
-                <div class="bg-base-200 rounded-lg p-8 mt-8">
+            <div class="w-full lg:w-1/3 space-y-4">
+                <div class="bg-base-200 rounded-lg p-4 sm:p-8">
                 <p class="uppercase font-bold mb-4">Setup Context</p>
                 <div>
                     <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-2">Strategy</p>
@@ -378,7 +379,7 @@
                 <div class="border-b border-base-300 my-4"></div>
                 <div class="">
                     <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-2">Emotional State</p>
-                    <div class="flex items-center gap-4 w-full">
+                    <div class="flex items-center gap-2 sm:gap-4 w-full">
                         <div class="bg-base-100 rounded-lg p-3 flex-1 text-center border border-base-300 shadow-sm">
                             <p class="uppercase text-xs font-bold text-base-content/40 tracking-wider">Entry</p>
                             <p class="font-medium text-base-content/80">{{ $trade->entry_emotion ?? '-' }}</p>
@@ -398,7 +399,7 @@
             </div>
                 </div>
                 <!-- Trade Logic -->
-                <div class="bg-base-200 rounded-lg p-8">
+                <div class="bg-base-200 rounded-lg p-4 sm:p-8">
                     <p class="uppercase font-bold mb-4">Trade Logic</p>
                     <div>
                         <p class="uppercase text-xs font-bold text-base-content/50 tracking-wider mb-2">Entry Triggers</p>
@@ -431,7 +432,7 @@
                 </div>
 
                 <!-- Key Takeaways -->
-                <div class="bg-base-200 rounded-lg p-8 mb-8">
+                <div class="bg-base-200 rounded-lg p-4 sm:p-8 mb-8">
                     <p class="uppercase font-bold mb-4">Key Takeaways</p>
                     @if($trade->lessons->isNotEmpty())
                         <ul class="list-disc ml-4 space-y-2 text-base-content/70">

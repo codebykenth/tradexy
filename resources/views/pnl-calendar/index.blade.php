@@ -1,5 +1,5 @@
 <x-layouts.app title="PnL Calendar - Tradexy">
-    <div class="max-w-7xl mx-auto px-6 space-y-6 mb-8 mt-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 space-y-6 mb-8 mt-6">
         <x-page-title title="PnL Calendar" subtitle="Visualize your daily trading performance" />
 
         @if($hasTrades)
@@ -28,7 +28,7 @@
             </div>
 
             <!-- Calendar -->
-            <div class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+            <div class="bg-white dark:bg-[#1A1C23] border border-gray-200 dark:border-gray-800 rounded-xl p-4 sm:p-6">
                 <!-- Month Navigation -->
                 <div class="flex items-center justify-between mb-6">
                     <a href="?year={{ $prevYear }}&month={{ $prevMonth }}" 
@@ -49,11 +49,12 @@
                 </div>
 
                 <!-- Calendar Grid -->
-                <div class="grid grid-cols-7 gap-2">
+                <div class="grid grid-cols-7 gap-1.5 sm:gap-2">
                     <!-- Day Headers -->
                     @foreach(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $day)
                         <div class="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider py-2">
-                            {{ $day }}
+                            <span class="sm:hidden">{{ substr($day, 0, 1) }}</span>
+                            <span class="hidden sm:inline">{{ $day }}</span>
                         </div>
                     @endforeach
 
@@ -95,23 +96,23 @@
                         <div class="aspect-square">
                             {{-- Link to trades.index filtered by this date --}}
                             <a href="{{ $trades > 0 ? route('trades.index', ['date' => $dateString]) : '#' }}"
-                               class="h-full w-full rounded-lg border {{ $borderClass }} {{ $bgClass }} p-2 flex flex-col justify-between hover:shadow-md transition-shadow {{ $trades > 0 ? 'cursor-pointer' : 'cursor-default' }} {{ $isToday ? 'ring-2 ring-blue-500' : '' }} block">
+                               class="h-full w-full rounded-lg border {{ $borderClass }} {{ $bgClass }} p-1 sm:p-2 flex flex-col justify-between hover:shadow-md transition-shadow {{ $trades > 0 ? 'cursor-pointer' : 'cursor-default' }} {{ $isToday ? 'ring-2 ring-blue-500' : '' }} block">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-medium {{ $trades > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400' }}">
                                         {{ $day }}
                                     </span>
                                     @if($trades > 0)
-                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                                            {{ $trades }}T
+                                        <span class="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                            {{ $trades }}<span class="hidden sm:inline">T</span>
                                         </span>
                                     @endif
                                 </div>
                                 @if($trades > 0)
-                                    <div class="text-sm font-bold {{ $pnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                    <div class="hidden sm:block text-xs sm:text-sm font-bold {{ $pnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} truncate">
                                         {{ $pnl >= 0 ? '+' : '' }}${{ number_format(abs($pnl), 2) }}
                                     </div>
                                 @else
-                                    <div class="text-xs text-gray-400 dark:text-gray-500">No trades</div>
+                                    <div class="hidden sm:block text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 truncate">No trades</div>
                                 @endif
                             </a>
                         </div>

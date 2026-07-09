@@ -1,11 +1,11 @@
 <x-layouts.app title="Screener — Tradexy" description="Scan crypto markets using technical indicators.">
-    <div id="screener-page" class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
+    <div id="screener-page" class="max-w-7xl mx-auto px-4 sm:px-6 space-y-4 mb-8">
         
         {{-- Top Bar: Set Filters --}}
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4  mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
             <x-page-title title="Set Filters" />
 
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                 <div class="relative w-full sm:w-64">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -13,20 +13,20 @@
                     <input type="text" id="indicator-search" placeholder="Search Filter" class="input input-sm input-bordered w-full pl-9 rounded-full bg-base-200/50 focus:bg-base-100 transition-colors">
                 </div>
                 
-                <div class="join">
-                    <select name="timeframe" id="global-timeframe" form="screener-form" class="select select-bordered select-sm join-item bg-base-200/50">
+                <div class="join w-full sm:w-auto flex sm:inline-flex">
+                    <select name="timeframe" id="global-timeframe" form="screener-form" class="select select-bordered select-sm join-item bg-base-200/50 flex-1 sm:flex-none">
                         @foreach($availableTimeframes as $value => $label)
                             <option value="{{ $value }}" @selected(($filters['timeframe'] ?? '1D') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <select class="select select-bordered select-sm join-item bg-base-200/50 font-medium">
+                    <select class="select select-bordered select-sm join-item bg-base-200/50 font-medium flex-1 sm:flex-none">
                         <option>Crypto (USDT)</option>
                         <option disabled>PSE (Coming Soon)</option>
                     </select>
                 </div>
 
-                <div class="flex-1 sm:flex-none flex justify-end">
-                    <button type="submit" form="screener-form" id="run-screener-btn" class="btn btn-primary btn-sm rounded-full px-6 shadow-sm hover:shadow-md transition-shadow font-bold">
+                <div class="w-full sm:w-auto">
+                    <button type="submit" form="screener-form" id="run-screener-btn" class="btn btn-primary btn-sm rounded-full w-full sm:w-auto px-6 shadow-sm hover:shadow-md transition-shadow font-bold">
                         Run Screener
                     </button>
                 </div>

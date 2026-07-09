@@ -7,9 +7,20 @@
         </div>
 
         @if (session('success'))
-            <div class="alert alert-success mt-4">
+            <div class="alert alert-success mt-4 flex justify-between items-center" id="profile-success-alert">
                 <span>{{ session('success') }}</span>
+                <button type="button" class="btn btn-ghost btn-xs text-success-content" onclick="document.getElementById('profile-success-alert').remove()">✕</button>
             </div>
+            <script>
+                setTimeout(() => {
+                    const alertEl = document.getElementById('profile-success-alert');
+                    if (alertEl) {
+                        alertEl.style.opacity = '0';
+                        alertEl.style.transition = 'opacity 0.5s ease';
+                        setTimeout(() => alertEl.remove(), 500);
+                    }
+                }, 4000);
+            </script>
         @endif
 
         <div class="flex flex-col gap-8 my-8">
@@ -17,7 +28,7 @@
             <div class="bg-base-200 rounded-lg p-8 flex items-center justify-between gap-6 border border-base-300 shadow-sm">
                 <div class="flex items-center gap-6">
                     <div
-                        class="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold overflow-hidden shadow-sm relative">
+                        class="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold overflow-hidden shadow-sm relative shrink-0">
                         @if (session('profile_uploading'))
                             <div class="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
                                 <div

@@ -1,6 +1,6 @@
 <x-layouts.app title="Trade Logs - Tradexy">
     <div class="w-full">
-        <div class="max-w-7xl mx-auto px-6 space-y-4 mb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 space-y-4 mb-8">
             <x-page-title title="Logs" subtitle="List of all your trades" />
 
             {{-- Date filter banner from PnL calendar deep-link --}}
@@ -19,8 +19,8 @@
             @endif
 
             @if($ownedTrades->isNotEmpty())
-                <div class="relative h-12 mb-4">
-                    <a href="{{ route('trades.create') }}" class="btn btn-primary absolute left-0 top-0 h-full">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <a href="{{ route('trades.create') }}" class="btn btn-primary w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -29,35 +29,37 @@
                     </a>
 
                     <div
-                        class="bulk-action-container absolute right-0 top-0 h-full flex items-center gap-4 hidden bg-base-200 p-2 rounded-lg border border-base-300">
-                        <span class="text-sm font-semibold text-base-content/70 px-2">Bulk Actions:</span>
-                        <select class="select select-sm border-base-300" name="timeframe" id="bulk-timeframe">
-                            <option value="">Timeframe...</option>
-                            <option>1m</option>
-                            <option>5m</option>
-                            <option>15m</option>
-                            <option>30m</option>
-                            <option>1hr</option>
-                            <option>4hr</option>
-                            <option>1d</option>
-                        </select>
-                        <select class="select select-sm border-base-300" name="strategy_id" id="bulk-strategy">
-                            <option value="">Strategy...</option>
-                            @foreach($strategies as $strategy)
-                                <option value="{{ $strategy->id }}">{{ $strategy->name }}</option>
-                            @endforeach
-                        </select>
+                        class="bulk-action-container flex flex-col sm:flex-row items-stretch sm:items-center gap-3 hidden bg-base-200 p-2 rounded-lg border border-base-300 w-full sm:w-auto">
+                        <span class="text-sm font-semibold text-base-content/70 px-2 text-center sm:text-left">Bulk Actions:</span>
+                        <div class="flex flex-wrap items-center justify-center gap-2">
+                            <select class="select select-sm select-bordered border-base-300 flex-1 sm:flex-none" name="timeframe" id="bulk-timeframe">
+                                <option value="">Timeframe...</option>
+                                <option>1m</option>
+                                <option>5m</option>
+                                <option>15m</option>
+                                <option>30m</option>
+                                <option>1hr</option>
+                                <option>4hr</option>
+                                <option>1d</option>
+                            </select>
+                            <select class="select select-sm select-bordered border-base-300 flex-1 sm:flex-none" name="strategy_id" id="bulk-strategy">
+                                <option value="">Strategy...</option>
+                                @foreach($strategies as $strategy)
+                                    <option value="{{ $strategy->id }}">{{ $strategy->name }}</option>
+                                @endforeach
+                            </select>
 
-                        <button class="btn btn-sm btn-primary" id="apply-bulk">Update</button>
-                        <div class="w-px h-6 bg-base-300 mx-1"></div>
-                        <!-- Delete Button -->
-                        <button class="btn btn-sm btn-square btn-error btn-outline" id="bulk-delete" aria-label="Delete Selected">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="size-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                            </svg>
-                        </button>
+                            <button class="btn btn-sm btn-primary flex-1 sm:flex-none" id="apply-bulk">Update</button>
+                            <div class="hidden sm:block w-px h-6 bg-base-300 mx-1"></div>
+                            <!-- Delete Button -->
+                            <button class="btn btn-sm btn-square btn-error btn-outline flex-none" id="bulk-delete" aria-label="Delete Selected">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <x-table>
@@ -69,9 +71,9 @@
                         </th>
                         <th>Date</th>
                         <th class="text-center">Symbol</th>
-                        <th class="whitespace-nowrap">Duration</th>
-                        <th class="whitespace-nowrap">Qty</th>
-                        <th class="text-right pr-8 whitespace-nowrap">Net Pnl</th>
+                        <th class="hidden sm:table-cell whitespace-nowrap">Duration</th>
+                        <th class="hidden sm:table-cell whitespace-nowrap">Qty</th>
+                        <th class="text-right pr-4 sm:pr-8 whitespace-nowrap">Net Pnl</th>
                         <th class="w-16 text-center">Chart</th>
                         <th class="w-16 text-center">AI</th>
                     </x-slot:header>
@@ -96,13 +98,13 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="whitespace-nowrap">
+                                <td class="hidden sm:table-cell whitespace-nowrap">
                                     {{ $ownedTrade->duration }}
                                 </td>
-                                <td class="whitespace-nowrap">
+                                <td class="hidden sm:table-cell whitespace-nowrap">
                                     {{ strpos((string) $ownedTrade->quantity, '.') !== false ? rtrim(rtrim((string) $ownedTrade->quantity, '0'), '.') : $ownedTrade->quantity }}
                                 </td>
-                                <td class="text-right pr-8 whitespace-nowrap">
+                                <td class="text-right pr-4 sm:pr-8 whitespace-nowrap">
                                     <span @class([
                                         'font-bold',
                                         'text-green-400' => $ownedTrade->total_pnl > 0,
@@ -113,7 +115,7 @@
                                     @if($ownedTrade->chart_picture)
                                         <div class="tooltip tooltip-left" data-tip="Click trade to view chart">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                stroke="currentColor" class="size-5 text-gray-400">
+                                                stroke="currentColor" class="size-5 text-gray-400 mx-auto">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                                             </svg>
@@ -358,13 +360,13 @@
                     const formattedPnl = trade.formatted_pnl;
                     
                     return `
-                        <tr class="hover cursor-pointer" onclick="window.location='/trades/${trade.id}'">
+                        <tr class="border-b border-base-300 odd:bg-base-200 even:bg-base-100 hover:bg-base-300 transition-colors text-center h-12 [&>th]:px-2 [&>th]:sm:px-4 [&>td]:px-2 [&>td]:sm:px-4 [&>th:first-child]:pl-4 [&>td:last-child]:pr-4 cursor-pointer" onclick="window.location='/trades/${trade.id}'">
                             <th onclick="event.stopPropagation()">
                                 <label>
                                     <input type="checkbox" class="trade-checkbox size-4" value="${trade.id}" />
                                 </label>
                             </th>
-                            <td class="font-medium">${formattedDate}</td>
+                            <td class="font-medium whitespace-nowrap">${formattedDate}</td>
                             <td>
                                 <div class="flex items-center justify-center gap-2">
                                     ${trade.symbol}
@@ -372,13 +374,19 @@
                                     ${trade.is_demo ? '<span class="badge badge-warning badge-xs uppercase">Demo</span>' : ''}
                                 </div>
                             </td>
-                            <td>${trade.duration || 'N/A'}</td>
-                            <td>${parseFloat(trade.quantity)}</td>
-                            <td class="text-right pr-8"><span class="font-bold ${pnlClass}">${formattedPnl}</span></td>
-                            <td>
-                                ${trade.chart_picture ? '<span class="text-xs opacity-50 italic text-center block">Has Chart</span>' : '-'}
+                            <td class="hidden sm:table-cell">${trade.duration || 'N/A'}</td>
+                            <td class="hidden sm:table-cell">${parseFloat(trade.quantity)}</td>
+                            <td class="text-right pr-4 sm:pr-8 whitespace-nowrap"><span class="font-bold ${pnlClass}">${formattedPnl}</span></td>
+                            <td class="w-16 text-center">
+                                ${trade.chart_picture ? `
+                                    <div class="tooltip tooltip-left" data-tip="Click trade to view chart">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-gray-400 mx-auto">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                        </svg>
+                                    </div>
+                                ` : '-'}
                             </td>
-                            <td>
+                            <td class="w-16 text-center">
                                 ${trade.has_ai_analysis ? `
                                     <div class="tooltip tooltip-left" data-tip="AI Analysis Available (Click trade to view)">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-indigo-400 mx-auto">

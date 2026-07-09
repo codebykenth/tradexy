@@ -4,7 +4,7 @@
             @isset($header)
                 <thead>
                     <tr
-                        class="border-b border-base-300 bg-base-200 h-10 [&>th:first-child]:pl-4 [&>th:last-child]:pr-4 uppercase text-sm text-base-content/70">
+                        class="border-b border-base-300 bg-base-200 h-10 [&>th]:px-2 [&>th]:sm:px-4 [&>th:first-child]:pl-4 [&>th:last-child]:pr-4 uppercase text-xs sm:text-sm text-base-content/70">
                         {{ $header }}
                     </tr>
                 </thead>
