@@ -13,7 +13,19 @@
             "dest": "/api/index.php"
         },
         {
-            "src": "/(build|assets|css|js|images|fonts|storage|favicon.ico|robots.txt)(.*)",
+            "src": "/manifest.json",
+            "dest": "/public/manifest.json"
+        },
+        {
+            "src": "/sw.js",
+            "dest": "/public/sw.js",
+            "headers": {
+                "Service-Worker-Allowed": "/",
+                "Cache-Control": "no-cache"
+            }
+        },
+        {
+            "src": "/(build|assets|css|js|images|icons|fonts|storage|favicon.ico|robots.txt|ads.txt)(.*)",
             "dest": "/public/$1$2"
         },
         {

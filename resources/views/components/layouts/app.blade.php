@@ -46,6 +46,14 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}" />
 
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tradexy">
+    <meta name="mobile-web-app-capable" content="yes">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
@@ -228,6 +236,31 @@
             })();
         </script>
     @endif
+
+    <!-- Service Worker Registration -->
+    @production
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then((reg) => {
+                        // Auto-update on new version
+                        reg.addEventListener('updatefound', () => {
+                            const newWorker = reg.installing;
+                            if (newWorker) {
+                                newWorker.addEventListener('statechange', () => {
+                                    if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+                                        console.log('[SW] New version available — will activate on next visit.');
+                                    }
+                                });
+                            }
+                        });
+                    })
+                    .catch((err) => console.warn('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+    @endproduction
 </body>
 
 </html>
