@@ -17,7 +17,7 @@
                 <div class="space-y-6">
                     <h1
                         class="text-4xl lg:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1] text-balance">
-                        The Best <span class="text-primary">Crypto & PSE (PH Market)</span> Trading Journal. <br>
+                        A <span class="text-primary">Crypto & PSE (PH Market)</span> Trading Journal. <br>
                         <span class="text-gray-400 dark:text-gray-600">Scale Your Edge.</span>
                     </h1>
                     <p class="text-lg text-gray-600 dark:text-gray-400 leading-relaxed max-w-lg text-balance">
@@ -71,7 +71,7 @@
                 <div
                     class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200">
                 </div>
-                <img src="{{ asset('images/tradexy-hero-1.png') }}" alt="Hero Image"
+                <img src="{{ asset('images/tradexy-hero-2.png') }}" alt="Hero Image"
                     class="relative w-full h-auto rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 object-cover aspect-[4/3]">
             </div>
         </section>
@@ -114,7 +114,7 @@
                     </div>
 
                     <!-- Effortless Trade Logging -->
-                    <div
+                    <!-- <div
                         class="p-8 bg-white dark:bg-[#161615] border border-gray-200 dark:border-[#272726] rounded-2xl hover:border-orange-500/30 dark:hover:border-orange-500/30 transition-colors group">
                         <div
                             class="w-12 h-12 bg-orange-50 dark:bg-orange-900/10 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 mb-6 group-hover:scale-110 transition-transform duration-300">
@@ -128,7 +128,7 @@
                         </h3>
                         <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">Import trades via CSV or use
                             our blazing fast manual entry. Add screenshots, notes, and tags to never forget a setup.</p>
-                    </div>
+                    </div> -->
 
                     <!-- Strategy Backtesting Engine -->
                     <div

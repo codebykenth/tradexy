@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use DateTime;
@@ -181,8 +183,8 @@ class DailyNewsService
         $output = Http::withHeaders([
             'x-goog-api-key' => config('services.gemini.key'),
             'Content-Type' => 'application/json',
-        ])->timeout(300)->retry(3, 10000)->post(
-            'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent',
+        ])->timeout(300)->post(
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
             [
                 'system_instruction' => [
                     'parts' => [
@@ -204,9 +206,6 @@ class DailyNewsService
                     'temperature' => 1.0,
                     'topP' => 0.8,
                     'topK' => 10,
-                    'thinkingConfig' => [
-                        'thinkingLevel' => 'medium',
-                    ],
                 ],
             ]
         );

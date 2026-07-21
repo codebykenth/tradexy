@@ -73,13 +73,13 @@
                 <!-- Equity Curve -->
                 <div class="relative min-h-[350px]">
                     <x-charts.area id="equityChart" title="Equity Curve" :series="$equitySeries"
-                        :categories="$equityCategories" color="#6366f1" />
+                        :categories="$equityCategories" color="#6366f1" :prefix="$currencySymbol" />
                 </div>
 
                 <!-- PnL Curve -->
                 <div class="relative min-h-[350px]">
                     <x-charts.area id="pnlChart" title="Cumulative PnL" :series="$pnlSeries" :categories="$pnlCategories"
-                        color="{{ $totalPnl >= 0 ? '#10B981' : '#EF4444' }}" />
+                        color="{{ $totalPnl >= 0 ? '#10B981' : '#EF4444' }}" :prefix="$currencySymbol" />
                 </div>
             </div>
 

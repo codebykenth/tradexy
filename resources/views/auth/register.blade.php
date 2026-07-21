@@ -3,7 +3,7 @@
         <div class="flex flex-col lg:flex-row w-full">
             <!-- Hero Section (Left) -->
             <div class="hidden lg:flex w-1/2 relative bg-gray-900 rounded-2xl overflow-hidden my-4 mr-0">
-                <img src="{{ asset('images/tradexy-hero-1.png') }}" alt="Trading Chart"
+                <img src="{{ asset('images/tradexy-hero-2.png') }}" alt="Trading Chart"
                     class="absolute inset-0 w-full h-full object-cover opacity-60">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 

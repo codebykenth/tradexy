@@ -4,7 +4,8 @@
     'categories',
     'title',
     'color' => '#10B981', // Default emerald green
-    'formatter' => 'usd' // 'usd' or 'number'
+    'formatter' => 'usd', // 'usd' or 'number'
+    'prefix' => '$'
 ])
 
 <div class="bg-white dark:bg-[#141414] border border-gray-200 dark:border-[#1F1F1E] rounded-xl shadow-sm p-4 w-full h-full">
@@ -18,10 +19,14 @@
 
         const render = () => {
             const target = document.querySelector('#' + chartId);
-            if (!target || target.dataset.rendered === '1') return;
+            if (!target) return;
             if (!window.ApexCharts) {
                 console.error('ApexCharts is not globally defined in window.');
                 return;
+            }
+
+            if (target._chartInstance) {
+                target._chartInstance.destroy();
             }
 
             const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark' || document.documentElement.classList.contains('dark');
@@ -72,7 +77,7 @@
                 labels: {
                     formatter: function (val) {
                         @if($formatter === 'usd')
-                            return '$' + val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            return @js($prefix) + val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                         @else
                             return val;
                         @endif
@@ -95,7 +100,7 @@
                 y: {
                     formatter: function (val) {
                         @if($formatter === 'usd')
-                            return '$' + val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            return @js($prefix) + val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                         @else
                             return val;
                         @endif
@@ -104,9 +109,9 @@
             }
         };
 
-            target.dataset.rendered = '1';
             const chart = new window.ApexCharts(target, options);
             chart.render();
+            target._chartInstance = chart;
         };
 
         // Inline classic <script> re-executes on each Turbo body swap, so
