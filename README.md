@@ -81,8 +81,8 @@ For deployment: a [Vercel](https://vercel.com/) account and a hosted PostgreSQL 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/codebykenth/trading-journal-v2.git
-cd trading-journal-v2
+git clone https://github.com/codebykenth/tradexy.git
+cd tradexy
 ```
 
 ### 2. Install Dependencies
