@@ -17,6 +17,7 @@ use App\Http\Controllers\ScreenerController;
 use App\Http\Controllers\SharedTradeController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StrategyController;
+use App\Http\Controllers\TermsController;
 use App\Http\Controllers\TradeBulkController;
 use App\Http\Controllers\TradeController;
 use App\Http\Controllers\TradingModeController;
@@ -54,7 +55,7 @@ Route::middleware(['throttle:auth'])->group(function () {
         Route::get('/auth/{provider}/callback', [LoginController::class, 'handleProviderCallback']);
     });
 
-    Route::post('logout', [LoginController::class, 'logout'])->middleware('auth');
+    Route::post('logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 });
 
 // Read Routes
@@ -111,6 +112,7 @@ Route::middleware(['throttle:write', 'auth'])->group(function () {
     Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('trades/{id}/share', [SharedTradeController::class, 'generate'])->name('trades.share.generate');
     Route::delete('trades/{id}/share', [SharedTradeController::class, 'revoke'])->name('trades.share.revoke');
+    Route::post('terms/accept', [TermsController::class, 'accept'])->name('terms.accept');
     Route::post('trading-mode', [TradingModeController::class, 'update'])->name('trading-mode.update');
     Route::post('trades/bulk', [TradeBulkController::class, 'handle'])->name('trades.bulk');
 

@@ -184,7 +184,7 @@ class DailyNewsService
             'x-goog-api-key' => config('services.gemini.key'),
             'Content-Type' => 'application/json',
         ])->timeout(300)->post(
-            'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent',
             [
                 'system_instruction' => [
                     'parts' => [

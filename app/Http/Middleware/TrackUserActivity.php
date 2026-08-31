@@ -17,6 +17,7 @@ final class TrackUserActivity
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
+            /** @var \App\Models\User $user */
             $user = Auth::user();
             $now = now();
             $lastSeen = $user->last_seen_at;
@@ -26,7 +27,7 @@ final class TrackUserActivity
 
             // Throttle: Only update the database once every 60 seconds
             if (!$lastSeen || $now->diffInSeconds($lastSeen) >= 60) {
-                if ($lastSeen && $lastSeen->diffInMinutes($now) < $sessionTimeout) {
+                if ($lastSeen instanceof \Illuminate\Support\Carbon && $lastSeen->diffInMinutes($now) < $sessionTimeout) {
                     // User is in a continuous session, add the gap to total duration
                     $durationGap = $now->getTimestamp() - $lastSeen->getTimestamp();
                     if ($durationGap > 0) {

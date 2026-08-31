@@ -62,6 +62,9 @@ A professional trading journal application built with Laravel, Tailwind CSS, and
 * **Admin Dashboard:** Access for administrators/developers to toggle maintenance mode, flush application cache, view system activity logs, and monitor registered users.
   * **Availability:** Developers and admins only (`User::id === 1` or `is_admin === true`).
 
+### 7. Authentication & Legal Compliance
+* **Terms of Service & Privacy Agreement:** All users must accept the Terms of Service and Privacy Policy before accessing platform features. Traditional signups require consent during registration, while social logins (e.g. Google/Facebook) and legacy accounts are presented with a mandatory, non-cancellable Terms Acceptance modal upon first login (`terms_accepted_at`).
+
 ---
 
 ## Prerequisites

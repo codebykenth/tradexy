@@ -11,6 +11,7 @@ parameters:
     level: 5
 
     treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
 
     ignoreErrors:
         - '#If condition is always true#'

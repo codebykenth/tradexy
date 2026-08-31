@@ -17,6 +17,7 @@ final class ActivityLogSubscriber
      */
     public function handleUserLogin(Login $event): void
     {
+        /** @var \App\Models\User $user */
         $user = $event->user;
         $user->updateQuietly(['last_login_at' => now()]);
 
@@ -38,8 +39,11 @@ final class ActivityLogSubscriber
             return;
         }
 
+        /** @var \App\Models\User $user */
+        $user = $event->user;
+
         ActivityLog::create([
-            'user_id' => $event->user->id,
+            'user_id' => $user->id,
             'action' => 'logout',
             'description' => 'User logged out of the system',
             'ip_address' => Request::ip(),

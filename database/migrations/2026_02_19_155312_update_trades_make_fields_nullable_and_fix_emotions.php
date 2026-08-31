@@ -5,12 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         // Drop the enum check constraints first (PostgreSQL)
-        DB::statement('ALTER TABLE trades DROP CONSTRAINT IF EXISTS trades_entry_emotion_check');
-        DB::statement('ALTER TABLE trades DROP CONSTRAINT IF EXISTS trades_exit_emotion_check');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE trades DROP CONSTRAINT IF EXISTS trades_entry_emotion_check');
+            DB::statement('ALTER TABLE trades DROP CONSTRAINT IF EXISTS trades_exit_emotion_check');
+        }
 
         Schema::table('trades', function (Blueprint $table) {
             // Change emotions from enum to nullable string (accepts any value)

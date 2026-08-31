@@ -25,6 +25,9 @@ class RegisterController extends Controller
             'terms.accepted' => 'You must agree to the Terms of Service and Privacy Policy to create an account.',
         ]);
 
+        unset($validated['terms']);
+        $validated['terms_accepted_at'] = now();
+
         $user = User::create($validated);
 
         Auth::login($user, true);

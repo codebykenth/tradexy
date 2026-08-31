@@ -21,7 +21,7 @@ final class ScreenerService
     private const HTTP_POOL_BATCH_SIZE = 10;
 
     // Maps interval labels to Bybit API interval values
-    private const array INTERVAL_MAP = [
+    private const INTERVAL_MAP = [
         '1h' => '60',
         '4h' => '240',
         '1D' => 'D',
@@ -29,7 +29,7 @@ final class ScreenerService
     ];
 
     // Available indicators and their default periods
-    private const array INDICATOR_DEFAULTS = [
+    private const INDICATOR_DEFAULTS = [
         'rsi' => ['period' => 14],
         'sma' => ['period' => 20],
         'ema' => ['period' => 12],

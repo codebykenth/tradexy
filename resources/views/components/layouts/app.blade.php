@@ -193,6 +193,7 @@
     </div>
     @endif
     <x-toast />
+    <x-terms-modal />
     <script>
         function togglePassword(id) {
             const input = document.getElementById(id);
