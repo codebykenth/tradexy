@@ -82,7 +82,7 @@ Route::middleware(['throttle:read'])->group(function () {
 
     Route::middleware('auth')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
-        Route::get('pnl-calendar', [PnlCalendarController::class, 'index']);
+        Route::get('pnl-calendar', [PnlCalendarController::class, 'index'])->name('pnl-calendar.index');
         Route::get('trades/gallery', [TradeController::class, 'gallery'])->name('trades.gallery');
         Route::get('trades/export', [TradeImportExportController::class, 'export'])->name('trades.export');
         Route::get('trades/template', [TradeImportExportController::class, 'template'])->name('trades.template');
