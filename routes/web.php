@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BalanceController;
+use App\Http\Controllers\BalanceImportExportController;
 use App\Http\Controllers\DailyNewsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MigrateBalancesController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\TermsController;
 use App\Http\Controllers\TradeBulkController;
 use App\Http\Controllers\TradeController;
+use App\Http\Controllers\TradeImportExportController;
 use App\Http\Controllers\TradingModeController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -82,7 +84,11 @@ Route::middleware(['throttle:read'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::get('pnl-calendar', [PnlCalendarController::class, 'index']);
         Route::get('trades/gallery', [TradeController::class, 'gallery'])->name('trades.gallery');
+        Route::get('trades/export', [TradeImportExportController::class, 'export'])->name('trades.export');
+        Route::get('trades/template', [TradeImportExportController::class, 'template'])->name('trades.template');
         Route::resource('trades', TradeController::class)->only(['index', 'show', 'create', 'edit']);
+        Route::get('balances/export', [BalanceImportExportController::class, 'export'])->name('balances.export');
+        Route::get('balances/template', [BalanceImportExportController::class, 'template'])->name('balances.template');
         Route::resource('balances', BalanceController::class)->only(['index', 'create']);
         Route::resource('strategies', StrategyController::class)->only(['index', 'create', 'show', 'edit']);
         Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
@@ -103,6 +109,8 @@ Route::middleware(['throttle:read'])->group(function () {
 
 // Write Routes (Create, Update Delete)
 Route::middleware(['throttle:write', 'auth'])->group(function () {
+    Route::post('trades/import', [TradeImportExportController::class, 'import'])->name('trades.import');
+    Route::post('balances/import', [BalanceImportExportController::class, 'import'])->name('balances.import');
     Route::resource('trades', TradeController::class)->only(['store', 'update', 'destroy']);
     Route::resource('balances', BalanceController::class)->only(['store', 'update', 'destroy']);
     Route::resource('strategies', StrategyController::class)->only(['store', 'update', 'destroy']);

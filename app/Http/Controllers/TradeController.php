@@ -41,18 +41,60 @@ final class TradeController extends Controller
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
         $prefCurrency = session('preferred_currency', 'USD');
-        $page = request()->get('page', 1);
-        // Date filter from PnL calendar deep-link
+        $page = (int) request()->get('page', 1);
+        $startDate = request()->get('start_date');
+        $endDate = request()->get('end_date');
         $dateFilter = request()->get('date');
+        $symbol = trim((string) request()->get('symbol', ''));
+        $outcome = request()->get('outcome');
+        $side = request()->get('side');
+        $strategyId = request()->get('strategy_id');
+        $timeframe = request()->get('timeframe');
+        $hasChart = request()->boolean('has_chart');
+        $hasAi = request()->boolean('has_ai');
+
+        if ($startDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $startDate)) {
+            $startDate = null;
+        }
+        if ($endDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $endDate)) {
+            $endDate = null;
+        }
+        if ($dateFilter && !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $dateFilter)) {
+            $dateFilter = null;
+        }
+        if ($outcome && !in_array($outcome, ['win', 'loss', 'breakeven'], true)) {
+            $outcome = null;
+        }
+        if ($side && !in_array($side, ['long', 'short'], true)) {
+            $side = null;
+        }
+
+        $filterPayload = [
+            's' => $startDate,
+            'e' => $endDate,
+            'd' => $dateFilter,
+            'sym' => $symbol ?: null,
+            'out' => $outcome,
+            'side' => $side,
+            'strat' => $strategyId,
+            'tf' => $timeframe,
+            'chart' => $hasChart ? 1 : null,
+            'ai' => $hasAi ? 1 : null,
+        ];
+        $filterHash = md5(http_build_query(array_filter($filterPayload)));
 
         $version = Cache::get("trades_version_user_{$userId}", now()->timestamp);
-        $cacheKey = "trades_v{$version}_u{$userId}_m{$accountMode}_mar{$marketMode}_cur{$prefCurrency}_p{$page}".($dateFilter ? "_d{$dateFilter}" : '');
+        $cacheKey = "trades_v{$version}_u{$userId}_m{$accountMode}_mar{$marketMode}_cur{$prefCurrency}_p{$page}_f{$filterHash}";
 
-        return Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $page, $dateFilter) {
+        $cached = Cache::remember($cacheKey, now()->addHours(2), function () use (
+            $userId, $accountMode, $marketMode, $page,
+            $startDate, $endDate, $dateFilter,
+            $symbol, $outcome, $side, $strategyId, $timeframe, $hasChart, $hasAi
+        ) {
             $query = Trade::with(['strategy'])
                 ->where('user_id', $userId)
                 ->select([
-                    'id', 'user_id', 'strategy_id', 'symbol', 'market', 'is_demo',
+                    'id', 'user_id', 'strategy_id', 'order_id', 'symbol', 'market', 'is_demo',
                     'quantity', 'total_pnl', 'close_datetime', 'open_datetime',
                     'avg_entry_price', 'avg_exit_price', 'stop_loss_price', 'take_profit_price',
                     'entry_side', 'exit_side', 'chart_picture',
@@ -67,8 +109,57 @@ final class TradeController extends Controller
                 $query->where('market', $marketMode);
             }
 
-            // Filter by calendar date (close_datetime stored UTC, calendar dates are Manila)
-            if ($dateFilter && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFilter)) {
+            // Filter by symbol
+            if ($symbol !== '') {
+                $query->where('symbol', 'LIKE', "%{$symbol}%");
+            }
+
+            // Filter by trade outcome
+            if ($outcome === 'win') {
+                $query->where('total_pnl', '>', 0);
+            } elseif ($outcome === 'loss') {
+                $query->where('total_pnl', '<', 0);
+            } elseif ($outcome === 'breakeven') {
+                $query->where('total_pnl', '=', 0);
+            }
+
+            // Filter by side
+            if ($side) {
+                $query->where('entry_side', $side);
+            }
+
+            // Filter by strategy
+            if (!empty($strategyId) && is_numeric($strategyId)) {
+                $query->where('strategy_id', (int) $strategyId);
+            }
+
+            // Filter by timeframe
+            if (!empty($timeframe)) {
+                $query->where('timeframe', $timeframe);
+            }
+
+            // Filter by chart picture presence
+            if ($hasChart) {
+                $query->whereNotNull('chart_picture')->where('chart_picture', '!=', '');
+            }
+
+            // Filter by AI analysis presence
+            if ($hasAi) {
+                $query->whereNotNull('ai_analysis')->where('ai_analysis', '!=', '');
+            }
+
+            // Filter by date range or single calendar date
+            if ($startDate && $endDate) {
+                $start = \Carbon\Carbon::createFromFormat('Y-m-d', $startDate, 'Asia/Manila')->startOfDay()->utc();
+                $end = \Carbon\Carbon::createFromFormat('Y-m-d', $endDate, 'Asia/Manila')->endOfDay()->utc();
+                $query->whereBetween('close_datetime', [$start, $end]);
+            } elseif ($startDate) {
+                $start = \Carbon\Carbon::createFromFormat('Y-m-d', $startDate, 'Asia/Manila')->startOfDay()->utc();
+                $query->where('close_datetime', '>=', $start);
+            } elseif ($endDate) {
+                $end = \Carbon\Carbon::createFromFormat('Y-m-d', $endDate, 'Asia/Manila')->endOfDay()->utc();
+                $query->where('close_datetime', '<=', $end);
+            } elseif ($dateFilter) {
                 $start = \Carbon\Carbon::createFromFormat('Y-m-d', $dateFilter, 'Asia/Manila')->startOfDay()->utc();
                 $end = \Carbon\Carbon::createFromFormat('Y-m-d', $dateFilter, 'Asia/Manila')->endOfDay()->utc();
                 $query->whereBetween('close_datetime', [$start, $end]);
@@ -91,19 +182,35 @@ final class TradeController extends Controller
                 return $trade;
             });
 
-            // Manually create paginator from cached data
-            $ownedTrades = new \Illuminate\Pagination\LengthAwarePaginator(
-                $items,
-                $total,
-                $perPage,
-                $page,
-                ['path' => request()->url(), 'query' => request()->query()]
-            );
-
             $strategies = Strategy::where('user_id', $userId)->get();
 
-            return compact('ownedTrades', 'strategies', 'dateFilter');
+            return compact('items', 'total', 'perPage', 'strategies');
         });
+
+        $ownedTrades = new \Illuminate\Pagination\LengthAwarePaginator(
+            $cached['items'],
+            $cached['total'],
+            $cached['perPage'],
+            (int) $page,
+            ['path' => url()->current(), 'query' => request()->query()]
+        );
+
+        $strategies = $cached['strategies'];
+
+        return compact(
+            'ownedTrades',
+            'strategies',
+            'dateFilter',
+            'startDate',
+            'endDate',
+            'symbol',
+            'outcome',
+            'side',
+            'strategyId',
+            'timeframe',
+            'hasChart',
+            'hasAi'
+        );
     }
 
     public function gallery()
@@ -111,8 +218,8 @@ final class TradeController extends Controller
         $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
-        $winPage = request()->get('win_page', 1);
-        $lossPage = request()->get('loss_page', 1);
+        $winPage = (int) request()->get('win_page', 1);
+        $lossPage = (int) request()->get('loss_page', 1);
 
         $version = Cache::get("trades_version_user_{$userId}", now()->timestamp);
         $cacheKey = "trades_gallery_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_win_{$winPage}_loss_{$lossPage}_v{$version}";
@@ -139,14 +246,6 @@ final class TradeController extends Controller
                 ->latest('close_datetime')
                 ->get();
 
-            $winningTrades = new \Illuminate\Pagination\LengthAwarePaginator(
-                $winItems,
-                $winTotal,
-                $winPerPage,
-                $winPage,
-                ['path' => request()->url(), 'query' => ['win_page' => $winPage, 'loss_page' => $lossPage]]
-            );
-
             // Losing trades pagination
             $losingQuery = Trade::with(['strategy', 'reasons'])
                 ->where('user_id', $userId)
@@ -168,18 +267,26 @@ final class TradeController extends Controller
                 ->latest('close_datetime')
                 ->get();
 
-            $losingTrades = new \Illuminate\Pagination\LengthAwarePaginator(
-                $lossItems,
-                $lossTotal,
-                $lossPerPage,
-                $lossPage,
-                ['path' => request()->url(), 'query' => ['win_page' => $winPage, 'loss_page' => $lossPage]]
-            );
-
-            return compact('winningTrades', 'losingTrades');
+            return compact('winItems', 'winTotal', 'winPerPage', 'lossItems', 'lossTotal', 'lossPerPage');
         });
 
-        return view('trades.gallery', $data);
+        $winningTrades = new \Illuminate\Pagination\LengthAwarePaginator(
+            $data['winItems'],
+            $data['winTotal'],
+            $data['winPerPage'],
+            $winPage,
+            ['path' => url()->current(), 'query' => ['win_page' => $winPage, 'loss_page' => $lossPage]]
+        );
+
+        $losingTrades = new \Illuminate\Pagination\LengthAwarePaginator(
+            $data['lossItems'],
+            $data['lossTotal'],
+            $data['lossPerPage'],
+            $lossPage,
+            ['path' => url()->current(), 'query' => ['win_page' => $winPage, 'loss_page' => $lossPage]]
+        );
+
+        return view('trades.gallery', compact('winningTrades', 'losingTrades'));
     }
 
     public function create()

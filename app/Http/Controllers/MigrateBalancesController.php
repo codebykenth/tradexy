@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Balance;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class MigrateBalancesController extends Controller
@@ -34,7 +33,7 @@ class MigrateBalancesController extends Controller
 
         return response()->json([
             'message' => 'Migration complete!',
-            'total_from_api' => count($oldBalances)
+            'total_from_api' => count($oldBalances),
         ]);
     }
 }

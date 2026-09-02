@@ -29,6 +29,9 @@ final class ProductionSeeder extends Seeder
                 'account_mode' => 'demo',
                 'market_type' => 'crypto',
                 'preferred_currency' => 'USD',
+                'email_verified_at' => now(),
+                'terms_accepted_at' => now(),
+                'is_admin' => true,
             ]
         );
 
@@ -114,6 +117,7 @@ final class ProductionSeeder extends Seeder
             'timeframe' => '15m',
             'leverage' => '10.00',
             'chart_picture' => null,
+            'ai_analysis' => 'Strong confluence of key horizontal support with 15m bullish divergence. Risk-to-reward is well-structured at 2.4R.',
             'open_fees' => '0.70560000',
             'close_fees' => '1.96350000',
             'broker_commission' => null,
@@ -230,6 +234,7 @@ final class ProductionSeeder extends Seeder
             'timeframe' => '15m',
             'leverage' => '10.00',
             'chart_picture' => null,
+            'ai_analysis' => 'Clean consolidation pattern breakout with significant volume surge. Target and stop-loss levels aligned with strategy guidelines.',
             'open_fees' => '0.30000000',
             'close_fees' => '0.85800000',
             'broker_commission' => null,

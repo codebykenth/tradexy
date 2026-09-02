@@ -15,6 +15,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return auth()->check();
     }
+
     /**
      * Get the validation rules that apply to the request.
      *

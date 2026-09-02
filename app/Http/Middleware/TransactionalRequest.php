@@ -26,6 +26,6 @@ final class TransactionalRequest
         }
 
         // Wrap write requests in a transaction
-        return DB::transaction(fn(): Response => $next($request));
+        return DB::transaction(fn (): Response => $next($request));
     }
 }

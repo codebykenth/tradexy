@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Strategy;
 use App\Models\StrategyRules;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
@@ -77,7 +76,7 @@ class MigrateStrategiesController extends Controller
 
         return response()->json([
             'message' => 'Migration complete!',
-            'total_from_api' => count($strategies)
+            'total_from_api' => count($strategies),
         ]);
     }
 }

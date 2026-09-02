@@ -1,263 +1,211 @@
-# Tradexy — Trading Journal
+# Tradexy — Trading Journal & Analytics
 
-A professional trading journal application built with Laravel, Tailwind CSS, and PostgreSQL. Log trades, backtest strategies, and leverage AI-powered insights to become a consistent, profitable trader.
+Tradexy is a web-based trading journal built for Crypto (USDT Perps & Spot) and Philippine Stock Exchange (PSE) traders. It helps traders log trades, backtest strategies, track equity curves, scan market setups, and get AI-assisted feedback on their charts.
+
+---
+
+## What It Does
+
+Most trading journals either lack support for local stock exchange fees (like PSE's transfer fees, commissions, and taxes) or don't offer automated chart analysis. Tradexy solves this by combining:
+
+- **Dual-Market Support:** Accurate PnL calculations for Crypto leverage trading and PSE equity trades with all required Philippine regulatory fees (SCCP, transfer fee, broker commission, sales tax, VAT).
+- **AI Chart Feedback:** Upload a chart screenshot and get an automated breakdown from Google Gemini covering setup quality, risk-to-reward ratio, entry/exit timing, and execution score.
+- **AI Market Insights (Daily News):** Automated daily macro market reports and sentiment analysis covering Gold, Crypto, CPI inflation data, and Federal Reserve interest rate trends.
+- **Market Screener:** Technical screening tool to monitor active setups, breakout patterns, and volume across crypto and equities.
+- **Strategy Playbooks & Rules:** Create custom strategies with checklists for entry, exit, risk management, and scaling to verify rule compliance per trade.
+- **PnL Calendar & Balance History:** Visual green/red day calendar heatmaps and equity curves to track consistency over time.
+- **CSV Import & Export Engine:** Bulk import historical trades and balances with automatic deduplication by Order ID / trade signature, plus streaming CSV export that respects active filters.
+- **Public Trade Sharing:** Generate shareable tokenized links (`/shared/trades/{token}`) to share setups and charts without exposing account balances or personal info.
+- **Automated Bybit Sync:** Background tasks that pull closed PnL and wallet balances directly via Bybit API.
+- **Demo & Real Mode:** Toggle between Live and Demo journaling with isolated caching and distinct analytics.
 
 ---
 
 ## Tech Stack
 
 - **Backend:** PHP 8.2+, Laravel 12
-- **Frontend:** Blade, Tailwind CSS v4, Vite
-- **Database:** PostgreSQL (Neon)
-- **AI:** Google Gemini API
-- **File storage:** Google Cloud Storage (production uploads)
-- **Hosting:** [Vercel](https://vercel.com/) (serverless PHP via `vercel-php`)
+- **Frontend:** Blade, Tailwind CSS v4, DaisyUI, Hotwire Turbo Drive
+- **Database:** PostgreSQL (Neon / Local)
+- **AI Analysis:** Google Gemini API (1.5 Flash / Pro)
+- **Real-time:** Pusher WebSockets + Laravel Echo
+- **Storage:** Google Cloud Storage / Firebase (for chart images)
+- **Deployment:** Vercel (serverless PHP via `vercel-php`)
 
 ---
 
-## Features & Limitations
+## Architecture & Code Highlights
 
-### 1. Core Trade Management
-* **Trade Logging & Editing:** Track trade metrics including entry/exit prices, symbol, timeframe, size, fees, leverage, side (long/short), emotions (entry & exit), and self-reflection lessons.
-* **Trade Views:** Supports a traditional list view (with advanced filters/search) and a visual Gallery View highlighting trade chart screenshots.
-* **Bulk Import:** Supports uploading and parsing multiple trades at once.
-* **Trading Modes:** Ability to toggle and segment trades between Live and Demo accounts.
-* **Image Uploads & CDNs:**
-  * **Availability:** All authenticated users.
-  * **Limitations:** Relies on the globally configured server-side storage disk (Google Cloud Storage / Firebase). Users cannot connect their own custom storage buckets.
-
-### 2. AI-Powered Features
-* **On-Demand Trade Critique:** Users can trigger Gemini AI to analyze their trade and chart screenshot. It returns a structured markdown post-mortem highlighting entry/exit validity, risk management critiques, emotional state analysis, and an execution score.
-  * **Availability:** All authenticated users.
-  * **Usage Limits:** 
-    * *Regular Users:* Strictly limited to **1 analysis per day** (enforced by the `throttle:ai-analysis` rate limiter).
-    * *Developer/Admin Users (User ID 1 or is_admin === true):* **Unlimited**.
-  * **Technical Limitations:** Requires the trade to have a valid, downloadable chart image URL (`direct_chart_url`) and relies on the external Google Gemini API.
-* **AI Market Insights:** Displays scheduled daily macro market reports (e.g., Gold, Crypto analysis) generated using the Gemini API.
-  * **Availability:** All authenticated users.
-
-### 3. Sharing & Collaboration
-* **Public Trade Sharing:** Securely generate tokenized public links for specific trades so users can share their charts and statistics without exposing account details. Links can be revoked at any time.
-  * **Availability:** All authenticated users.
-  * **Usage Limits:** **Unlimited** link generation and revocation.
-  * **Limitations:** Only supports sharing individual trades; there is currently no feature to share full journals, strategy folders, or PnL calendars.
-
-### 4. Strategy & Portfolio Performance
-* **Strategy Manager:** Define and backtest specific trading strategies. Tags trades to strategies to calculate win rates, profit factors, and average PnL per setup.
-* **PnL Calendar:** Visual calendar displaying daily profits/losses (green vs. red days) to track monthly consistency.
-* **Balance Tracker:** Log and chart account balances over time to monitor overall net worth growth.
-* **Market Screener:** A dashboard for filtering and finding active trading setups.
-
-### 5. Automated Integrations & Backend Services
-* **Bybit API Syncing:** Backend cron jobs scheduled to automatically fetch closed PnL and wallet balances from Bybit.
-  * **Availability:** **Admin/Developer only**. Disabled for general users.
-  * **Technical Limitations:** 
-    * Credentials (API Key and Secret) are defined server-side in the `.env` file.
-    * The cron job matches and runs only for the single user designated under `BYBIT_USER_EMAIL` in the `.env`.
-    * Restricted strictly to Bybit's Linear category (USDT perpetuals) and looks back a maximum of 20 days.
-* **Database Backups:** Daily automated backups uploaded securely to Firebase/Google Cloud Storage.
-* **Real-time Notifications:** WebSockets integration (via Pusher) to broadcast events like finished AI analyses or new trade syncs directly to the UI.
-
-### 6. Administration
-* **Admin Dashboard:** Access for administrators/developers to toggle maintenance mode, flush application cache, view system activity logs, and monitor registered users.
-  * **Availability:** Developers and admins only (`User::id === 1` or `is_admin === true`).
-
-### 7. Authentication & Legal Compliance
-* **Terms of Service & Privacy Agreement:** All users must accept the Terms of Service and Privacy Policy before accessing platform features. Traditional signups require consent during registration, while social logins (e.g. Google/Facebook) and legacy accounts are presented with a mandatory, non-cancellable Terms Acceptance modal upon first login (`terms_accepted_at`).
+- **Thin Controllers:** Public controller methods stay under ~10 lines, delegating validation to FormRequests and business logic to dedicated Services (`TradeImportExportService`, `DailyNewsService`, `BybitService`, `ScreenerService`).
+- **Global Transaction Middleware:** Relational multi-table writes (trades + entry reasons + lessons) are wrapped by `TransactionalRequest` middleware for ACID integrity.
+- **Dynamic MD5 Query Caching:** Cached index queries use MD5 parameter hashes (`trades_v..._f{filterHash}`) to deliver sub-millisecond responses without stale cache conflicts across filter combinations.
+- **Idempotent Syncing:** Relation updates (reasons, rules, lessons) follow a delete-then-recreate pattern to avoid duplicate records on resubmission.
+- **Strict Typing:** `declare(strict_types=1)` across all PHP files with PHPStan Level 5 static analysis compliance.
 
 ---
 
-## Prerequisites
+## Full Feature Breakdown
 
-- [PHP](https://www.php.net/) 8.2+ with extensions: `pdo_pgsql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`, `fileinfo`
-- [Composer](https://getcomposer.org/)
-- [Node.js](https://nodejs.org/) v20+
-- [PostgreSQL](https://www.postgresql.org/) 16+ (local install or a hosted instance)
-- [Git](https://git-scm.com/)
+### 1. Trade Logs & Setup Gallery
+- **Multi-Filter Toolbar:** Filter trades by Symbol/Ticker, Outcome (Wins, Losses, Breakeven), Direction (Long, Short), Strategy, Timeframe, Date Range, and media tags (Chart Attached, AI Analyzed).
+- **Dual Views:** Switch between an interactive table view with 1-click compact bulk actions (bulk timeframe/strategy update, bulk delete) and a visual card gallery displaying chart screenshots.
+- **Psychology Tracking:** Log entry and exit emotional states (e.g. FOMO, Confident, Anxious, Fearful) alongside self-reflection lessons.
 
-For deployment: a [Vercel](https://vercel.com/) account and a hosted PostgreSQL database.
+### 2. AI Trade Critique & Setup Post-Mortem
+- Request on-demand Gemini AI analysis for any trade with an attached chart screenshot.
+- Returns a structured post-mortem: Market context, intended edge validity, stop-loss placement critique, psychological root causes, action items, and an execution score (1–10).
+- **Rate Limit:** 1 AI analysis per day for regular users (`throttle:ai-analysis`); unlimited for admin/developer accounts (`User::id === 1` or `is_admin === true`).
+
+### 3. AI Market Insights (Daily News)
+- **Automated Macro Analysis:** Automated daily background process (`generate:daily-news`) that aggregates economic RSS feeds and prompts Gemini to synthesize macro reports.
+- **Covered Markets:** Gold, Bitcoin & Crypto, Federal Reserve monetary policy, CPI/PPI inflation prints, and global liquidity trends.
+- Dedicated `/insights` view with historical archive and latest daily breakdown.
+
+### 4. Technical Market Screener
+- Accessible via `/screener` to filter and monitor real-time market setups, technical indicators, and price action patterns across tracked assets.
+
+### 5. CSV/Excel Import & Export Engine
+- **Trade Import & Export:** Drag-and-drop CSV uploader with downloadable template, spreadsheet preview, and duplicate resolution (skips duplicate Order IDs or composite signatures). Filter-aware CSV exports preserve active table filters.
+- **Balance Import & Export:** Bulk import/export daily equity curve entries with duplicate prevention and downloadable balance CSV template.
+
+### 6. Strategy Playbooks & Rule Checklists
+- Define strategies with target R:R, max risk percentage, category, and color tags.
+- Attach structured checklist rules categorized into **Entry**, **Exit**, **Risk Management**, and **Scaling**.
+- Calculate win rate, profit factor, average return, and net PnL per strategy.
+
+### 7. PnL Calendar & Portfolio Analytics
+- Interactive monthly calendar heatmap displaying daily net PnL, win/loss trade badges, and day-by-day modal breakdowns.
+- Cumulative equity curve tracking wallet balance and total portfolio value over time.
+
+### 8. Tokenized Public Trade Sharing
+- Generate cryptographically secure public links (`/shared/trades/{token}`) to share trade breakdowns on social media or with mentors.
+- Privacy-safe: hides account balances, private trades, and user identity.
+- Instant 1-click link revocation.
+
+### 9. Trading Modes & Preferences
+- **Instant Workspace Switch:** Toggle between **Live** and **Demo** environments. Caches and calculations remain strictly separated.
+- **Currency Preferences:** Switch between **USD** and **PHP** displays.
+
+### 10. Authentication, Administration & Compliance
+- **Social Login:** Sign in via **Google** or **GitHub** OAuth (via Laravel Socialite) or email/password.
+- **Terms & Privacy Enforcement:** Mandatory Terms of Service agreement with modal gating on first login (`terms_accepted_at`).
+- **Admin Dashboard (`/admin`):** User management, real-time activity audit logs, maintenance mode toggling, and cache flush controls.
+
+---
+
+## 🔌 Third-Party API Integrations
+
+### 1. Google Gemini AI API
+- **Multimodal Chart Setup Analysis (`app/Jobs/AnalyzeTradeJob.php`):** Downloads the trade chart screenshot, encodes it into Base64, and sends it with trade execution parameters (entry/exit, R:R, emotions, user lessons) to Gemini (`gemini-3-flash-preview:generateContent`) to generate an execution score and risk critique. Triggered via `app/Http/Controllers/AiAnalysisController.php`.
+- **Daily Macro News (`app/Services/DailyNewsService.php`):** Pulls economic RSS feeds and prompts Gemini to produce structured daily macro reports. Run via `php artisan generate:daily-news`.
+
+### 2. Bybit V5 Exchange API
+- **Bybit Client (`app/Services/BybitService.php`):** Implements Bybit V5 HMAC-SHA256 signature authentication (`X-BAPI-SIGN`, `X-BAPI-TIMESTAMP`, `X-BAPI-API-KEY`, `X-BAPI-RECV-WINDOW`) to query closed PnL (`/v5/position/closed-pnl`) and wallet balances (`/v5/account/wallet-balance`).
+- **Automated Sync Scope (`app/Console/Commands/FetchClosedPnl.php`, `FetchBalance.php`):** Server-side background cron jobs scheduled in `routes/console.php`. Runs automatically for the designated admin user configured via `BYBIT_USER_EMAIL` in `.env` (restricted to Bybit Linear USDT perpetual contracts).
+
+### 3. Google & GitHub OAuth (Socialite)
+- **OAuth Controller (`app/Http/Controllers/SocialiteController.php`):** Secure authentication flow using Google and GitHub providers with automatic user account provisioning.
+
+### 4. Pusher & Laravel Echo (Real-Time WebSockets)
+- **Event Broadcasting (`app/Events/TradeAnalysisGenerated.php`):** Broadcasts completed AI analyses over private user channels to automatically update the frontend without manual refreshes.
+
+### 5. Cloud Storage (Google Cloud Storage / Firebase)
+- **File Upload Service (`app/Services/FileService.php`):** Handles image validation, MIME detection, and cloud uploads for high-resolution trade setup chart screenshots.
 
 ---
 
 ## Local Development Setup
 
-### 1. Clone the Repository
+### 1. Requirements
+- PHP 8.2 or higher (with `pdo_pgsql`, `mbstring`, `bcmath`, `fileinfo`)
+- Composer
+- Node.js 20+ & npm
+- PostgreSQL 16+
+
+### 2. Install
 
 ```bash
+# Clone the repository
 git clone https://github.com/codebykenth/tradexy.git
-cd tradexy
-```
+cd trading-journal-v2
 
-### 2. Install Dependencies
-
-```bash
+# Install backend & frontend dependencies
 composer install
 npm install
 ```
 
-### 3. Environment Variables
+### 3. Environment Config
 
 ```bash
 cp .env.example .env
+php artisan key:generate
 ```
 
-Configure your database. Either set `DB_URL` (recommended for hosted Postgres) or individual fields:
+Update your database credentials in `.env`:
 
 ```env
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_DATABASE=tradexy
-DB_USERNAME=your_user
+DB_USERNAME=postgres
 DB_PASSWORD=your_password
 ```
 
-Add API keys and other secrets as needed (`GEMINI_API_KEY`, OAuth credentials, etc.). See `.env.example` for the full list.
-
-### 4. Application Key & Database
-
-```bash
-php artisan key:generate
-php artisan migrate --seed
+*(Optional API keys)*
+```env
+GEMINI_API_KEY=your_key_here
+PUSHER_APP_KEY=your_key_here
 ```
 
-### 5. Run the Dev Stack
+### 4. Database Setup & Seed
 
 ```bash
-composer dev
+php artisan migrate:fresh --seed
 ```
 
-This starts the Laravel dev server, queue worker, and Vite in one terminal. Open **http://127.0.0.1:8000**.
+This sets up the tables and seeds a demo account:
+- **Email:** `demo@tradexy.app`
+- **Password:** `password`
 
-Alternatively, run services separately:
-
-```bash
-# Terminal 1
-php artisan serve
-
-# Terminal 2 (optional — skip if QUEUE_FORCE_SYNC=true)
-php artisan queue:listen
-
-# Terminal 3
-npm run dev
-```
-
----
-
-## Daily Workflow
+### 5. Run the Application
 
 ```bash
 composer dev
 ```
 
-Then open http://127.0.0.1:8000.
+This starts the Laravel server, queue listener, and Vite hot-reload. Navigate to `http://127.0.0.1:8000`.
 
 ---
 
-## Useful Commands
+## Automated Tests & Code Quality
 
-| Command | Description |
-|---------|-------------|
-| `composer dev` | Laravel server + queue + Vite (local dev) |
-| `composer setup` | Fresh install: deps, key, migrate, build assets |
-| `php artisan migrate` | Run migrations |
-| `php artisan migrate:fresh --seed` | Reset DB & re-seed |
-| `php artisan tinker` | Open Laravel REPL |
-| `php artisan test` | Run tests |
-| `php artisan cache:clear` | Clear application cache |
-| `npm run dev` | Vite dev server (hot reload) |
-| `npm run build` | Build production assets |
+```bash
+# Run feature & unit test suite (Pest PHP)
+php artisan test
 
----
+# Run PHPStan static analysis
+./vendor/bin/phpstan analyse --memory-limit=2G
 
-## Project Structure
-
+# Run code style fixer (Pint)
+./vendor/bin/pint
 ```
-trading-journal-v2/
-├── api/
-│   └── index.php           # Vercel serverless entry point
-├── app/                    # Laravel application code
-│   ├── Http/Controllers/   # Route controllers
-│   ├── Models/             # Eloquent models
-│   └── Services/           # Business logic
-├── config/                 # Configuration files
-├── database/
-│   ├── migrations/         # Database migrations
-│   └── seeders/            # Database seeders
-├── public/                 # Public assets
-├── resources/
-│   ├── css/                # Stylesheets (Tailwind)
-│   ├── js/                 # JavaScript
-│   └── views/              # Blade templates
-├── routes/                 # Route definitions
-├── storage/                # Logs, cache, uploads
-├── vercel.json             # Vercel build & routing config
-├── vite.config.js          # Vite configuration
-└── .env.example            # Environment template
-```
-
----
-
-## Environment Files
-
-| File | Purpose |
-|------|---------|
-| `.env.example` | Template — committed to git |
-| `.env` | Your local config — **never committed** |
-
-Set secrets in the Vercel project dashboard for production (not in git).
 
 ---
 
 ## Deployment (Vercel)
 
-The app is configured for Vercel via `vercel.json`. Static assets are served from `public/`; all other requests route to `api/index.php`.
+The project is structured for serverless deployment on Vercel using `vercel.json` and the `vercel-php` runtime:
+- Web traffic routes through `api/index.php`.
+- Static assets are served from `public/`.
+- PostgreSQL connects to hosted instances (Neon, Supabase, AWS RDS).
 
-### 1. Connect the Repository
-
-1. Import the GitHub repo in the [Vercel dashboard](https://vercel.com/new).
-2. Vercel reads `vercel.json` automatically (`buildCommand`, PHP runtime, routes).
-
-### 2. Environment Variables
-
-Add these in **Project → Settings → Environment Variables** (use production values):
-
-| Variable | Notes |
-|----------|-------|
-| `APP_KEY` | From `php artisan key:generate` |
-| `APP_ENV` | `production` |
-| `APP_DEBUG` | `false` |
-| `APP_URL` | Your Vercel or custom domain URL |
-| `DB_URL` | Hosted PostgreSQL connection string |
-| `QUEUE_FORCE_SYNC` | `true` — no background workers on Vercel |
-| `SESSION_DRIVER` | `database` |
-| `CACHE_STORE` | `database` |
-| `GEMINI_API_KEY` | AI analysis |
-| `GOOGLE_CLOUD_*` / `GCS_URL` | File uploads (GCS) |
-| `BROADCAST_CONNECTION` | `pusher` for real-time updates |
-| `REALTIME_ENABLED` | `true` to broadcast events & load Echo |
-| `PUSHER_APP_*` | App ID, key, secret, cluster from [Pusher](https://pusher.com/) |
-| OAuth vars | Update redirect URLs to your production domain |
-
-Vercel sets `VERCEL=1` automatically; logging is configured to use stderr in that environment.
-
-### 3. Database Migrations
-
-Vercel does not run migrations on deploy. Run them against your production database before or after each release:
-
-```bash
-# With production DB_URL in your local .env, or via Vercel CLI:
-php artisan migrate --force
-```
-
-### 4. Deploy
-
-Push to the connected branch (usually `main`). Vercel builds frontend assets (`npm ci && npm run build`) and deploys the PHP function.
-
-For a custom domain, add it under **Project → Settings → Domains** and update `APP_URL` and OAuth callback URLs accordingly.
+To deploy:
+1. Connect the repository in the Vercel dashboard.
+2. Add the environment variables from `.env.example`.
+3. Run `php artisan migrate --force` against your production database.
 
 ---
 
-## License
+## Author
 
-This project is proprietary software. All rights reserved.
+Built by [Kenth](https://github.com/codebykenth).

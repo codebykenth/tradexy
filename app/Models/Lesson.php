@@ -11,7 +11,7 @@ class Lesson extends Model
         'trade_id',
         'lesson',
         'category', // 'strategy', 'execution', 'risk_management', 'psychology', etc.
-        'is_positive'
+        'is_positive',
     ];
 
     public function trade(): BelongsTo

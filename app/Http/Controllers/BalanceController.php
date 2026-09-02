@@ -34,11 +34,47 @@ final class BalanceController extends Controller
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
         $prefCurrency = session('preferred_currency', 'USD');
-        $page = request()->get('page', 1);
-        $version = Cache::get("balances_version_user_{$userId}", now()->timestamp);
-        $cacheKey = "balances_v{$version}_u{$userId}_a{$accountMode}_m{$marketMode}_c{$prefCurrency}_p{$page}";
+        $page = (int) request()->get('page', 1);
+        $startDate = request()->get('start_date');
+        $endDate = request()->get('end_date');
+        $dateFilter = request()->get('date');
+        $pnlTrend = request()->get('pnl_trend');
+        $minEquity = request()->get('min_equity');
+        $maxEquity = request()->get('max_equity');
 
-        return Cache::remember($cacheKey, now()->addHours(6), function () use ($userId, $accountMode, $marketMode, $page) {
+        if ($startDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $startDate)) {
+            $startDate = null;
+        }
+        if ($endDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $endDate)) {
+            $endDate = null;
+        }
+        if ($dateFilter && !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $dateFilter)) {
+            $dateFilter = null;
+        }
+        if ($pnlTrend && !in_array($pnlTrend, ['profit', 'loss', 'breakeven'], true)) {
+            $pnlTrend = null;
+        }
+        $minEquity = is_numeric($minEquity) ? (float) $minEquity : null;
+        $maxEquity = is_numeric($maxEquity) ? (float) $maxEquity : null;
+
+        $filterPayload = [
+            's' => $startDate,
+            'e' => $endDate,
+            'd' => $dateFilter,
+            'trend' => $pnlTrend,
+            'min' => $minEquity,
+            'max' => $maxEquity,
+        ];
+        $filterHash = md5(http_build_query(array_filter($filterPayload, fn ($v) => $v !== null)));
+
+        $version = Cache::get("balances_version_user_{$userId}", now()->timestamp);
+        $cacheKey = "balances_v{$version}_u{$userId}_a{$accountMode}_m{$marketMode}_c{$prefCurrency}_p{$page}_f{$filterHash}";
+
+        $cached = Cache::remember($cacheKey, now()->addHours(6), function () use (
+            $userId, $accountMode, $marketMode, $page,
+            $startDate, $endDate, $dateFilter,
+            $pnlTrend, $minEquity, $maxEquity
+        ) {
             $query = Balance::where('user_id', $userId);
 
             if ($accountMode !== 'all') {
@@ -47,6 +83,39 @@ final class BalanceController extends Controller
 
             if ($marketMode !== 'all') {
                 $query->where('market', $marketMode);
+            }
+
+            // PnL Trend filtering
+            if ($pnlTrend === 'profit') {
+                $query->where('cum_realised_pnl', '>', 0);
+            } elseif ($pnlTrend === 'loss') {
+                $query->where('cum_realised_pnl', '<', 0);
+            } elseif ($pnlTrend === 'breakeven') {
+                $query->where('cum_realised_pnl', '=', 0);
+            }
+
+            // Equity range filtering
+            if ($minEquity !== null) {
+                $query->where('total_equity', '>=', $minEquity);
+            }
+            if ($maxEquity !== null) {
+                $query->where('total_equity', '<=', $maxEquity);
+            }
+
+            // Date filtering
+            if ($startDate && $endDate) {
+                $start = \Carbon\Carbon::parse($startDate)->startOfDay();
+                $end = \Carbon\Carbon::parse($endDate)->endOfDay();
+                $query->whereBetween('date', [$start, $end]);
+            } elseif ($startDate) {
+                $start = \Carbon\Carbon::parse($startDate)->startOfDay();
+                $query->where('date', '>=', $start);
+            } elseif ($endDate) {
+                $end = \Carbon\Carbon::parse($endDate)->endOfDay();
+                $query->where('date', '<=', $end);
+            } elseif ($dateFilter) {
+                $date = \Carbon\Carbon::parse($dateFilter)->toDateString();
+                $query->whereDate('date', '=', $date);
             }
 
             // Get total count for pagination
@@ -60,17 +129,8 @@ final class BalanceController extends Controller
                 ->latest('date')
                 ->get();
 
-            // Manually create paginator from cached data
-            $balances = new \Illuminate\Pagination\LengthAwarePaginator(
-                $items,
-                $total,
-                $perPage,
-                $page,
-                ['path' => request()->url(), 'query' => request()->query()]
-            );
-
             // Transform the collection to include formatted attributes for JS
-            $balances->getCollection()->transform(function ($balance) {
+            $items->transform(function ($balance) {
                 $balance->local_date = \Carbon\Carbon::parse($balance->date)->format('M d, Y');
                 $balance->formatted_wallet = \App\Helpers\CurrencyFormatter::format($balance->wallet_balance, $balance->market);
                 $balance->formatted_equity = \App\Helpers\CurrencyFormatter::format($balance->total_equity, $balance->market);
@@ -79,10 +139,20 @@ final class BalanceController extends Controller
                 return $balance;
             });
 
-            return [
-                'balances' => $balances,
-            ];
+            return compact('items', 'total', 'perPage');
         });
+
+        $balances = new \Illuminate\Pagination\LengthAwarePaginator(
+            $cached['items'],
+            $cached['total'],
+            $cached['perPage'],
+            (int) $page,
+            ['path' => url()->current(), 'query' => request()->query()]
+        );
+
+        $initialBalance = Balance::where('user_id', $userId)->oldest('date')->first();
+
+        return compact('balances', 'initialBalance', 'startDate', 'endDate', 'dateFilter', 'pnlTrend', 'minEquity', 'maxEquity');
     }
 
     /**

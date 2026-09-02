@@ -170,20 +170,9 @@
                 </div>
             </div>
 
-            <main class="flex-1">
+            <main class="flex-1 pb-8">
                 {{ $slot }}
             </main>
-            
-            <footer class="w-full border-t border-base-200 py-4 mt-auto bg-base-100">
-                <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-base-content/60">
-                    <div>© {{ date('Y') }} Tradexy — All rights reserved.</div>
-                    <div class="flex gap-6">
-                        <a href="{{ route('privacy') }}" class="hover:text-base-content transition-colors">Privacy Policy</a>
-                        <a href="{{ route('terms') }}" class="hover:text-base-content transition-colors">Terms of Service</a>
-                        <a href="{{ route('deletion') }}" class="hover:text-base-content transition-colors">Data Deletion</a>
-                    </div>
-                </div>
-            </footer>
         </div> 
 
         <div class="drawer-side z-40 overflow-visible">

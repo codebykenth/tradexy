@@ -20,8 +20,9 @@ final class SharedTradeController extends Controller
 
         if (request()->wantsJson()) {
             session()->flash('success', 'Share link generated & copied to clipboard 🎉');
+
             return response()->json([
-                'url' => route('trades.shared', $trade->share_token)
+                'url' => route('trades.shared', $trade->share_token),
             ]);
         }
 

@@ -93,7 +93,7 @@ final class AdminDashboardController extends Controller
     {
         if (app()->isDownForMaintenance()) {
             Artisan::call('up');
-            
+
             ActivityLog::create([
                 'user_id' => Auth::id(),
                 'action' => 'maintenance_off',
@@ -108,7 +108,7 @@ final class AdminDashboardController extends Controller
         // Secret allows the admin to bypass maintenance mode
         // We set a long random string that is stored in the maintenance file
         $secret = Str::random(32);
-        
+
         Artisan::call('down', [
             '--secret' => $secret,
             '--refresh' => 15, // Refresh browser every 15s for users seeing the maintenance page

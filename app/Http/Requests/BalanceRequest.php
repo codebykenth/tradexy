@@ -36,10 +36,10 @@ final class BalanceRequest extends FormRequest
             'date' => [
                 $creating ? 'required' : 'sometimes',
                 'date',
-                'before_or_equal:' . now()->addDay()->endOfDay()->toDateTimeString(),
+                'before_or_equal:'.now()->addDay()->endOfDay()->toDateTimeString(),
                 function (string $attribute, mixed $value, \Closure $fail): void {
                     $date = Carbon::parse($value)->toDateString(); // extract calendar date only
-        
+
                     $query = Balance::where('user_id', auth()->id())
                         ->whereDate('date', '=', $date)
                         ->where('is_demo', $this->boolean('is_demo'))

@@ -57,6 +57,14 @@ class DailyNewsService
         'bankruptcy' => 5,
     ];
 
+    private const GEMINI_MODELS = [
+        'gemini-3.7-flash',
+        'gemini-3.6-flash',
+        'gemini-3.5-flash',
+        'gemini-2.5-flash',
+        'gemini-flash-latest',
+    ];
+
     public function generate()
     {
         $now = new DateTime;
@@ -178,40 +186,64 @@ class DailyNewsService
         ];
     }
 
-    private function analyze(string $systemPrompt, string $userPrompt)
+    private function analyze(string $systemPrompt, string $userPrompt): string
     {
-        $output = Http::withHeaders([
-            'x-goog-api-key' => config('services.gemini.key'),
-            'Content-Type' => 'application/json',
-        ])->timeout(300)->post(
-            'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent',
-            [
-                'system_instruction' => [
-                    'parts' => [
-                        [
-                            'text' => $systemPrompt,
-                        ],
-                    ],
-                ],
-                'contents' => [
+        $lastError = 'No models attempted.';
+
+        foreach (self::GEMINI_MODELS as $model) {
+            $maxRetries = 2;
+
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                $output = Http::withHeaders([
+                    'x-goog-api-key' => config('services.gemini.key'),
+                    'Content-Type' => 'application/json',
+                ])->timeout(300)->post(
+                    "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent",
                     [
-                        'parts' => [
-                            [
-                                'text' => $userPrompt,
+                        'system_instruction' => [
+                            'parts' => [
+                                [
+                                    'text' => $systemPrompt,
+                                ],
                             ],
                         ],
-                    ],
-                ],
-                'generationConfig' => [
-                    'temperature' => 1.0,
-                    'topP' => 0.8,
-                    'topK' => 10,
-                ],
-            ]
-        );
-        $responseData = $output->json();
+                        'contents' => [
+                            [
+                                'parts' => [
+                                    [
+                                        'text' => $userPrompt,
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'generationConfig' => [
+                            'responseMimeType' => 'application/json',
+                            'temperature' => 1.0,
+                            'topP' => 0.8,
+                            'topK' => 10,
+                        ],
+                    ]
+                );
 
-        return $responseData['candidates'][0]['content']['parts'][0]['text'] ?? 'No analysis generated.';
+                if ($output->successful()) {
+                    $responseData = $output->json();
+                    $text = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+                    if ($text) {
+                        return $text;
+                    }
+                }
+
+                $lastError = "Model {$model} failed (status {$output->status()}): {$output->body()}";
+                logger()->warning("Gemini {$lastError} (attempt {$attempt}/{$maxRetries})");
+
+                if ($attempt < $maxRetries) {
+                    sleep(2);
+                }
+            }
+        }
+
+        throw new Exception("All Gemini fallback models failed. Last error: {$lastError}");
     }
 
     private function normalizeAiOutput(string $rawOutput): array

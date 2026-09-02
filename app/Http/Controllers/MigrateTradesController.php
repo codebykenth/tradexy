@@ -48,7 +48,7 @@ final class MigrateTradesController extends Controller
             return response()->json(['message' => 'No trades found in old journal.']);
         }
 
-        usort($oldTrades, fn($a, $b) => strtotime($a['open_datetime']) - strtotime($b['open_datetime']));
+        usort($oldTrades, fn ($a, $b) => strtotime($a['open_datetime']) - strtotime($b['open_datetime']));
 
         $total = count($oldTrades);
         $created = 0;
@@ -69,6 +69,7 @@ final class MigrateTradesController extends Controller
 
                 if (isset($existingOrderIds[$orderId])) {
                     $skipped++;
+
                     continue;
                 }
 
