@@ -104,19 +104,32 @@
                             <legend
                                 class="fieldset-legend uppercase font-semibold text-xs tracking-wider text-base-content/50">
                                 Timeframe</legend>
-                            <select class="select w-full @error('timeframe') input-error @enderror" name="timeframe"
-                                id="timeframe-select">
-                                <option disabled selected value="{{ old('timeframe', $trade->timeframe ?? null) }}">
-                                    {{ $trade->timeframe ?? 'Select a timeframe' }}
+                            @php
+                                $currentTimeframe = old('timeframe', $trade->timeframe ?? null);
+                                $standardTfs = ['1s', '1m', '2m', '3m', '5m', '10m', '15m', '30m', '45m', '1h', '2h', '3h', '4h', '6h', '8h', '12h', '1d', '2d', '3d', '1w', '1M'];
+                            @endphp
+                            <select class="select w-full @error('timeframe') input-error @enderror" name="timeframe" id="timeframe-select">
+                                <option disabled @if(!$currentTimeframe) selected @endif value="">
+                                    Select a timeframe
                                 </option>
-                                <option value="1m" class="crypto-timeframe">1m</option>
-                                <option value="5m" class="crypto-timeframe">5m</option>
-                                <option value="15m" class="crypto-timeframe">15m</option>
-                                <option value="30m" class="crypto-timeframe">30m</option>
-                                <option value="1hr" class="crypto-timeframe">1hr</option>
-                                <option value="4hr" class="crypto-timeframe">4hr</option>
-                                <option value="1d">1d</option>
-                                <option value="1w" class="pse-timeframe">1w</option>
+                                @if(!empty($currentTimeframe) && !in_array($currentTimeframe, $standardTfs))
+                                    <option value="{{ $currentTimeframe }}" selected>{{ $currentTimeframe }} (Custom)</option>
+                                @endif
+                                <optgroup label="Minutes" class="crypto-timeframe">
+                                    @foreach(['1s', '1m', '2m', '3m', '5m', '10m', '15m', '30m', '45m'] as $tf)
+                                        <option value="{{ $tf }}" @selected($currentTimeframe === $tf)>{{ $tf }}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="Hours" class="crypto-timeframe">
+                                    @foreach(['1h', '2h', '3h', '4h', '6h', '8h', '12h'] as $tf)
+                                        <option value="{{ $tf }}" @selected($currentTimeframe === $tf)>{{ $tf }}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="Days & Higher">
+                                    @foreach(['1d', '2d', '3d', '1w', '1M'] as $tf)
+                                        <option value="{{ $tf }}" @selected($currentTimeframe === $tf)>{{ $tf }}</option>
+                                    @endforeach
+                                </optgroup>
                             </select>
                             @error('timeframe') <span class="text-error mt-1 text-sm">{{ $message }}</span> @enderror
                         </fieldset>

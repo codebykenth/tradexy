@@ -92,11 +92,29 @@
                     </select>
 
                     {{-- Timeframe Filter --}}
+                    @php
+                        $standardTfs = ['1s', '1m', '2m', '3m', '5m', '10m', '15m', '30m', '45m', '1h', '2h', '3h', '4h', '6h', '8h', '12h', '1d', '2d', '3d', '1w', '1M'];
+                    @endphp
                     <select name="timeframe" class="select select-xs select-bordered bg-base-100 flex-1 sm:flex-none" aria-label="Filter by Timeframe">
                         <option value="">Timeframe: All</option>
-                        @foreach(['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '1d', '1w'] as $tf)
-                            <option value="{{ $tf }}" @selected($timeframe === $tf)>{{ $tf }}</option>
-                        @endforeach
+                        @if(!empty($timeframe) && !in_array($timeframe, $standardTfs))
+                            <option value="{{ $timeframe }}" selected>{{ $timeframe }} (Custom)</option>
+                        @endif
+                        <optgroup label="Minutes">
+                            @foreach(['1s', '1m', '2m', '3m', '5m', '10m', '15m', '30m', '45m'] as $tf)
+                                <option value="{{ $tf }}" @selected($timeframe === $tf)>{{ $tf }}</option>
+                            @endforeach
+                        </optgroup>
+                        <optgroup label="Hours">
+                            @foreach(['1h', '2h', '3h', '4h', '6h', '8h', '12h'] as $tf)
+                                <option value="{{ $tf }}" @selected($timeframe === $tf)>{{ $tf }}</option>
+                            @endforeach
+                        </optgroup>
+                        <optgroup label="Days & Higher">
+                            @foreach(['1d', '2d', '3d', '1w', '1M'] as $tf)
+                                <option value="{{ $tf }}" @selected($timeframe === $tf)>{{ $tf }}</option>
+                            @endforeach
+                        </optgroup>
                     </select>
 
                     {{-- Quick Checkbox Toggles --}}

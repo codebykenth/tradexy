@@ -45,7 +45,7 @@ class TradeRequest extends FormRequest
             'symbol' => [$creating ? 'required' : 'sometimes', 'string', 'max:20', 'alpha_num:ascii'],
             'open_datetime' => [$creating ? 'required' : 'sometimes', 'date', 'before_or_equal:now'],
             'close_datetime' => ['sometimes', 'nullable', 'date', 'after_or_equal:open_datetime', 'before_or_equal:now'],
-            'timeframe' => ['sometimes', 'nullable', 'string', 'in:1m,5m,15m,30m,1hr,4hr,1d,1w'],
+            'timeframe' => ['sometimes', 'nullable', 'string', 'max:10'],
             'strategy_id' => ['sometimes', 'nullable', Rule::exists('strategies', 'id')->where('user_id', auth()->id())],
 
             // --- Entry Details ---

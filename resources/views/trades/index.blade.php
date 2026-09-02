@@ -172,11 +172,29 @@
 
                         <div class="space-y-1">
                             <label class="label-text text-[11px] font-semibold">Timeframe</label>
+                            @php
+                                $standardTfs = ['1s', '1m', '2m', '3m', '5m', '10m', '15m', '30m', '45m', '1h', '2h', '3h', '4h', '6h', '8h', '12h', '1d', '2d', '3d', '1w', '1M'];
+                            @endphp
                             <select name="timeframe" class="select select-xs select-bordered w-full">
                                 <option value="">All Timeframes</option>
-                                @foreach(['1m', '5m', '15m', '30m', '1hr', '4hr', '1d'] as $tf)
-                                    <option value="{{ $tf }}" @selected($timeframe === $tf)>{{ $tf }}</option>
-                                @endforeach
+                                @if(!empty($timeframe) && !in_array($timeframe, $standardTfs))
+                                    <option value="{{ $timeframe }}" selected>{{ $timeframe }} (Custom)</option>
+                                @endif
+                                <optgroup label="Minutes">
+                                    @foreach(['1s', '1m', '2m', '3m', '5m', '10m', '15m', '30m', '45m'] as $tf)
+                                        <option value="{{ $tf }}" @selected($timeframe === $tf)>{{ $tf }}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="Hours">
+                                    @foreach(['1h', '2h', '3h', '4h', '6h', '8h', '12h'] as $tf)
+                                        <option value="{{ $tf }}" @selected($timeframe === $tf)>{{ $tf }}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="Days & Higher">
+                                    @foreach(['1d', '2d', '3d', '1w', '1M'] as $tf)
+                                        <option value="{{ $tf }}" @selected($timeframe === $tf)>{{ $tf }}</option>
+                                    @endforeach
+                                </optgroup>
                             </select>
                         </div>
 
@@ -214,13 +232,9 @@
                 <div class="flex items-center gap-1.5 flex-nowrap overflow-x-auto">
                     <select class="select select-xs select-bordered bg-base-100 w-28 text-xs shrink-0" name="timeframe" id="bulk-timeframe">
                         <option value="">Timeframe...</option>
-                        <option>1m</option>
-                        <option>5m</option>
-                        <option>15m</option>
-                        <option>30m</option>
-                        <option>1hr</option>
-                        <option>4hr</option>
-                        <option>1d</option>
+                        @foreach(['1m', '2m', '3m', '5m', '10m', '15m', '30m', '45m', '1h', '2h', '3h', '4h', '6h', '8h', '12h', '1d', '2d', '3d', '1w', '1M'] as $tf)
+                            <option value="{{ $tf }}">{{ $tf }}</option>
+                        @endforeach
                     </select>
                     <select class="select select-xs select-bordered bg-base-100 w-32 text-xs shrink-0" name="strategy_id" id="bulk-strategy">
                         <option value="">Strategy...</option>

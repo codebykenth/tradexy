@@ -98,23 +98,21 @@
                                 Timeframe</legend>
                             <select class="select w-full" name="timeframe" id="timeframe-select">
                                 <option disabled @if(!old('timeframe')) selected @endif>Select timeframe</option>
-                                <!-- Crypto timeframes -->
-                                <option value="1m" class="crypto-timeframe" @selected(old('timeframe') == '1m')>1m
-                                </option>
-                                <option value="5m" class="crypto-timeframe" @selected(old('timeframe') == '5m')>5m
-                                </option>
-                                <option value="15m" class="crypto-timeframe" @selected(old('timeframe') == '15m')>15m
-                                </option>
-                                <option value="30m" class="crypto-timeframe" @selected(old('timeframe') == '30m')>30m
-                                </option>
-                                <option value="1hr" class="crypto-timeframe" @selected(old('timeframe') == '1hr')>1hr
-                                </option>
-                                <option value="4hr" class="crypto-timeframe" @selected(old('timeframe') == '4hr')>4hr
-                                </option>
-                                <!-- Shared timeframes -->
-                                <option value="1d" @selected(old('timeframe') == '1d')>1d</option>
-                                <!-- PSE timeframes -->
-                                <option value="1w" class="pse-timeframe" @selected(old('timeframe') == '1w')>1w</option>
+                                <optgroup label="Minutes" class="crypto-timeframe">
+                                    @foreach(['1s', '1m', '2m', '3m', '5m', '10m', '15m', '30m', '45m'] as $tf)
+                                        <option value="{{ $tf }}" @selected(old('timeframe') == $tf)>{{ $tf }}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="Hours" class="crypto-timeframe">
+                                    @foreach(['1h', '2h', '3h', '4h', '6h', '8h', '12h'] as $tf)
+                                        <option value="{{ $tf }}" @selected(old('timeframe') == $tf)>{{ $tf }}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="Days & Higher">
+                                    @foreach(['1d', '2d', '3d', '1w', '1M'] as $tf)
+                                        <option value="{{ $tf }}" @selected(old('timeframe') == $tf)>{{ $tf }}</option>
+                                    @endforeach
+                                </optgroup>
                             </select>
                             @error('timeframe') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
                         </fieldset>

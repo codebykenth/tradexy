@@ -22,10 +22,23 @@ final class ScreenerService
 
     // Maps interval labels to Bybit API interval values
     private const INTERVAL_MAP = [
+        '1m' => '1',
+        '3m' => '3',
+        '5m' => '5',
+        '15m' => '15',
+        '30m' => '30',
         '1h' => '60',
+        '1hr' => '60',
+        '2h' => '120',
         '4h' => '240',
+        '4hr' => '240',
+        '6h' => '360',
+        '12h' => '720',
+        '1d' => 'D',
         '1D' => 'D',
+        '1w' => 'W',
         '1W' => 'W',
+        '1M' => 'M',
     ];
 
     // Available indicators and their default periods
@@ -922,10 +935,19 @@ final class ScreenerService
     public static function availableTimeframes(): array
     {
         return [
+            '1m' => '1 Minute',
+            '3m' => '3 Minutes',
+            '5m' => '5 Minutes',
+            '15m' => '15 Minutes',
+            '30m' => '30 Minutes',
             '1h' => '1 Hour',
+            '2h' => '2 Hours',
             '4h' => '4 Hours',
+            '6h' => '6 Hours',
+            '12h' => '12 Hours',
             '1D' => '1 Day',
             '1W' => '1 Week',
+            '1M' => '1 Month',
         ];
     }
 }

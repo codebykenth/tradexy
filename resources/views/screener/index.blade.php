@@ -2,34 +2,36 @@
     <div id="screener-page" class="max-w-7xl mx-auto px-4 sm:px-6 space-y-4 mb-8">
         
         {{-- Top Bar: Set Filters --}}
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-            <x-page-title title="Set Filters" />
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
+            <x-page-title title="Set Filters" subtitle="Scan markets using technical indicators and price action" />
 
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
-                <div class="relative w-full sm:w-64">
+            <div class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+                <div class="relative w-full sm:w-56 shrink-0">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
                     </div>
-                    <input type="text" id="indicator-search" placeholder="Search Filter" class="input input-sm input-bordered w-full pl-9 rounded-full bg-base-200/50 focus:bg-base-100 transition-colors">
+                    <input type="text" id="indicator-search" placeholder="Search Filter..." class="input input-sm input-bordered w-full pl-9 rounded-lg bg-base-100 text-xs">
                 </div>
                 
-                <div class="join w-full sm:w-auto flex sm:inline-flex">
-                    <select name="timeframe" id="global-timeframe" form="screener-form" class="select select-bordered select-sm join-item bg-base-200/50 flex-1 sm:flex-none">
-                        @foreach($availableTimeframes as $value => $label)
-                            <option value="{{ $value }}" @selected(($filters['timeframe'] ?? '1D') === $value)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                    <select class="select select-bordered select-sm join-item bg-base-200/50 font-medium flex-1 sm:flex-none">
-                        <option>Crypto (USDT)</option>
-                        <option disabled>PSE (Coming Soon)</option>
-                    </select>
-                </div>
+                <select name="timeframe" id="global-timeframe" form="screener-form" class="select select-bordered select-sm bg-base-100 text-xs font-semibold shrink-0">
+                    @foreach($availableTimeframes as $value => $label)
+                        <option value="{{ $value }}" @selected(($filters['timeframe'] ?? '1D') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
 
-                <div class="w-full sm:w-auto">
-                    <button type="submit" form="screener-form" id="run-screener-btn" class="btn btn-primary btn-sm rounded-full w-full sm:w-auto px-6 shadow-sm hover:shadow-md transition-shadow font-bold">
-                        Run Screener
-                    </button>
-                </div>
+                <select class="select select-bordered select-sm bg-base-100 text-xs font-semibold shrink-0">
+                    <option>Crypto (USDT)</option>
+                    <option disabled>PSE (Coming Soon)</option>
+                </select>
+
+                <button type="submit" form="screener-form" id="run-screener-btn" class="btn btn-primary btn-sm rounded-lg px-5 shadow-sm font-bold shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-3.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                    Run Screener
+                </button>
             </div>
         </div>
 
@@ -311,30 +313,45 @@
         // --- Subcategory Pill Switching ---
         const subcatPills = document.querySelectorAll('.subcat-pill');
         const indicatorGrids = document.querySelectorAll('.indicator-grid');
+        const searchInput = document.getElementById('indicator-search');
+
+        const activateSubcategory = (targetSubcat) => {
+            // Update pills styling
+            subcatPills.forEach(p => {
+                if (p.dataset.subcat === targetSubcat) {
+                    p.classList.remove('bg-base-200/70', 'text-base-content/70', 'opacity-40');
+                    p.classList.add('bg-primary', 'text-primary-content', 'shadow-md', 'scale-105');
+                } else {
+                    p.classList.remove('bg-primary', 'text-primary-content', 'shadow-md', 'scale-105');
+                    p.classList.add('bg-base-200/70', 'text-base-content/70');
+                }
+            });
+
+            // Update grids
+            indicatorGrids.forEach(grid => {
+                if (grid.dataset.subcat === targetSubcat) {
+                    grid.classList.remove('hidden', 'absolute', 'inset-0');
+                    grid.classList.add('relative', 'z-10');
+                    setTimeout(() => grid.classList.remove('opacity-0'), 10);
+                } else {
+                    grid.classList.add('hidden', 'opacity-0', 'absolute', 'inset-0');
+                    grid.classList.remove('relative', 'z-10');
+                }
+            });
+        };
 
         subcatPills.forEach(pill => {
             pill.addEventListener('click', () => {
-                const targetSubcat = pill.dataset.subcat;
-
-                // Update pills styling
-                subcatPills.forEach(p => {
-                    p.classList.remove('bg-primary', 'text-primary-content', 'shadow-md', 'scale-105');
-                    p.classList.add('bg-base-200/70', 'text-base-content/70');
-                });
-                pill.classList.remove('bg-base-200/70', 'text-base-content/70');
-                pill.classList.add('bg-primary', 'text-primary-content', 'shadow-md', 'scale-105');
-
-                // Update grids with basic transition
-                indicatorGrids.forEach(grid => {
-                    if (grid.dataset.subcat === targetSubcat) {
-                        grid.classList.remove('hidden', 'absolute', 'inset-0');
-                        grid.classList.add('relative', 'z-10');
-                        setTimeout(() => grid.classList.remove('opacity-0'), 10);
-                    } else {
-                        grid.classList.add('hidden', 'opacity-0', 'absolute', 'inset-0');
-                        grid.classList.remove('relative', 'z-10');
-                    }
-                });
+                // If user clicks a category pill while searching, clear the search filter to show full category
+                if (searchInput && searchInput.value.trim() !== '') {
+                    searchInput.value = '';
+                    document.querySelectorAll('.add-indicator-btn').forEach(btn => {
+                        btn.classList.remove('hidden');
+                        btn.classList.add('flex');
+                    });
+                    subcatPills.forEach(p => p.classList.remove('opacity-40'));
+                }
+                activateSubcategory(pill.dataset.subcat);
             });
         });
 
@@ -434,46 +451,83 @@
             }
         });
 
-        // Search Filter
-        const searchInput = document.getElementById('indicator-search');
-        const allIndicatorGrids = document.querySelectorAll('.indicator-grid');
-        if (!searchInput) return;
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase().trim();
-            
-            if (term === '') {
-                // Restore normal grid view by auto-clicking the currently active pill
-                const activePill = document.querySelector('.subcat-pill.bg-primary') || document.querySelector('.subcat-pill');
-                if (activePill) activePill.click();
+        // Search Filter (Dynamic Active Category Selection)
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase().trim();
                 
-                // Make sure all buttons are restored to visible
-                document.querySelectorAll('.add-indicator-btn').forEach(btn => {
-                    btn.classList.remove('hidden');
-                    btn.classList.add('flex');
-                });
-                return;
-            }
-
-            // Force override: make ALL grids visible during search
-            allIndicatorGrids.forEach(grid => {
-                grid.classList.remove('hidden', 'absolute', 'inset-0', 'opacity-0');
-                grid.classList.add('relative', 'opacity-100');
-            });
-
-            // Filter individual buttons globally
-            document.querySelectorAll('.add-indicator-btn').forEach(btn => {
-                const label = btn.dataset.label.toLowerCase();
-                const type = (btn.dataset.type || '').toLowerCase();
-                
-                if (label.includes(term) || type.includes(term)) {
-                    btn.classList.remove('hidden');
-                    btn.classList.add('flex');
-                } else {
-                    btn.classList.add('hidden');
-                    btn.classList.remove('flex');
+                if (term === '') {
+                    // Restore pills and default view
+                    subcatPills.forEach(p => p.classList.remove('opacity-40'));
+                    const activePill = document.querySelector('.subcat-pill.bg-primary') || subcatPills[0];
+                    if (activePill) {
+                        activateSubcategory(activePill.dataset.subcat);
+                    }
+                    
+                    // Make sure all buttons are restored to visible
+                    document.querySelectorAll('.add-indicator-btn').forEach(btn => {
+                        btn.classList.remove('hidden');
+                        btn.classList.add('flex');
+                    });
+                    return;
                 }
+
+                // Check matches in all indicator grids
+                let firstMatchingSubcat = null;
+                const matchingSubcats = new Set();
+
+                indicatorGrids.forEach(grid => {
+                    const subcat = grid.dataset.subcat;
+                    let hasMatchInGrid = false;
+
+                    grid.querySelectorAll('.add-indicator-btn').forEach(btn => {
+                        const label = (btn.dataset.label || '').toLowerCase();
+                        const type = (btn.dataset.type || '').toLowerCase();
+                        const key = (btn.dataset.key || '').toLowerCase();
+                        
+                        if (label.includes(term) || type.includes(term) || key.includes(term)) {
+                            btn.classList.remove('hidden');
+                            btn.classList.add('flex');
+                            hasMatchInGrid = true;
+                        } else {
+                            btn.classList.add('hidden');
+                            btn.classList.remove('flex');
+                        }
+                    });
+
+                    if (hasMatchInGrid) {
+                        matchingSubcats.add(subcat);
+                        if (!firstMatchingSubcat) {
+                            firstMatchingSubcat = subcat;
+                        }
+                        grid.classList.remove('hidden', 'absolute', 'inset-0', 'opacity-0');
+                        grid.classList.add('relative', 'opacity-100');
+                    } else {
+                        grid.classList.add('hidden', 'opacity-0', 'absolute', 'inset-0');
+                        grid.classList.remove('relative', 'opacity-100');
+                    }
+                });
+
+                // Dynamically update subcategory pill active state based on search results
+                subcatPills.forEach(pill => {
+                    const subcat = pill.dataset.subcat;
+                    if (matchingSubcats.has(subcat)) {
+                        pill.classList.remove('opacity-40');
+                        if (subcat === firstMatchingSubcat) {
+                            pill.classList.remove('bg-base-200/70', 'text-base-content/70');
+                            pill.classList.add('bg-primary', 'text-primary-content', 'shadow-md', 'scale-105');
+                        } else {
+                            pill.classList.remove('bg-primary', 'text-primary-content', 'shadow-md', 'scale-105');
+                            pill.classList.add('bg-base-200/70', 'text-base-content/70');
+                        }
+                    } else {
+                        // Dim categories with 0 matches
+                        pill.classList.remove('bg-primary', 'text-primary-content', 'shadow-md', 'scale-105');
+                        pill.classList.add('bg-base-200/70', 'text-base-content/70', 'opacity-40');
+                    }
+                });
             });
-        });
+        }
 
         // Global timeframe update sync
         const globalTimeframe = document.getElementById('global-timeframe');

@@ -18,7 +18,7 @@ final class ScreenerController extends Controller
     public function index(Request $request): View
     {
         $validated = $request->validate([
-            'timeframe' => 'sometimes|string|in:1h,4h,1D,1W',
+            'timeframe' => 'sometimes|string|in:1m,3m,5m,15m,30m,1h,1hr,2h,4h,4hr,6h,12h,1d,1D,1w,1W,1M',
             'price_min' => 'sometimes|nullable|numeric|min:0',
             'price_max' => 'sometimes|nullable|numeric|min:0',
             'change_min' => 'sometimes|nullable|numeric',
