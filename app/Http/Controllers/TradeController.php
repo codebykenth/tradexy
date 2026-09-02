@@ -218,16 +218,17 @@ final class TradeController extends Controller
         $userId = Auth::id();
         $accountMode = session('account_mode', 'real');
         $marketMode = session('market_type', 'crypto');
-        $winPage = (int) request()->get('win_page', 1);
-        $lossPage = (int) request()->get('loss_page', 1);
+        $winPage = max(1, (int) request()->get('win_page', 1));
+        $lossPage = max(1, (int) request()->get('loss_page', 1));
 
         $version = Cache::get("trades_version_user_{$userId}", now()->timestamp);
-        $cacheKey = "trades_gallery_user_{$userId}_mode_{$accountMode}_market_{$marketMode}_win_{$winPage}_loss_{$lossPage}_v{$version}";
+        $cacheKey = "trades_gallery_v2_u{$userId}_a{$accountMode}_m{$marketMode}_w{$winPage}_l{$lossPage}_v{$version}";
 
         $data = Cache::remember($cacheKey, now()->addHours(2), function () use ($userId, $accountMode, $marketMode, $winPage, $lossPage) {
             $winningQuery = Trade::with(['strategy', 'reasons'])
                 ->where('user_id', $userId)
                 ->whereNotNull('chart_picture')
+                ->where('chart_picture', '!=', '')
                 ->where('total_pnl', '>', 0);
 
             if ($accountMode !== 'all') {
@@ -250,6 +251,7 @@ final class TradeController extends Controller
             $losingQuery = Trade::with(['strategy', 'reasons'])
                 ->where('user_id', $userId)
                 ->whereNotNull('chart_picture')
+                ->where('chart_picture', '!=', '')
                 ->where('total_pnl', '<', 0);
 
             if ($accountMode !== 'all') {
@@ -270,12 +272,18 @@ final class TradeController extends Controller
             return compact('winItems', 'winTotal', 'winPerPage', 'lossItems', 'lossTotal', 'lossPerPage');
         });
 
+        if (!is_array($data) || !isset($data['winItems']) || !isset($data['lossItems'])) {
+            Cache::forget($cacheKey);
+
+            return redirect()->route('trades.gallery');
+        }
+
         $winningTrades = new \Illuminate\Pagination\LengthAwarePaginator(
             $data['winItems'],
             $data['winTotal'],
             $data['winPerPage'],
             $winPage,
-            ['path' => url()->current(), 'query' => ['win_page' => $winPage, 'loss_page' => $lossPage]]
+            ['path' => url()->current(), 'pageName' => 'win_page']
         );
 
         $losingTrades = new \Illuminate\Pagination\LengthAwarePaginator(
@@ -283,7 +291,7 @@ final class TradeController extends Controller
             $data['lossTotal'],
             $data['lossPerPage'],
             $lossPage,
-            ['path' => url()->current(), 'query' => ['win_page' => $winPage, 'loss_page' => $lossPage]]
+            ['path' => url()->current(), 'pageName' => 'loss_page']
         );
 
         return view('trades.gallery', compact('winningTrades', 'losingTrades'));

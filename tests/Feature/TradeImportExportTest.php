@@ -358,3 +358,55 @@ test('import fails with error when required columns are missing', function () {
     $response->assertSessionHas('error');
     expect(Trade::where('user_id', $user->id)->count())->toBe(0);
 });
+
+test('authenticated user can view the trades gallery without error', function () {
+    /** @var \Tests\TestCase $this */
+    $user = User::factory()->create(['terms_accepted_at' => now()]);
+
+    Trade::create([
+        'user_id' => $user->id,
+        'order_id' => 'ORD_WIN',
+        'market' => 'crypto',
+        'symbol' => 'BTCUSDT',
+        'entry_side' => 'long',
+        'exit_side' => 'short',
+        'quantity' => 1,
+        'cum_entry_value' => 60000,
+        'cum_exit_value' => 62000,
+        'avg_entry_price' => 60000,
+        'avg_exit_price' => 62000,
+        'leverage' => 1,
+        'closed_pnl' => 2000,
+        'total_pnl' => 2000,
+        'chart_picture' => 'https://example.com/chart1.png',
+        'open_datetime' => now()->subDay(),
+        'close_datetime' => now(),
+        'is_demo' => false,
+    ]);
+
+    Trade::create([
+        'user_id' => $user->id,
+        'order_id' => 'ORD_LOSS',
+        'market' => 'crypto',
+        'symbol' => 'ETHUSDT',
+        'entry_side' => 'short',
+        'exit_side' => 'long',
+        'quantity' => 1,
+        'cum_entry_value' => 3000,
+        'cum_exit_value' => 3200,
+        'avg_entry_price' => 3000,
+        'avg_exit_price' => 3200,
+        'leverage' => 1,
+        'closed_pnl' => -200,
+        'total_pnl' => -200,
+        'chart_picture' => 'https://example.com/chart2.png',
+        'open_datetime' => now()->subDay(),
+        'close_datetime' => now(),
+        'is_demo' => false,
+    ]);
+
+    $response = $this->actingAs($user)->get(route('trades.gallery'));
+    $response->assertStatus(200);
+    $response->assertSee('Winning Trades');
+    $response->assertSee('Losing Trades');
+});

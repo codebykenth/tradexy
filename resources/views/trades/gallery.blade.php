@@ -21,10 +21,12 @@
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <h3 class="font-black uppercase text-base-content">{{ $trade->symbol }}</h3>
-                                            <p class="text-xs font-medium text-base-content/60 mt-0.5">{{ \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') }}</p>
+                                            <p class="text-xs font-medium text-base-content/60 mt-0.5">
+                                                {{ $trade->close_datetime ? \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') : ($trade->open_datetime ? \Carbon\Carbon::parse($trade->open_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') : 'N/A') }}
+                                            </p>
                                         </div>
                                         <div class="badge badge-success font-bold border-none shadow-sm text-success-content">
-                                            +${{ number_format($trade->total_pnl, 2) }}
+                                            +${{ number_format((float) ($trade->total_pnl ?? 0), 2) }}
                                         </div>
                                     </div>
                                 </div>
@@ -67,10 +69,12 @@
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <h3 class="font-black uppercase text-base-content">{{ $trade->symbol }}</h3>
-                                            <p class="text-xs font-medium text-base-content/60 mt-0.5">{{ \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') }}</p>
+                                            <p class="text-xs font-medium text-base-content/60 mt-0.5">
+                                                {{ $trade->close_datetime ? \Carbon\Carbon::parse($trade->close_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') : ($trade->open_datetime ? \Carbon\Carbon::parse($trade->open_datetime, 'UTC')->setTimezone('Asia/Manila')->format('M d, Y') : 'N/A') }}
+                                            </p>
                                         </div>
                                         <div class="badge badge-error font-bold border-none shadow-sm text-error-content">
-                                            -${{ number_format(abs($trade->total_pnl), 2) }}
+                                            -${{ number_format(abs((float) ($trade->total_pnl ?? 0)), 2) }}
                                         </div>
                                     </div>
                                 </div>
