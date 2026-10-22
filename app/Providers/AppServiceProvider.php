@@ -21,7 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Neon needs the endpoint ID in the DSN when libpq lacks SNI support.
+        $this->app->bind('db.connector.pgsql', \App\Database\PostgresConnector::class);
     }
 
     /**

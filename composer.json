@@ -77,6 +77,10 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ],
+        "vercel": [
+            "@php -v",
+            "rm -f public/hot public/fonts-manifest.dev.json"
         ]
     },
     "extra": {

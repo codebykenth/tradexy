@@ -198,6 +198,9 @@ The project is structured for serverless deployment on Vercel using `vercel.json
 - Web traffic routes through `api/index.php`.
 - Static assets are served from `public/`.
 - PostgreSQL connects to hosted instances (Neon, Supabase, AWS RDS).
+- The runtime is pinned to `vercel-php@0.9.0` (PHP 8.5.12). Older runtimes ship PHP versions affected by PHP2Shell (CVE-2026-109618 / CVE-2026-109619).
+
+> **Neon:** the PHP 8.5 runtime bundles an older `libpq` that does not support TLS SNI. `App\Database\PostgresConnector` automatically appends Neon's documented `options=endpoint=<id>` fallback for `*.neon.tech` hosts. Set `DB_NEON_ENDPOINT` only when connecting through a custom Neon host.
 
 To deploy:
 1. Connect the repository in the Vercel dashboard.
