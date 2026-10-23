@@ -181,7 +181,7 @@ README.md                     # Readme
 **Purpose:** Builds the PHP container for **local development**. Not used on the server.
 
 ```dockerfile
-FROM php:8.4-fpm
+FROM php:8.5-fpm
 
 # Install PHP extensions needed for Laravel + PostgreSQL
 RUN apt-get update && apt-get install -y \
@@ -213,8 +213,8 @@ CMD ["php-fpm"]
 **Purpose:** Builds the optimized PHP container image that gets pushed to GHCR. This is the image used on the server for ALL environments (dev/staging/prod).
 
 **It uses a Multi-Stage Build:**
-1.  **Stage 1 (Frontend):** Uses `node:20-alpine` to install npm dependencies and run `npm run build` to compile assets (CSS/JS).
-2.  **Stage 2 (Backend):** Uses `php:8.4-fpm` to setup the PHP environment.
+1.  **Stage 1 (Frontend):** Uses `node:24-alpine` to install npm dependencies and run `npm run build` to compile assets (CSS/JS).
+2.  **Stage 2 (Backend):** Uses `php:8.5-fpm` to setup the PHP environment.
 3.  **Merge:** Copies the compiled `public/build` directory from Stage 1 into the final PHP image.
 
 ```dockerfile
@@ -230,7 +230,7 @@ RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-r
 # ==============================================================================
 # Stage 2: Build Frontend Assets
 # ==============================================================================
-FROM node:20-alpine AS frontend
+FROM node:24-alpine AS frontend
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -242,7 +242,7 @@ RUN npm run build
 # ==============================================================================
 # Stage 3: Build PHP Application
 # ==============================================================================
-FROM php:8.4-fpm
+FROM php:8.5-fpm
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -1107,7 +1107,7 @@ docker system prune -af       # Remove everything unused
 **Cause:** Frontend assets (CSS/JS) were not built during the Docker image creation. Laravel needs this file to know which compiled assets to load.
 
 **Solution:**
-1. Check `docker/php/Dockerfile.prod` has the `FROM node:20-alpine AS frontend` stage that runs `npm ci` and `npm run build`.
+1. Check `docker/php/Dockerfile.prod` has the `FROM node:24-alpine AS frontend` stage that runs `npm ci` and `npm run build`.
 2. Ensure the line `COPY --from=frontend /app/public/build public/build` exists in the PHP stage.
 3. Trigger a rebuild by pushing to your branch.
 

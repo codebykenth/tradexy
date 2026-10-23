@@ -10,7 +10,7 @@ RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-r
 # ==============================================================================
 # Stage 2: Build Frontend Assets
 # ==============================================================================
-FROM node:20-alpine AS frontend
+FROM node:24-alpine AS frontend
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -22,7 +22,7 @@ RUN npm run build
 # ==============================================================================
 # Stage 3: Build PHP Application
 # ==============================================================================
-FROM php:8.4-fpm
+FROM php:8.5-fpm
 
 RUN apt-get update && apt-get install -y \
     git \
